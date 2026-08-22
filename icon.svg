@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title">
+  <title id="title">Shuffle Works</title>
+  <rect width="32" height="32" rx="9" fill="#141416"/>
+  <path id="shuffle-arrows" d="M 4 9 L 6.1 9 C 8.2 9 9.4 10.2 10.7 12.2 L 12.6 15.2 C 13.7 17 14.8 18 16.8 18 L 18.3 18 M 15.58 8.419 L 18.292 10.017 L 16.067 11.994 M 4 19 L 6.1 19 C 8.2 19 9.4 17.8 10.7 15.8 L 12.6 12.8 C 13.7 11 14.8 10 16.8 10 L 18.3 10 M 16.005 19.568 L 18.326 18.003 L 16.588 16.383" fill="none" stroke="#fb923c" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <path id="lightning-bolt" d="M24.2 8.5 21 16.5h3l-1.1 6.5 4.4-8.6h-3L26.1 8.5Z" fill="#f97316" stroke="#fb923c" stroke-linejoin="round" stroke-width="0.6"/>
+</svg>

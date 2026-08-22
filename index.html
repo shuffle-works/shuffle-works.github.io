@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shuffle Works</title>
+  <meta name="description" content="Local-first tools for reading Spark event logs, catching PySpark schema drift, and tuning shuffle-heavy jobs.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL@400..700,0..1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <span class="brand">
+        <img class="brand-mark" src="icon.svg" width="28" height="28" alt="">
+        Shuffle Works
+      </span>
+      <div class="header-actions">
+        <a class="org-link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme" aria-pressed="false">
+          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-mesh" aria-hidden="true"></div>
+      <div class="container hero-content">
+        <div class="spark-trace" aria-hidden="true">
+          <span class="trace-node trace-driver" data-label="driver"></span>
+          <span class="trace-line trace-line-a"></span>
+          <span class="trace-node trace-stage-a" data-label="stage 12"></span>
+          <span class="trace-line trace-line-b"></span>
+          <span class="trace-node trace-stage-b" data-label="shuffle read"></span>
+          <span class="trace-line trace-line-c"></span>
+          <span class="trace-node trace-output" data-label="output"></span>
+        </div>
+        <h1>Shuffle Works</h1>
+        <p class="tagline">Local-first tools for reading Spark event logs, catching PySpark schema drift, and tuning shuffle bottlenecks before they burn cluster time.</p>
+        <a class="org-cta" href="https://github.com/shuffle-works" target="_blank" rel="noopener">View the org on GitHub &rarr;</a>
+      </div>
+    </section>
+
+    <section class="proof">
+      <div class="container proof-inner">
+        <div class="proof-heading">
+          <h2>How Shuffle Works ships</h2>
+          <p>Small tools with enough Spark context to be useful when a job is already slow, surprising, or expensive.</p>
+        </div>
+        <ul class="proof-list">
+          <li>
+            <strong>Local-first</strong>
+            <span>Keep event logs and schemas in the browser or local workflow instead of sending cluster evidence to a backend.</span>
+          </li>
+          <li>
+            <strong>Runtime evidence</strong>
+            <span>Start from the artifacts Spark already emits: history logs, DataFrame schemas, stages, memory pressure, and shuffle reads.</span>
+          </li>
+          <li>
+            <strong>Spark internals</strong>
+            <span>Explain the tuning levers that actually matter: AQE, partitioning, serialization, executor memory, and skew.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="projects" id="projects">
+      <div class="container">
+        <h2 class="section-title">Projects</h2>
+        <div class="projects-grid">
+          <article class="project-card project-card-featured" data-reveal>
+            <h3 class="project-name">SparkForensics</h3>
+            <p class="project-desc">A static, zero-backend browser app for analyzing Spark History Server event logs.</p>
+            <p class="project-use"><span>Use when</span> a job regresses and you need to inspect stages, timelines, shuffle reads, and executor behavior from the log you already have.</p>
+            <ul class="tag-list">
+              <li class="tag">TypeScript</li>
+              <li class="tag">React</li>
+              <li class="tag">Browser app</li>
+            </ul>
+            <div class="project-links">
+              <a href="https://github.com/shuffle-works/sparkforensics" target="_blank" rel="noopener">GitHub &rarr;</a>
+            </div>
+          </article>
+
+          <article class="project-card" data-reveal>
+            <h3 class="project-name">sparkenforce</h3>
+            <p class="project-desc">Type annotation system for PySpark DataFrame schema validation via type hints.</p>
+            <p class="project-use"><span>Use when</span> a DataFrame contract can drift between jobs and you want schema failures before Spark spends runtime discovering them.</p>
+            <ul class="tag-list">
+              <li class="tag">Python</li>
+              <li class="tag">PySpark</li>
+              <li class="tag">Type-safety</li>
+            </ul>
+            <div class="project-links">
+              <a href="https://github.com/shuffle-works/sparkenforce" target="_blank" rel="noopener">GitHub &rarr;</a>
+              <a href="https://pypi.org/project/sparkenforce/" target="_blank" rel="noopener">PyPI &rarr;</a>
+            </div>
+          </article>
+
+          <article class="project-card" data-reveal>
+            <h3 class="project-name">spark-tuning-reference</h3>
+            <p class="project-desc">A hands-on reference for tuning Spark and PySpark jobs — internals, memory, shuffle, AQE, and cluster config.</p>
+            <p class="project-use"><span>Use when</span> you need a practical path from a symptom like skew, spill, or slow joins to the Spark setting that changes the outcome.</p>
+            <ul class="tag-list">
+              <li class="tag">Python</li>
+              <li class="tag">Docs/Reference</li>
+            </ul>
+            <div class="project-links">
+              <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub &rarr;</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="footer-org" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub</a>
+      <p class="footer-socials">
+        Created by
+        <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba</a>
+        <span aria-hidden="true">&middot;</span>
+        <a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn</a>
+      </p>
+      <p class="footer-copyright">&copy; 2026 Shuffle Works.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
