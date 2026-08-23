@@ -35,40 +35,38 @@
 
   <main>
     <section class="hero">
-      <div class="hero-mesh" aria-hidden="true"></div>
       <div class="container hero-content">
-        <div class="spark-trace" aria-hidden="true">
-          <span class="trace-node trace-driver" data-label="driver"></span>
-          <span class="trace-line trace-line-a"></span>
-          <span class="trace-node trace-stage-a" data-label="stage 12"></span>
-          <span class="trace-line trace-line-b"></span>
-          <span class="trace-node trace-stage-b" data-label="shuffle read"></span>
-          <span class="trace-line trace-line-c"></span>
-          <span class="trace-node trace-output" data-label="output"></span>
-        </div>
+        <p class="hero-kicker">Spark evidence, kept local</p>
         <h1>Shuffle Works</h1>
         <p class="tagline">Local-first tools for reading Spark event logs, catching PySpark schema drift, and tuning shuffle bottlenecks before they burn cluster time.</p>
-        <a class="org-cta" href="https://github.com/shuffle-works" target="_blank" rel="noopener">View the org on GitHub &rarr;</a>
+        <ul class="evidence-list" aria-label="Supported Spark evidence">
+          <li>History Server event logs</li>
+          <li>PySpark schema contracts</li>
+          <li>AQE and cluster settings</li>
+        </ul>
+        <div class="hero-actions">
+          <a class="org-cta" href="#projects">Inspect projects</a>
+        </div>
       </div>
     </section>
 
     <section class="proof">
       <div class="container proof-inner">
         <div class="proof-heading">
-          <h2>How Shuffle Works ships</h2>
-          <p>Small tools with enough Spark context to be useful when a job is already slow, surprising, or expensive.</p>
+          <h2>Built around Spark evidence</h2>
+          <p>Small tools for the artifacts you already have when a job is slow, surprising, schema-fragile, or expensive.</p>
         </div>
         <ul class="proof-list">
           <li>
-            <strong>Local-first</strong>
+            <strong>No upload path</strong>
             <span>Keep event logs and schemas in the browser or local workflow instead of sending cluster evidence to a backend.</span>
           </li>
           <li>
-            <strong>Runtime evidence</strong>
+            <strong>Event log first</strong>
             <span>Start from the artifacts Spark already emits: history logs, DataFrame schemas, stages, memory pressure, and shuffle reads.</span>
           </li>
           <li>
-            <strong>Spark internals</strong>
+            <strong>Spark setting, not superstition</strong>
             <span>Explain the tuning levers that actually matter: AQE, partitioning, serialization, executor memory, and skew.</span>
           </li>
         </ul>
@@ -79,45 +77,75 @@
       <div class="container">
         <h2 class="section-title">Projects</h2>
         <div class="projects-grid">
-          <article class="project-card project-card-featured" data-reveal>
+          <article class="project-card project-card-featured" id="sparkforensics" data-reveal>
             <h3 class="project-name">SparkForensics</h3>
             <p class="project-desc">A static, zero-backend browser app for analyzing Spark History Server event logs.</p>
             <p class="project-use"><span>Use when</span> a job regresses and you need to inspect stages, timelines, shuffle reads, and executor behavior from the log you already have.</p>
+            <dl class="evidence-panel">
+              <div>
+                <dt>Input</dt>
+                <dd>Spark History Server event log</dd>
+              </div>
+              <div>
+                <dt>Reads</dt>
+                <dd>Stages, timelines, shuffle reads, executor behavior</dd>
+              </div>
+            </dl>
             <ul class="tag-list">
               <li class="tag">TypeScript</li>
               <li class="tag">React</li>
               <li class="tag">Browser app</li>
             </ul>
             <div class="project-links">
-              <a href="https://github.com/shuffle-works/sparkforensics" target="_blank" rel="noopener">GitHub &rarr;</a>
+              <a href="https://github.com/shuffle-works/sparkforensics" target="_blank" rel="noopener">Inspect SparkForensics &rarr;</a>
             </div>
           </article>
 
-          <article class="project-card" data-reveal>
+          <article class="project-card project-card-supporting" id="sparkenforce" data-reveal>
             <h3 class="project-name">sparkenforce</h3>
             <p class="project-desc">Type annotation system for PySpark DataFrame schema validation via type hints.</p>
             <p class="project-use"><span>Use when</span> a DataFrame contract can drift between jobs and you want schema failures before Spark spends runtime discovering them.</p>
+            <dl class="evidence-panel">
+              <div>
+                <dt>Checks</dt>
+                <dd>Type hints against DataFrame schema contracts</dd>
+              </div>
+              <div>
+                <dt>Failure</dt>
+                <dd>Schema drift before a Spark job spends runtime finding it</dd>
+              </div>
+            </dl>
             <ul class="tag-list">
               <li class="tag">Python</li>
               <li class="tag">PySpark</li>
               <li class="tag">Type-safety</li>
             </ul>
             <div class="project-links">
-              <a href="https://github.com/shuffle-works/sparkenforce" target="_blank" rel="noopener">GitHub &rarr;</a>
+              <a href="https://github.com/shuffle-works/sparkenforce" target="_blank" rel="noopener">Validate a schema contract &rarr;</a>
               <a href="https://pypi.org/project/sparkenforce/" target="_blank" rel="noopener">PyPI &rarr;</a>
             </div>
           </article>
 
-          <article class="project-card" data-reveal>
+          <article class="project-card project-card-supporting" id="spark-tuning-reference" data-reveal>
             <h3 class="project-name">spark-tuning-reference</h3>
             <p class="project-desc">A hands-on reference for tuning Spark and PySpark jobs — internals, memory, shuffle, AQE, and cluster config.</p>
             <p class="project-use"><span>Use when</span> you need a practical path from a symptom like skew, spill, or slow joins to the Spark setting that changes the outcome.</p>
+            <dl class="evidence-panel">
+              <div>
+                <dt>Symptom</dt>
+                <dd>Skew, spill, slow joins, or memory pressure</dd>
+              </div>
+              <div>
+                <dt>Path</dt>
+                <dd>AQE, partitioning, serialization, executor memory</dd>
+              </div>
+            </dl>
             <ul class="tag-list">
               <li class="tag">Python</li>
               <li class="tag">Docs/Reference</li>
             </ul>
             <div class="project-links">
-              <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub &rarr;</a>
+              <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">Find a tuning path &rarr;</a>
             </div>
           </article>
         </div>
