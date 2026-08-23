@@ -9,17 +9,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL@400..700,0..1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var STORAGE_KEY = 'shuffle-works-theme';
+      var stored = null;
+      try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+      var theme = (stored === 'light' || stored === 'dark')
+        ? stored
+        : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <span class="brand">
+      <a class="brand" href="#">
         <img class="brand-mark" src="icon.svg" width="28" height="28" alt="">
         Shuffle Works
-      </span>
+      </a>
       <div class="header-actions">
-        <a class="org-link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub</a>
+        <a class="org-link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
         <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme" aria-pressed="false">
           <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="4"></circle>
@@ -38,14 +49,14 @@
       <div class="container hero-content">
         <p class="hero-kicker">Spark evidence, kept local</p>
         <h1>Shuffle Works</h1>
-        <p class="tagline">Local-first tools for reading Spark event logs, catching PySpark schema drift, and tuning shuffle bottlenecks before they burn cluster time.</p>
+        <p class="tagline">Local-first tools for reading Spark event logs, catching PySpark schema drift, and tuning bottlenecks before they burn cluster time.</p>
         <ul class="evidence-list" aria-label="Supported Spark evidence">
           <li>History Server event logs</li>
           <li>PySpark schema contracts</li>
           <li>AQE and cluster settings</li>
         </ul>
         <div class="hero-actions">
-          <a class="org-cta" href="#projects">Inspect projects</a>
+          <a class="org-cta" href="#projects">Open the toolkit</a>
         </div>
       </div>
     </section>
@@ -54,7 +65,7 @@
       <div class="container proof-inner">
         <div class="proof-heading">
           <h2>Built around Spark evidence</h2>
-          <p>Small tools for the artifacts you already have when a job is slow, surprising, schema-fragile, or expensive.</p>
+          <p>Small tools for a job that's slow, surprising, schema-fragile, or expensive, built around the evidence Spark leaves behind.</p>
         </div>
         <ul class="proof-list">
           <li>
@@ -80,72 +91,84 @@
           <article class="project-card project-card-featured" id="sparkforensics" data-reveal>
             <h3 class="project-name">SparkForensics</h3>
             <p class="project-desc">A static, zero-backend browser app for analyzing Spark History Server event logs.</p>
-            <p class="project-use"><span>Use when</span> a job regresses and you need to inspect stages, timelines, shuffle reads, and executor behavior from the log you already have.</p>
-            <dl class="evidence-panel">
-              <div>
-                <dt>Input</dt>
-                <dd>Spark History Server event log</dd>
+            <div class="project-use-group">
+              <p class="project-use"><span>Use when</span> a job regresses and you need to inspect stages, timelines, shuffle reads, and executor behavior from the log you already have.</p>
+              <dl class="use-facts">
+                <div>
+                  <dt>Input</dt>
+                  <dd>Spark History Server event log</dd>
+                </div>
+                <div>
+                  <dt>Reads</dt>
+                  <dd>Stages, timelines, shuffle reads, executor behavior</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="project-meta">
+              <ul class="tag-list">
+                <li class="tag">TypeScript</li>
+                <li class="tag">React</li>
+                <li class="tag">Browser app</li>
+              </ul>
+              <div class="project-links">
+                <a href="https://github.com/shuffle-works/sparkforensics" target="_blank" rel="noopener">Inspect SparkForensics &rarr;<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
               </div>
-              <div>
-                <dt>Reads</dt>
-                <dd>Stages, timelines, shuffle reads, executor behavior</dd>
-              </div>
-            </dl>
-            <ul class="tag-list">
-              <li class="tag">TypeScript</li>
-              <li class="tag">React</li>
-              <li class="tag">Browser app</li>
-            </ul>
-            <div class="project-links">
-              <a href="https://github.com/shuffle-works/sparkforensics" target="_blank" rel="noopener">Inspect SparkForensics &rarr;</a>
             </div>
           </article>
 
           <article class="project-card project-card-supporting" id="sparkenforce" data-reveal>
             <h3 class="project-name">sparkenforce</h3>
             <p class="project-desc">Type annotation system for PySpark DataFrame schema validation via type hints.</p>
-            <p class="project-use"><span>Use when</span> a DataFrame contract can drift between jobs and you want schema failures before Spark spends runtime discovering them.</p>
-            <dl class="evidence-panel">
-              <div>
-                <dt>Checks</dt>
-                <dd>Type hints against DataFrame schema contracts</dd>
+            <div class="project-use-group">
+              <p class="project-use"><span>Use when</span> a DataFrame contract can drift between jobs and you want schema failures before Spark spends runtime discovering them.</p>
+              <dl class="use-facts">
+                <div>
+                  <dt>Checks</dt>
+                  <dd>Type hints against DataFrame schema contracts</dd>
+                </div>
+                <div>
+                  <dt>Failure</dt>
+                  <dd>Schema drift before a Spark job spends runtime finding it</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="project-meta">
+              <ul class="tag-list">
+                <li class="tag">Python</li>
+                <li class="tag">PySpark</li>
+                <li class="tag">Type-safety</li>
+              </ul>
+              <div class="project-links">
+                <a href="https://github.com/shuffle-works/sparkenforce" target="_blank" rel="noopener">Validate a schema contract &rarr;<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
+                <a href="https://pypi.org/project/sparkenforce/" target="_blank" rel="noopener">PyPI &rarr;<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
               </div>
-              <div>
-                <dt>Failure</dt>
-                <dd>Schema drift before a Spark job spends runtime finding it</dd>
-              </div>
-            </dl>
-            <ul class="tag-list">
-              <li class="tag">Python</li>
-              <li class="tag">PySpark</li>
-              <li class="tag">Type-safety</li>
-            </ul>
-            <div class="project-links">
-              <a href="https://github.com/shuffle-works/sparkenforce" target="_blank" rel="noopener">Validate a schema contract &rarr;</a>
-              <a href="https://pypi.org/project/sparkenforce/" target="_blank" rel="noopener">PyPI &rarr;</a>
             </div>
           </article>
 
           <article class="project-card project-card-supporting" id="spark-tuning-reference" data-reveal>
             <h3 class="project-name">spark-tuning-reference</h3>
             <p class="project-desc">A hands-on reference for tuning Spark and PySpark jobs — internals, memory, shuffle, AQE, and cluster config.</p>
-            <p class="project-use"><span>Use when</span> you need a practical path from a symptom like skew, spill, or slow joins to the Spark setting that changes the outcome.</p>
-            <dl class="evidence-panel">
-              <div>
-                <dt>Symptom</dt>
-                <dd>Skew, spill, slow joins, or memory pressure</dd>
+            <div class="project-use-group">
+              <p class="project-use"><span>Use when</span> you need a practical path from a symptom like skew, spill, or slow joins to the Spark setting that changes the outcome.</p>
+              <dl class="use-facts">
+                <div>
+                  <dt>Symptom</dt>
+                  <dd>Skew, spill, slow joins, or memory pressure</dd>
+                </div>
+                <div>
+                  <dt>Path</dt>
+                  <dd>AQE, partitioning, serialization, executor memory</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="project-meta">
+              <ul class="tag-list">
+                <li class="tag">Python</li>
+                <li class="tag">Docs/Reference</li>
+              </ul>
+              <div class="project-links">
+                <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">Find a tuning path &rarr;<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
               </div>
-              <div>
-                <dt>Path</dt>
-                <dd>AQE, partitioning, serialization, executor memory</dd>
-              </div>
-            </dl>
-            <ul class="tag-list">
-              <li class="tag">Python</li>
-              <li class="tag">Docs/Reference</li>
-            </ul>
-            <div class="project-links">
-              <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">Find a tuning path &rarr;</a>
             </div>
           </article>
         </div>
@@ -155,12 +178,12 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <a class="footer-org" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub</a>
+      <a class="footer-org" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
       <p class="footer-socials">
         Created by
-        <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba</a>
+        <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
         <span aria-hidden="true">&middot;</span>
-        <a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn<svg class="icon-external" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg><span class="sr-only"> (opens in new tab)</span></a>
       </p>
       <p class="footer-copyright">&copy; 2026 Shuffle Works.</p>
     </div>

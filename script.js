@@ -8,27 +8,14 @@
   var root = document.documentElement;
   var toggle = document.getElementById('theme-toggle');
 
-  function systemPrefersLight() {
-    return window.matchMedia('(prefers-color-scheme: light)').matches;
-  }
-
   function applyTheme(theme) {
     root.setAttribute('data-theme', theme);
     toggle.setAttribute('aria-pressed', String(theme === 'light'));
   }
 
-  function currentTheme() {
-    var stored;
-    try {
-      stored = localStorage.getItem(STORAGE_KEY);
-    } catch (e) {
-      stored = null;
-    }
-    if (stored === 'light' || stored === 'dark') return stored;
-    return systemPrefersLight() ? 'light' : 'dark';
-  }
-
-  applyTheme(currentTheme());
+  // The inline head script already set data-theme before first paint (avoids a
+  // flash of the wrong theme); just sync the toggle button's aria-pressed to match.
+  toggle.setAttribute('aria-pressed', String(root.getAttribute('data-theme') === 'light'));
 
   toggle.addEventListener('click', function () {
     var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';

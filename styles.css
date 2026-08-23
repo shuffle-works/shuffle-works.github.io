@@ -13,6 +13,29 @@ button:focus-visible {
   border-radius: 4px;
 }
 
+/* Visually hidden but announced by screen readers (clip-based, not display:none) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* External-link glyph appended to every target="_blank" anchor */
+.icon-external {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 0.3em;
+  vertical-align: -0.05em;
+  flex: none;
+}
+
 /* Theme tokens: dark is the default (dark-first), OS light preference overrides it,
    and the manual [data-theme] attribute (set by script.js) always wins over both. */
 :root {
@@ -425,8 +448,6 @@ body {
 }
 
 .project-card {
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -435,17 +456,6 @@ body {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.project-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-signal), transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s ease;
 }
 
 .project-card:hover {
@@ -459,6 +469,7 @@ body {
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+    grid-template-rows: auto auto auto;
     column-gap: var(--space-8);
     row-gap: var(--space-4);
     padding: var(--space-8);
@@ -474,14 +485,6 @@ body {
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 45%),
     var(--color-bg-elevated);
-}
-
-.project-card-featured::before {
-  transform: scaleX(1);
-}
-
-.project-card:hover::before {
-  transform: scaleX(1);
 }
 
 .project-name {
@@ -500,15 +503,21 @@ body {
 }
 
 .project-card-featured .project-desc,
-.project-card-featured .project-use {
+.project-card-featured .project-use-group {
   max-width: 58ch;
+}
+
+.project-use-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex-grow: 1;
 }
 
 .project-use {
   color: var(--color-text);
   font-size: 0.95rem;
   line-height: 1.45;
-  flex-grow: 1;
   text-wrap: pretty;
 }
 
@@ -520,42 +529,33 @@ body {
   margin-right: 0.25rem;
 }
 
-.evidence-panel {
+/* Compact facts that extend the "Use when" sentence: plain text, no boxed
+   treatment, so they read as part of the use-case group rather than a
+   separate chip language. */
+.use-facts {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-block: var(--space-2);
+  gap: 0.35rem;
 }
 
-.evidence-panel div {
+.use-facts div {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--color-signal);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4em;
 }
 
 @media (min-width: 960px) {
   .project-card-featured .project-name,
   .project-card-featured .project-desc,
-  .project-card-featured .project-use,
-  .project-card-featured .project-links {
+  .project-card-featured .project-use-group {
     grid-column: 1;
   }
 
-  .project-card-featured .evidence-panel,
-  .project-card-featured .tag-list {
+  .project-card-featured .project-meta {
     grid-column: 2;
-  }
-
-  .project-card-featured .evidence-panel {
-    align-self: start;
-    margin-block: 0;
-  }
-
-  .project-card-featured .project-links {
+    grid-row: 1 / -1;
     align-self: end;
-    margin-top: var(--space-4);
   }
 
   .project-card-supporting .project-desc {
@@ -567,18 +567,31 @@ body {
   }
 }
 
-.evidence-panel dt {
+.use-facts dt {
   color: var(--color-signal);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
+  flex: none;
 }
 
-.evidence-panel dd {
+.use-facts dt::after {
+  content: ':';
+}
+
+.use-facts dd {
   color: var(--color-text-muted);
   font-size: 0.86rem;
   line-height: 1.4;
+}
+
+/* Tags + links share one "metadata" group: tight internal gap, one
+   generous gap separating it from the use-case group above. */
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .tag-list {
@@ -602,7 +615,6 @@ body {
   flex-wrap: wrap;
   row-gap: var(--space-2);
   column-gap: var(--space-4);
-  margin-top: var(--space-2);
   font-size: 0.9rem;
 }
 
@@ -617,7 +629,7 @@ body {
 
 /* Scroll reveal */
 html:where(.js:not(.no-js)) .project-card[data-reveal] {
-  opacity: 1;
+  opacity: 0;
   transform: translateY(0.75rem);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
@@ -636,7 +648,7 @@ html:where(.js:not(.no-js)) .project-card[data-reveal] {
   html { scroll-behavior: auto; }
 
   .project-card,
-  .project-card[data-reveal] {
+  html:where(.js:not(.no-js)) .project-card[data-reveal] {
     opacity: 1;
     transform: none;
     transition: none;
