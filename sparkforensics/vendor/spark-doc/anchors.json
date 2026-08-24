@@ -1,0 +1,205 @@
+[
+  {
+    "anchor": "intro",
+    "section": "Getting Started",
+    "title": "Introduction",
+    "keywords": []
+  },
+  {
+    "anchor": "spark-architecture",
+    "section": "Optimization Guide",
+    "title": "Spark Execution Model",
+    "keywords": []
+  },
+  {
+    "anchor": "memory-model",
+    "section": "Optimization Guide",
+    "title": "Memory Management",
+    "keywords": []
+  },
+  {
+    "anchor": "partitioning",
+    "section": "Optimization Guide",
+    "title": "Partitioning",
+    "keywords": [
+      "repartition",
+      "coalesce",
+      "skew"
+    ]
+  },
+  {
+    "anchor": "joins",
+    "section": "Optimization Guide",
+    "title": "Join Optimization",
+    "keywords": [
+      "broadcast",
+      "shuffle-join",
+      "bucketing",
+      "aqe"
+    ]
+  },
+  {
+    "anchor": "shuffle",
+    "section": "Optimization Guide",
+    "title": "Shuffle",
+    "keywords": []
+  },
+  {
+    "anchor": "data-formats",
+    "section": "Optimization Guide",
+    "title": "Data Formats",
+    "keywords": []
+  },
+  {
+    "anchor": "table-formats",
+    "section": "Optimization Guide",
+    "title": "Table Formats",
+    "keywords": [
+      "delta",
+      "iceberg",
+      "hudi",
+      "compaction",
+      "optimize",
+      "z-order",
+      "deletion-vectors"
+    ]
+  },
+  {
+    "anchor": "caching",
+    "section": "Optimization Guide",
+    "title": "Caching & Persistence",
+    "keywords": []
+  },
+  {
+    "anchor": "pyspark",
+    "section": "Optimization Guide",
+    "title": "PySpark Specifics",
+    "keywords": []
+  },
+  {
+    "anchor": "aqe",
+    "section": "Optimization Guide",
+    "title": "Adaptive Query Execution",
+    "keywords": []
+  },
+  {
+    "anchor": "cluster-config",
+    "section": "Optimization Guide",
+    "title": "Cluster Tuning",
+    "keywords": []
+  },
+  {
+    "anchor": "anti-patterns",
+    "section": "Optimization Guide",
+    "title": "Anti-Patterns",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-skew",
+    "section": "Detector Catalog",
+    "title": "Task Skew",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-shuffle",
+    "section": "Detector Catalog",
+    "title": "Shuffle I/O",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-spill",
+    "section": "Detector Catalog",
+    "title": "Memory / Disk Spill",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-gc",
+    "section": "Detector Catalog",
+    "title": "GC Pressure",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-cold-start",
+    "section": "Detector Catalog",
+    "title": "Cold Start",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-utilization",
+    "section": "Detector Catalog",
+    "title": "Executor Utilization",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-slow-host",
+    "section": "Detector Catalog",
+    "title": "Slow Host",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-failures",
+    "section": "Detector Catalog",
+    "title": "Task Failures",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-straggler",
+    "section": "Detector Catalog",
+    "title": "Stragglers",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-retry-waste",
+    "section": "Detector Catalog",
+    "title": "Retry Waste",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-tiny-tasks",
+    "section": "Detector Catalog",
+    "title": "Tiny Tasks",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-job-failure-rate",
+    "section": "Detector Catalog",
+    "title": "Job Failure Rate",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-memory-utilization",
+    "section": "Detector Catalog",
+    "title": "Memory Utilization",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-duplicate-plan-subtree",
+    "section": "Detector Catalog",
+    "title": "Duplicate Plan Subtree",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-small-files",
+    "section": "Detector Catalog",
+    "title": "Small Files",
+    "keywords": []
+  },
+  {
+    "anchor": "bottleneck-broadcast-sizing",
+    "section": "Detector Catalog",
+    "title": "Broadcast Sizing",
+    "keywords": []
+  },
+  {
+    "anchor": "metrics",
+    "section": "Reference",
+    "title": "Metrics Glossary",
+    "keywords": []
+  },
+  {
+    "anchor": "config",
+    "section": "Reference",
+    "title": "Spark Config Quick-Reference",
+    "keywords": []
+  }
+]

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How This Site Works</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-code: #eef1f6;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: #e2e8f0;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-info: #2563eb;
+  --color-warning: #b45309;
+  --color-critical: #dc2626;
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  --sidebar-width: 260px;
+  --content-max-width: 760px;
+  --transition-fast: 150ms ease-out;
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-code: #182234;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-accent: #60a5fa;
+  --color-accent-hover: #93c5fd;
+  --color-info: #60a5fa;
+  --color-warning: #fbbf24;
+  --color-critical: #f87171;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-surface-code: #182234;
+    --color-text: #f1f5f9;
+    --color-text-muted: #94a3b8;
+    --color-border: #334155;
+    --color-accent: #60a5fa;
+    --color-accent-hover: #93c5fd;
+    --color-info: #60a5fa;
+    --color-warning: #fbbf24;
+    --color-critical: #f87171;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+a[href^="http"]::after {
+  content: "\2197";
+  display: inline-block;
+  margin-left: 0.2em;
+  font-size: 0.85em;
+  color: var(--color-text-muted);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Layout */
+
+.layout {
+  display: flex;
+  min-height: 100dvh;
+  align-items: flex-start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-3);
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-6) var(--space-5);
+}
+
+.doc-section {
+  max-width: var(--content-max-width);
+  margin: 0 auto var(--space-6);
+}
+
+.doc-section:first-of-type {
+  margin-top: 0;
+}
+
+/* Content group titles (mirror sidebar nav groups, so scrolling the page
+   surfaces the same top-level structure the sidebar shows) */
+
+.content-group-title {
+  max-width: var(--content-max-width);
+  margin: var(--space-6) auto var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+}
+
+.content-group-title-first {
+  margin-top: 0;
+}
+
+/* Accessibility utilities */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-3);
+  z-index: 30;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+/* Nav */
+
+.nav-toggle {
+  display: none;
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 20;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.nav-search {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--space-3);
+  padding: var(--space-1) var(--space-2);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.nav-search::placeholder {
+  color: var(--color-text-muted);
+}
+
+.nav-group {
+  margin-bottom: var(--space-4);
+}
+
+.nav-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+  padding: 0 var(--space-2);
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  display: block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.nav-link:hover {
+  background: var(--color-border);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  color: var(--color-accent);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+/* Anchor-not-found fallback */
+
+.anchor-fallback[hidden] {
+  display: none;
+}
+
+.anchor-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: var(--content-max-width);
+  margin: 0 auto var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-warning);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.anchor-fallback button {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Prose */
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.doc-section > h2:first-child,
+.doc-section > h3:first-child,
+.doc-section > h4:first-child {
+  margin-top: 0;
+}
+
+/* Each section's own Markdown headings are demoted a level in build.py
+   (bump_headings) so the page has exactly one real <h1>; sizes below keep the
+   original visual scale (former h1/h2/h3 sizes) despite the semantic shift. */
+h1 { font-size: 32px; }
+h2 { font-size: 32px; }
+h3 { font-size: 24px; }
+h4 { font-size: 18px; }
+
+p, ul, ol {
+  margin: 0 0 var(--space-3);
+}
+
+p { color: var(--color-text); }
+
+/* PySpark callouts (blockquotes) */
+
+blockquote {
+  margin: var(--space-4) 0;
+  padding: var(--space-3);
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface);
+  border-radius: 0 6px 6px 0;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Code */
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-surface-code);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  background: var(--color-surface-code);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: var(--space-3);
+  overflow-x: auto;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: 14px;
+}
+
+/* Tables */
+
+.table-scroll {
+  margin: var(--space-4) 0;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 14px;
+}
+
+th, td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+th {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-border);
+}
+
+/* Footnotes */
+
+.footnote {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.footnote li {
+  margin-bottom: var(--space-1);
+}
+
+sup {
+  line-height: 0;
+}
+
+/* Severity dots & tags */
+
+.severity-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--space-1);
+}
+
+.severity-dot.info { background: var(--color-info); }
+.severity-dot.warning { background: var(--color-warning); }
+.severity-dot.critical { background: var(--color-critical); }
+
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-muted);
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .nav-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    transition: transform var(--transition-fast);
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .content {
+    /* top padding clears the fixed nav-toggle button (44px + its own space-3 offset)
+       plus a gap, so it never overlaps the first heading/group title */
+    padding: calc(var(--space-3) * 2 + 44px) var(--space-3) var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<h1 class="visually-hidden">How This Site Works</h1>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Pipeline Overview</div>
+      <ul class="nav-list">
+        
+        <li><a href="#pipeline-overview" class="nav-link">Pipeline Overview</a></li>
+        
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Registry & Retrieval</div>
+      <ul class="nav-list">
+        
+        <li><a href="#registry-and-retrieval" class="nav-link">Registry & Retrieval</a></li>
+        
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Agents & Orchestration</div>
+      <ul class="nav-list">
+        
+        <li><a href="#agents-and-orchestration" class="nav-link">Agents & Orchestration</a></li>
+        
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Content, Staleness & Build</div>
+      <ul class="nav-list">
+        
+        <li><a href="#content-staleness-and-build" class="nav-link">Content, Staleness & Build</a></li>
+        
+      </ul>
+    </div>
+    
+    
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <div class="anchor-fallback" id="anchor-fallback" hidden role="status">
+      Section not found — showing introduction.
+      <button type="button" id="anchor-fallback-dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+    
+    
+    <div class="content-group-title content-group-title-first">Pipeline Overview</div>
+    
+    <section id="pipeline-overview" class="doc-section">
+      <h2>Pipeline Overview</h2>
+<h3>What this repository builds</h3>
+<p>This repository runs a question-granular, citation-backed answering pipeline that turns a registry of research questions into a reviewed reference site, and it does so twice: once for a Spark optimization reference and once for the pipeline's own architecture<sup id="fnref:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Selection between the two happens via <code>--corpus {spark,meta}</code> on every pipeline script, defaulting to <code>spark</code>. <code>scripts/corpus.py</code> holds a <code>Corpus</code> dataclass with <code>SPARK</code>/<code>META</code> profiles, and every path a script touches (registry, per-question answers dir, section-projection dir, content-state sidecar, content manifest, references dir, Chroma path/collection, embedding model, build output, site title) comes from the selected profile rather than a hardcoded constant<sup id="fnref2:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>spark</code> corpus is the Spark optimization reference itself, built over <code>references/</code> and indexed with the asymmetric question→passage retriever <code>multi-qa-mpnet-base-dot-v1</code>; its build output is <code>index.html</code><sup id="fnref3:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>meta</code> corpus is this project's own architecture doc (<code>docs/architecture.md</code>, <code>docs/runbook.md</code>, <code>docs/rules/*.md</code>, <code>AGENTS.md</code>, and the agent/skill files that make up the pipeline). It is indexed via symlinks under <code>references-meta/</code> with the general symmetric model <code>all-mpnet-base-v2</code> into a separate Chroma collection, and its build output is <code>meta.html</code><sup id="fnref4:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The two corpora never share a registry, a Chroma collection, or a content manifest; each is an independent instance of the same pipeline shape<sup id="fnref5:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>Within either corpus, the atomic unit of the pipeline is the question, not the section: the registry (<code>research/questions.yaml</code>, or its meta counterpart) is the single source of truth holding sections and questions, and every other artifact is a derived projection, never edited directly as a source of truth<sup id="fnref6:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Content flows one way through the pipeline: registry → per-question answer files (prose plus footnotes and their own <code>## Sources</code>) → section projections (an ordered concatenation of a section's question answers, with sources merged and deduped) → content pages (brief-driven on first generation, human-owned after that) → the built site, and a downstream artifact is never treated as a source of truth for an upstream one<sup id="fnref7:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The project's own <code>AGENTS.md</code> restates the operator-facing consequence: every content page is real cited prose, not a placeholder, and new or changed content still flows registry → answer → projection → page<sup id="fnref:3-agents-md"><a class="footnote-ref" href="#fn:3-agents-md" title="agents-md — references-meta/AGENTS.md">2</a></sup>.</p>
+<p>The build output is produced regardless of whether every content page is current. A committed hash sidecar tracks each content page against the sha256 of the section projection it was last generated or accepted from, classifying pages as ungenerated, stale, or ok; the build script checks this before rendering and prints a non-fatal warning banner listing any stale or ungenerated pages, but the build still produces <code>index.html</code> either way<sup id="fnref8:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Recompute never triggers regeneration on its own; it only flags a page stale, since content pages are human-owned once generated<sup id="fnref9:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>On the Spark side, the resulting pages carry a further constraint tied to why the site exists: its manifest-level anchor IDs are a frozen cross-repo Integration Contract with the sibling <code>../eventLogsVisualizer</code> repo, so renaming or removing one is a breaking change, and content assembly must read anchors from <code>content/manifest.yaml</code> rather than deriving them from a filename or heading<sup id="fnref:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. That contract applies only to the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, and their anchors may change freely<sup id="fnref2:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. <code>docs/anchor-map.md</code> reconciles the two, mapping each research answer file to its content file and frozen anchor<sup id="fnref:3-anchor-map"><a class="footnote-ref" href="#fn:3-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">4</a></sup>.</p>
+<h3>The one-way derive chain</h3>
+<p>The chain runs in one direction, front to back:</p>
+<p><code>research/questions.yaml</code> → <code>research/answers/q/&lt;id&gt;.md</code> → <code>research/answers/&lt;section-id&gt;.md</code> → <code>content/*.md</code> (and <code>content/bottlenecks/*.md</code>) → <code>index.html</code><sup id="fnref10:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>Each stage has a role. <code>questions.yaml</code> is the registry of sections and questions with their statuses. Each per-question answer file holds that question's prose plus its own <code>[^id]</code> footnotes and <code>## Sources</code> block. The section file is a projection: an ordered concatenation of a section's question answers, with <code>## Sources</code> merged and deduped, and it is the same path the content manifest's <code>assembled_from:</code> already points at. Content pages are brief-driven and only first-generated from that projection, after which they become human-owned. The build turns the content pages into <code>index.html</code><sup id="fnref11:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>The architecture forbids treating any downstream artifact as a source of truth because <code>research/questions.yaml</code> is the single source of truth for the whole pipeline. Every other artifact (per-question answers, section projections, content pages) is a derived projection, regenerable from the registry and the per-question answer files, never edited as a source of truth itself<sup id="fnref12:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The registry rules state this directly: never edit a downstream artifact as if it were the source of truth, since per-question answers, section projections, and content pages are all derived projections regenerable from the registry, and recompute always starts at <code>questions.yaml</code> and flows forward<sup id="fnref:3-rules-registry"><a class="footnote-ref" href="#fn:3-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">5</a></sup>. The derive-direction diagram states the same principle as an invariant: every arrow is one-way, and a downstream artifact (a section projection, a content page, the built site) is never a source of truth for an upstream one<sup id="fnref13:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The project's own <code>AGENTS.md</code> restates the practical consequence for operators: new or changed content still flows registry → answer → projection → page, and <code>questions.yaml</code> remains the authoritative question registry rather than any prose plan or derived array<sup id="fnref2:3-agents-md"><a class="footnote-ref" href="#fn:3-agents-md" title="agents-md — references-meta/AGENTS.md">2</a></sup>.</p>
+<h3>Why the question, not the section, is the atomic unit</h3>
+<p><code>docs/architecture.md</code> states the design directly: the atomic unit of the answering pipeline is the <strong>question</strong>, not the section. It goes on to name <code>research/questions.yaml</code> as the single source of truth, holding <code>sections</code> (id, num, title, default_k) as a grouping label and <code>questions</code> (id, section, text, version, k, status) as the working records. Every other artifact, from per-question answer files up through section projections and content pages, is a derived projection regenerable from the registry and those answer files, never a source of truth itself<sup id="fnref14:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>That per-question state (its own <code>version</code>, <code>k</code>, <code>status</code>) is what makes independent recompute possible. <code>add_question.py</code> mints an id and appends a single <code>pending</code> record without mutating any existing record, and <code>recompute_question.py</code> flips exactly one record back to <code>pending</code> and backs up only that question's old answer file, touching no other record or file<sup id="fnref2:3-rules-registry"><a class="footnote-ref" href="#fn:3-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">5</a></sup>. If the section were the atomic unit, recomputing one question's answer would force treating the whole section's state as dirty; scoping status and versioning to the question lets one question be re-answered, re-versioned, or given its own <code>k</code> without disturbing its siblings.</p>
+<p>The rest of the pipeline is built around that same grain: the Draft/Verify/Redraft agents are each scoped to a single question, and the <code>answer-question</code> skill runs one question end to end: Draft → Verify → [Redraft → re-Verify] → Humanize → <code>check_prose</code> → <code>project_section</code> → <code>content_state</code> ... → commit<sup id="fnref15:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The meta corpus's own <code>answer-meta-question</code> skill mirrors this: its input is one question id, and it dispatches the Draft/Verify agents with a one-item question list equal to the record's text<sup id="fnref:3-skill-answer-meta-question"><a class="footnote-ref" href="#fn:3-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">6</a></sup>. Only after a question is answered does <code>project_section</code> roll it into the section file, by concatenating that section's question answers in registry order and merging their <code>## Sources</code> blocks<sup id="fnref16:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The section projection is assembled from finished question-level work, not answered as a unit itself.</p>
+<h3>Sources</h3>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:3-architecture">
+<p>architecture — references-meta/docs/architecture.md&#160;<a class="footnote-backref" href="#fnref:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref8:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref9:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref10:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref11:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref12:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref13:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref14:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref15:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref16:3-architecture" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3-agents-md">
+<p>agents-md — references-meta/AGENTS.md&#160;<a class="footnote-backref" href="#fnref:3-agents-md" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3-agents-md" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3-rules-content">
+<p>rules-content — references-meta/docs/rules/content.md&#160;<a class="footnote-backref" href="#fnref:3-rules-content" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3-rules-content" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3-anchor-map">
+<p>anchor-map — references-meta/docs/anchor-map.md&#160;<a class="footnote-backref" href="#fnref:3-anchor-map" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3-rules-registry">
+<p>rules-registry — references-meta/docs/rules/registry.md&#160;<a class="footnote-backref" href="#fnref:3-rules-registry" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:3-rules-registry" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3-skill-answer-meta-question">
+<p>skill-answer-meta-question — references-meta/skills/answer-meta-question.md&#160;<a class="footnote-backref" href="#fnref:3-skill-answer-meta-question" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+    </section>
+    
+    
+    <div class="content-group-title">Registry & Retrieval</div>
+    
+    <section id="registry-and-retrieval" class="doc-section">
+      <h2>Registry &amp; Retrieval</h2>
+<h3>The registry's data model</h3>
+<p><code>research/questions.yaml</code> holds two top-level collections. A section record has <code>id</code>, <code>num</code>, <code>title</code>, and <code>default_k</code>. A question record has <code>id</code>, <code>section</code>, <code>text</code>, <code>version</code>, <code>k</code>, and <code>status</code><sup id="fnref:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p><code>id</code> is stable once minted: <code>scripts/add_question.py</code> appends a new <code>pending</code> record and prints its id<sup id="fnref:4-runbook"><a class="footnote-ref" href="#fn:4-runbook" title="runbook — references-meta/docs/runbook.md">3</a></sup>, but never mutates an existing record's <code>id</code>, <code>section</code>, or <code>text</code>. A reworded or dropped question gets a new id rather than a rewritten one<sup id="fnref:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup>.</p>
+<p><code>version</code> is one of <code>3.0</code> / <code>3.5</code> / <code>4.0</code> / <code>n/a</code>, passed through to <code>ask.py --version</code><sup id="fnref2:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup>. It has a default rather than being absent: <code>add_question</code> takes an optional <code>--version X</code> flag and falls back to <code>n/a</code> when omitted<sup id="fnref2:4-runbook"><a class="footnote-ref" href="#fn:4-runbook" title="runbook — references-meta/docs/runbook.md">3</a></sup>. The meta corpus's own registry (<code>research/meta/questions.yaml</code>) doesn't use the bucket concept at all. Every question there is <code>n/a</code><sup id="fnref:4-agent-meta-draft"><a class="footnote-ref" href="#fn:4-agent-meta-draft" title="agent-meta-draft — references-meta/agents/meta-section-draft.md">4</a></sup>.</p>
+<p><code>k</code> is the field that's genuinely optional at the per-question level: <code>add_question</code> takes an optional <code>--k N</code> that overrides the section's <code>default_k</code> for that one question only; when a question's <code>k</code> is left null, the answering pipeline reads the section's <code>default_k</code> instead<sup id="fnref:4-skill-answer-question"><a class="footnote-ref" href="#fn:4-skill-answer-question" title="skill-answer-question — references-meta/skills/answer-question.md">5</a></sup>.</p>
+<p><code>status</code> starts as <code>pending</code> on append and is later flipped by the answering pipeline to <code>answered</code> if verification passes with no unresolved markers, or <code>needs-review</code> otherwise<sup id="fnref2:4-skill-answer-question"><a class="footnote-ref" href="#fn:4-skill-answer-question" title="skill-answer-question — references-meta/skills/answer-question.md">5</a></sup>. <code>scripts/recompute_question.py</code> can also flip an existing record's status back to <code>pending</code> while backing up its old answer file, without touching any other record or file<sup id="fnref3:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup>.</p>
+<h3>Why retrieval differs by corpus</h3>
+<p>For the Spark corpus (the <code>spark</code> profile, <code>scripts/ask.py</code>'s default), retrieval is indexed over <code>references/</code> with <code>multi-qa-mpnet-base-dot-v1</code>, which the architecture doc itself labels "the asymmetric question→passage retriever"<sup id="fnref2:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. That label is contrasted directly with the other corpus this pipeline runs: the meta corpus (this doc's own corpus) uses a different, symmetric embedding model, <code>all-mpnet-base-v2</code>, instead<sup id="fnref3:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The research rules single out <code>multi-qa-mpnet-base-dot-v1</code>'s asymmetric, question-to-passage nature as the reason the retriever's absolute similarity scores run low. Relevance is computed as <code>2·cos − 1</code>, so rank matters more than the raw number<sup id="fnref:4-rules-research"><a class="footnote-ref" href="#fn:4-rules-research" title="rules-research — references-meta/docs/rules/research.md">6</a></sup>. That's also why the gap-marking gate for Spark-corpus drafting tells writers not to mark a claim <code>[UNRESOURCED]</code> just because a retrieved chunk's relevance score is low or slightly negative: with this asymmetric model, a positive-or-slightly-negative-relevance chunk can still visibly answer the question and should be extracted, and <code>[UNRESOURCED]</code> is reserved for when no retrieved chunk supports any part of the answer at all<sup id="fnref2:4-rules-research"><a class="footnote-ref" href="#fn:4-rules-research" title="rules-research — references-meta/docs/rules/research.md">6</a></sup>.</p>
+<p>The two corpora are selected via <code>--corpus {spark,meta}</code> on every pipeline script, and <code>scripts/corpus.py</code>'s <code>Corpus</code> dataclass keeps every path and setting for each profile fully separate: registry, per-question answers dir, section-projection dir, content-state sidecar, content manifest, references dir, Chroma path/collection, embedding model, build output, and site title all come from the selected profile rather than a hardcoded constant<sup id="fnref4:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The Spark corpus is indexed with the asymmetric question→passage retriever <code>multi-qa-mpnet-base-dot-v1</code>, chosen for retrieving over <code>references/</code>, while the meta corpus is indexed with the general symmetric model <code>all-mpnet-base-v2</code> into its own Chroma collection, <code>meta_docs</code> in <code>.chromadb-meta/</code><sup id="fnref5:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. That model choice tracks what each corpus actually contains: the meta corpus has no book sources<sup id="fnref3:4-rules-research"><a class="footnote-ref" href="#fn:4-rules-research" title="rules-research — references-meta/docs/rules/research.md">6</a></sup> and consists of general-purpose prose (docs, rules, agent/skill files describing this repo's own pipeline)<sup id="fnref6:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>, which is why it uses a symmetric embedding model rather than the Spark corpus's asymmetric one<sup id="fnref4:4-rules-research"><a class="footnote-ref" href="#fn:4-rules-research" title="rules-research — references-meta/docs/rules/research.md">6</a></sup>.</p>
+<p>Beyond the embedding model, the two instances share no state at any layer: no registry, no Chroma collection, no content manifest. Each is a fully independent instance of the same pipeline shape (registry question → RAG draft/verify/redraft → section projection → content page → build)<sup id="fnref7:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<h3>The append-only registry</h3>
+<p><code>research/questions.yaml</code> never has an existing record mutated: new questions are added by appending a fresh <code>pending</code> record, and existing records keep their <code>id</code>, <code>section</code>, and <code>text</code> forever once written<sup id="fnref4:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup>. Two scripts enforce this:</p>
+<ul>
+<li><code>scripts/add_question.py</code> mints a new id and appends a <code>pending</code> record; it never mutates an existing record<sup id="fnref6:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup><sup id="fnref10:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</li>
+<li><code>scripts/recompute_question.py</code> flips one existing record's status to <code>pending</code> and backs up its old answer file, but touches no other record or file<sup id="fnref7:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup><sup id="fnref11:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</li>
+</ul>
+<p>Separately, <code>scripts/registry.py</code> loads, saves, and validates <code>questions.yaml</code> for the <code>Registry</code>/<code>Section</code>/<code>Question</code> dataclasses<sup id="fnref8:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The rules also forbid hand-editing an existing record's <code>id</code>, <code>section</code>, or <code>text</code>; a changed question is added as a new record instead of being rewritten in place<sup id="fnref5:4-rules-registry"><a class="footnote-ref" href="#fn:4-rules-registry" title="rules-registry — references-meta/docs/rules/registry.md">2</a></sup>. Because of this, the rest of the pipeline treats <code>questions.yaml</code> as the one-way source of truth: recompute always starts at the registry and flows forward through per-question answers, section projections, and content pages, never the other direction<sup id="fnref9:4-architecture"><a class="footnote-ref" href="#fn:4-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<h3>Sources</h3>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:4-architecture">
+<p>architecture — references-meta/docs/architecture.md&#160;<a class="footnote-backref" href="#fnref:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref8:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref9:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref10:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref11:4-architecture" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4-rules-registry">
+<p>rules-registry — references-meta/docs/rules/registry.md&#160;<a class="footnote-backref" href="#fnref:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:4-rules-registry" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4-runbook">
+<p>runbook — references-meta/docs/runbook.md&#160;<a class="footnote-backref" href="#fnref:4-runbook" title="Jump back to footnote 3 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4-runbook" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4-agent-meta-draft">
+<p>agent-meta-draft — references-meta/agents/meta-section-draft.md&#160;<a class="footnote-backref" href="#fnref:4-agent-meta-draft" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4-skill-answer-question">
+<p>skill-answer-question — references-meta/skills/answer-question.md&#160;<a class="footnote-backref" href="#fnref:4-skill-answer-question" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4-skill-answer-question" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4-rules-research">
+<p>rules-research — references-meta/docs/rules/research.md&#160;<a class="footnote-backref" href="#fnref:4-rules-research" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:4-rules-research" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:4-rules-research" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:4-rules-research" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+    </section>
+    
+    
+    <div class="content-group-title">Agents & Orchestration</div>
+    
+    <section id="agents-and-orchestration" class="doc-section">
+      <h2>Agents &amp; Orchestration</h2>
+<h3>Draft, Verify, and Redraft</h3>
+<p>The pipeline splits judgment-requiring work (retrieval, drafting, verifying citations, fixing issues, humanizing prose) into separate agents rather than folding it into deterministic scripts, because that work has no single correct output given its inputs<sup id="fnref:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. For the meta corpus these are <code>meta-section-draft</code>, <code>meta-section-verify</code>, and <code>meta-section-redraft</code>, mirrors of the Spark corpus's <code>spark-section-draft</code>/<code>spark-section-verify</code>/<code>spark-section-redraft</code>, adapted to the meta corpus's paths and <code>--corpus meta</code> invocations but not sharing prompt text with them<sup id="fnref2:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p><strong>Draft</strong> produces one citation-backed answer per question from the local RAG index. It writes the finished answer using an <code>## &lt;question text&gt;</code> heading with prose beneath, footnotes every factual claim with the source ID <code>ask.py</code> printed, and closes with a <code>## Sources</code> section<sup id="fnref:5-agent-spark-draft"><a class="footnote-ref" href="#fn:5-agent-spark-draft" title="agent-spark-draft — references-meta/agents/spark-section-draft.md">2</a></sup>. For the meta corpus this same agent role is described as drafting one section of the meta-doc "one citation-backed answer per question," acting as the Draft stage of the meta answering pipeline<sup id="fnref:5-agent-meta-draft"><a class="footnote-ref" href="#fn:5-agent-meta-draft" title="agent-meta-draft — references-meta/agents/meta-section-draft.md">3</a></sup>.</p>
+<p><strong>Verify</strong> checks a drafted section: it validates gaps, checks every cited claim against its underlying chunk, and checks that the <code>## Sources</code> block is formatted correctly<sup id="fnref:5-agent-meta-verify"><a class="footnote-ref" href="#fn:5-agent-meta-verify" title="agent-meta-verify — references-meta/agents/meta-section-verify.md">4</a></sup>.</p>
+<p><strong>Redraft</strong> is dispatched only if Verify reports issues, and only once, taking those issues as input; after it runs, the section is re-verified a single time. If it still fails after that one redraft-and-re-verify cycle, the answer keeps whatever <code>[NEEDS-REVIEW: ...]</code> markers remain, and the question's registry record is set to <code>needs-review</code> rather than <code>answered</code><sup id="fnref:5-skill-answer-meta-question"><a class="footnote-ref" href="#fn:5-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">5</a></sup>.</p>
+<p>The <code>answer-meta-question</code> skill runs these stages in a fixed sequence for a single question: read the registry record, dispatch Draft, dispatch Verify, dispatch Redraft-if-needed followed by one re-verify, then Humanize, project the section, update the record status, refresh content state, and finally build and commit<sup id="fnref2:5-skill-answer-meta-question"><a class="footnote-ref" href="#fn:5-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">5</a></sup>. This order (Draft → Verify → an optional Redraft-then-re-Verify loop → Humanize → downstream projection and build steps → commit) is the same sequence the answering pipeline documents for orchestrating one question end to end<sup id="fnref3:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<h3>Why citations are scoped per question</h3>
+<p>The verify agent's citation check requires two things for every footnoted claim: the source ID must appear on THAT question's own <code>citable source_ids</code> line, and the chunk excerpt under that question must actually support the claim. A footnote whose source ID is not on that question's <code>citable source_ids</code> line is a FAIL even if the underlying fact is true. The claim-support check against that question's own chunk text is the real gate, not the mere existence of the ID somewhere in the corpus<sup id="fnref:5-agent-spark-verify"><a class="footnote-ref" href="#fn:5-agent-spark-verify" title="agent-spark-verify — references-meta/agents/spark-section-verify.md">6</a></sup><sup id="fnref2:5-agent-meta-verify"><a class="footnote-ref" href="#fn:5-agent-meta-verify" title="agent-meta-verify — references-meta/agents/meta-section-verify.md">4</a></sup>.</p>
+<p>The reason the same ID can't cross questions is that retrieval is per-question: a source ID retrieved under a different question's block does not license citing it here, because the chunk <em>text</em> returned for that ID differs per question<sup id="fnref:5-rules-research"><a class="footnote-ref" href="#fn:5-rules-research" title="rules-research — references-meta/docs/rules/research.md">7</a></sup>. The Draft stage states the same constraint from the writer's side: answer each question from its own retrieval block only, since a source can be retrieved for several questions but with different chunks, and a fact seen under one question's chunks does not license citing that source under another question unless that question's own chunk text states it. The held-out gate that motivated this rule caught exactly this failure: a true <code>peakExecutionMemory</code> definition retrieved under one question was cited under a different question whose own chunks only held an executor-level table<sup id="fnref2:5-agent-spark-draft"><a class="footnote-ref" href="#fn:5-agent-spark-draft" title="agent-spark-draft — references-meta/agents/spark-section-draft.md">2</a></sup>.</p>
+<p>This is why Redraft treats a "misattributed footnote" (source ID not on that question's <code>citable source_ids</code> line) as something to fix rather than wave through: either re-cite to a source ID that is on that question's line and supports the claim, or mark the claim <code>[NEEDS-REVIEW: &lt;reason&gt;]</code> and remove the wrong footnote, never leaving an orphan footnote<sup id="fnref:5-agent-meta-redraft"><a class="footnote-ref" href="#fn:5-agent-meta-redraft" title="agent-meta-redraft — references-meta/agents/meta-section-redraft.md">8</a></sup><sup id="fnref:5-agent-spark-redraft"><a class="footnote-ref" href="#fn:5-agent-spark-redraft" title="agent-spark-redraft — references-meta/agents/spark-section-redraft.md">9</a></sup>.</p>
+<h3>Humanize and its deterministic backstop</h3>
+<p>The Humanize stage applies prose style to a drafted answer. It is a separate step run by the <code>writing-prose-like-a-human-for-agents:prose-humanizer</code> agent (an installed plugin), not by the Draft/Verify/Redraft agents themselves<sup id="fnref:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup><sup id="fnref4:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. In the per-question skill flow it sits as step 5 of 8, after Draft, Verify, and any Redraft/re-Verify cycle, and before <code>check_prose</code>, <code>project_section</code>, and <code>content_state</code><sup id="fnref5:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup><sup id="fnref2:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup>. For the meta corpus specifically, the humanizer runs against <code>research/meta/answers/q/&lt;id&gt;.md</code> (copied first to a unique scratch path) under hard constraints: it must never touch <code>[^id]</code> footnotes, the <code>## Sources</code> block, <code>[UNRESOURCED]</code>/<code>[NEEDS-REVIEW]</code> markers, or the <code>## &lt;question&gt;</code> heading<sup id="fnref3:5-skill-answer-meta-question"><a class="footnote-ref" href="#fn:5-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">5</a></sup>.</p>
+<p>The deterministic backstop is <code>scripts/check_prose.py</code>, described as a "no-LLM lint/backstop" for the Humanize stage<sup id="fnref6:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. It runs in two forms after every humanize pass. Plain <code>check_prose.py &lt;file&gt;</code> lints the humanized file for leftover AI-tell vocabulary (significance inflation, inflated verbs, structural tics such as conclusion phrases or additive transitions, vague attribution), bans curly quotes, and caps em dashes at zero<sup id="fnref3:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup><sup id="fnref7:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. <code>check_prose.py --diff &lt;before&gt; &lt;after&gt;</code> instead checks that the humanizer didn't touch a protected element: <code>[^id]</code> footnotes, the <code>## Sources</code> block, <code>[UNRESOURCED]</code>/<code>[NEEDS-REVIEW]</code> markers, the <code>## &lt;question&gt;</code> heading, or any numeric/config token<sup id="fnref4:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup><sup id="fnref8:5-architecture"><a class="footnote-ref" href="#fn:5-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. For the meta pipeline, both invocations run as <code>uv run python -m scripts.check_prose --diff &lt;scratch-copy&gt; research/meta/answers/q/&lt;id&gt;.md</code> and <code>uv run python -m scripts.check_prose research/meta/answers/q/&lt;id&gt;.md</code><sup id="fnref4:5-skill-answer-meta-question"><a class="footnote-ref" href="#fn:5-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">5</a></sup>.</p>
+<p>The vocabulary/structural list check_prose applies is a literal blocklist rather than semantic understanding, so it can false-positive on legitimate technical usage (the rule's own example is a Spark phrase about broadcast joins that trips the blocklist even though it is idiomatic)<sup id="fnref5:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup>. A lint failure is treated as a signal to re-dispatch the humanizer once rather than an automatic hard block<sup id="fnref6:5-rules-editorial"><a class="footnote-ref" href="#fn:5-rules-editorial" title="rules-editorial — references-meta/docs/rules/editorial.md">10</a></sup>; in the meta procedure, if either check fails the humanizer is re-dispatched once with the reported issues and both checks re-run, and if still failing the issues are left in place and noted in the final status<sup id="fnref5:5-skill-answer-meta-question"><a class="footnote-ref" href="#fn:5-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">5</a></sup>.</p>
+<h3>Sources</h3>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:5-architecture">
+<p>architecture — references-meta/docs/architecture.md&#160;<a class="footnote-backref" href="#fnref:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref8:5-architecture" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-spark-draft">
+<p>agent-spark-draft — references-meta/agents/spark-section-draft.md&#160;<a class="footnote-backref" href="#fnref:5-agent-spark-draft" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:5-agent-spark-draft" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-meta-draft">
+<p>agent-meta-draft — references-meta/agents/meta-section-draft.md&#160;<a class="footnote-backref" href="#fnref:5-agent-meta-draft" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-meta-verify">
+<p>agent-meta-verify — references-meta/agents/meta-section-verify.md&#160;<a class="footnote-backref" href="#fnref:5-agent-meta-verify" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:5-agent-meta-verify" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-skill-answer-meta-question">
+<p>skill-answer-meta-question — references-meta/skills/answer-meta-question.md&#160;<a class="footnote-backref" href="#fnref:5-skill-answer-meta-question" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:5-skill-answer-meta-question" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:5-skill-answer-meta-question" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:5-skill-answer-meta-question" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:5-skill-answer-meta-question" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-spark-verify">
+<p>agent-spark-verify — references-meta/agents/spark-section-verify.md&#160;<a class="footnote-backref" href="#fnref:5-agent-spark-verify" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-rules-research">
+<p>rules-research — references-meta/docs/rules/research.md&#160;<a class="footnote-backref" href="#fnref:5-rules-research" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-meta-redraft">
+<p>agent-meta-redraft — references-meta/agents/meta-section-redraft.md&#160;<a class="footnote-backref" href="#fnref:5-agent-meta-redraft" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-agent-spark-redraft">
+<p>agent-spark-redraft — references-meta/agents/spark-section-redraft.md&#160;<a class="footnote-backref" href="#fnref:5-agent-spark-redraft" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+</li>
+<li id="fn:5-rules-editorial">
+<p>rules-editorial — references-meta/docs/rules/editorial.md&#160;<a class="footnote-backref" href="#fnref:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:5-rules-editorial" title="Jump back to footnote 10 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+    </section>
+    
+    
+    <div class="content-group-title">Content, Staleness & Build</div>
+    
+    <section id="content-staleness-and-build" class="doc-section">
+      <h2>Content, Staleness &amp; Build</h2>
+<h3>Ungenerated vs. stale</h3>
+<p><code>content_state.py</code> distinguishes the two states by comparing a page's recorded hash in the committed sidecar <code>research/content-state.yaml</code> against the sha256 of the section projection it was assembled from<sup id="fnref:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. A page with no entry in that sidecar has never been generated from its section projection, and <code>content_state.py</code> reports it <strong>ungenerated</strong><sup id="fnref:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>. A page has an entry whose recorded hash no longer matches the current projection hash when the section's underlying answers changed since the page was generated or last accepted; <code>content_state.py</code> reports it <strong>stale</strong><sup id="fnref2:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup><sup id="fnref2:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>.</p>
+<p>The required human action differs accordingly. For an <strong>ungenerated</strong> page, the pipeline generates it: the answer-meta-question skill reads the page's <code>brief:</code> and <code>assembled_from:</code> entries from <code>content/meta/manifest.yaml</code>, writes the page from the projection, humanizes it, then runs <code>content_state --accept &lt;page&gt;</code> to stamp its hash<sup id="fnref:6-skill-answer-meta-question"><a class="footnote-ref" href="#fn:6-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">3</a></sup>. For a <strong>stale</strong> page, nothing is overwritten automatically. The pipeline does not edit the page; a human hand-edits it to reflect the changed answers, and only then does <code>content_state.py --accept &lt;page&gt;</code> re-stamp the hash so the page is no longer flagged<sup id="fnref3:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup><sup id="fnref3:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. This follows from content pages being human-owned once generated: the pipeline never silently overwrites a generated page<sup id="fnref:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
+<h3>Anchors as a frozen cross-repo contract</h3>
+<p><code>content/manifest.yaml</code> is the single authority for section order, titles, and anchor IDs; content assembly reads anchors from it and never derives them from a Markdown heading or a filename<sup id="fnref2:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Because the anchors are looked up rather than generated from content, other repos can depend on them staying stable, so the project documents them as a frozen cross-repo Integration Contract with the sibling repo <code>../eventLogsVisualizer</code><sup id="fnref3:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref2:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Renaming or removing an anchor is a breaking change, and if the two repos' descriptions of an anchor diverge, the sibling repo's own contract doc wins<sup id="fnref4:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
+<p>The contract covers two sets of IDs: the 26 manifest-level anchors, one per <code>content/manifest.yaml</code> entry (enforced by <code>scripts/smoke_content.py</code>'s 26-section count check), and 4 config-page sub-anchors nested inside the single <code>config</code> manifest entry (<code>config-shuffle-service</code>, <code>config-autoscale-bounds</code>, <code>config-serializer</code>, <code>config-memory-overhead</code>). These four aren't manifest entries themselves but are also enforced by <code>scripts/smoke_content.py</code><sup id="fnref5:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>. The contract applies only to <code>content/manifest.yaml</code>/<code>index.html</code>, i.e. the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, so this meta corpus's own anchors may change freely<sup id="fnref6:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
+<h3>The build's non-fatal staleness warning</h3>
+<p>Before rendering, <code>build.py</code> calls <code>content_state.report(...)</code>, which compares each content page's recorded hash (from <code>research/content-state.yaml</code>) against the current section-projection hash and classifies the page as ungenerated (no recorded entry), stale (hash differs), or up to date (hash matches)<sup id="fnref4:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. If any pages come back ungenerated or stale, <code>build.py</code> prints a non-fatal warning banner listing them, but proceeds to produce <code>index.html</code> regardless<sup id="fnref5:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup><sup id="fnref4:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>.</p>
+<p>The warning is non-fatal because content pages are human-owned once generated: the pipeline never overwrites a page's prose automatically, even when its upstream answers have changed<sup id="fnref6:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. A stale or ungenerated flag just means the built page's text may not reflect the latest answers yet. Fixing it requires a human to edit the page (or run first-gen for an ungenerated one) and then re-stamp its hash with <code>content_state.py --accept &lt;page&gt;</code> so it reports up to date again<sup id="fnref5:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup><sup id="fnref7:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Recompute itself never triggers first-gen; it only ever flags a page stale, so content pages stay human-owned<sup id="fnref8:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<h3>Sources</h3>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:6-architecture">
+<p>architecture — references-meta/docs/architecture.md&#160;<a class="footnote-backref" href="#fnref:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref7:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref8:6-architecture" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:6-runbook">
+<p>runbook — references-meta/docs/runbook.md&#160;<a class="footnote-backref" href="#fnref:6-runbook" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:6-runbook" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:6-runbook" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:6-runbook" title="Jump back to footnote 2 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:6-runbook" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:6-skill-answer-meta-question">
+<p>skill-answer-meta-question — references-meta/skills/answer-meta-question.md&#160;<a class="footnote-backref" href="#fnref:6-skill-answer-meta-question" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:6-rules-content">
+<p>rules-content — references-meta/docs/rules/content.md&#160;<a class="footnote-backref" href="#fnref:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref3:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref4:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref5:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a><a class="footnote-backref" href="#fnref6:6-rules-content" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:6-anchor-map">
+<p>anchor-map — references-meta/docs/anchor-map.md&#160;<a class="footnote-backref" href="#fnref:6-anchor-map" title="Jump back to footnote 5 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:6-anchor-map" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+    </section>
+    
+  </main>
+</div>
+
+<script>
+// postMessage bridge to the embedding Spark Event Log Visualizer.
+// Contract: Integration Contract with ../eventLogsVisualizer (anchor IDs frozen).
+
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'theme') {
+    document.documentElement.setAttribute('data-theme', e.data.theme);
+  }
+  if (e.data?.type === 'navigate') {
+    document.querySelector(e.data.anchor)?.scrollIntoView({ behavior: 'smooth' });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  window.parent.postMessage({ type: 'ready' }, '*');
+
+  const hash = window.location.hash;
+  if (hash && !document.querySelector(hash)) {
+    document.querySelector('#intro')?.scrollIntoView();
+    const fallback = document.getElementById('anchor-fallback');
+    if (fallback) {
+      fallback.hidden = false;
+      document.getElementById('anchor-fallback-dismiss')?.addEventListener('click', () => {
+        fallback.hidden = true;
+      });
+    }
+  }
+
+  const toggle = document.getElementById('nav-toggle');
+  const sidebar = document.getElementById('sidebar');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => {
+      const isOpen = sidebar.classList.toggle('sidebar-open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    sidebar.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        sidebar.classList.remove('sidebar-open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  const navSearch = document.getElementById('nav-search');
+  if (navSearch) {
+    navSearch.addEventListener('input', () => {
+      const query = navSearch.value.trim().toLowerCase();
+      document.querySelectorAll('.nav-group').forEach((group) => {
+        let anyVisible = false;
+        group.querySelectorAll('.nav-list > li').forEach((item) => {
+          const matches = !query || item.textContent.toLowerCase().includes(query);
+          item.hidden = !matches;
+          anyVisible = anyVisible || matches;
+        });
+        group.hidden = !anyVisible;
+      });
+    });
+  }
+
+  const navLinks = document.querySelectorAll('.nav-link');
+  const setActive = (anchor) => {
+    navLinks.forEach((link) => {
+      link.classList.toggle('active', link.getAttribute('href') === `#${anchor}`);
+    });
+  };
+  const sections = document.querySelectorAll('.doc-section[id]');
+  if (navLinks.length && sections.length && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (visible.length) {
+          const topmost = visible.reduce((a, b) =>
+            a.boundingClientRect.top <= b.boundingClientRect.top ? a : b
+          );
+          setActive(topmost.target.id);
+        }
+      },
+      { rootMargin: '0px 0px -70% 0px', threshold: 0 }
+    );
+    sections.forEach((section) => observer.observe(section));
+  }
+});
+
+</script>
+</body>
+</html>

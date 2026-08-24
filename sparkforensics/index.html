@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SparkForensics</title>
+    <script>
+      try {
+        var stored = localStorage.getItem('theme');
+        // Persisted choice wins; otherwise honor the OS preference. Mirrors
+        // initialTheme() in src/store/store.ts. Runs before paint to avoid a
+        // dark-then-light flash on prefers-light systems.
+        if (stored === 'light' || (stored == null && window.matchMedia('(prefers-color-scheme: light)').matches))
+          document.documentElement.setAttribute('data-theme', 'light');
+      } catch (_) {}
+    </script>
+    <script type="module" crossorigin src="./assets/index-Cf58mfo2.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BQemLNWo.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+import{r as a,b6 as t,b7 as o}from"./index-Cf58mfo2.js";var l=["axis"],i=a.forwardRef((r,e)=>a.createElement(t,{chartName:"AreaChart",defaultTooltipEventType:"axis",validateTooltipEventTypes:l,tooltipPayloadSearcher:o,categoricalChartProps:r,ref:e}));export{i as A};
