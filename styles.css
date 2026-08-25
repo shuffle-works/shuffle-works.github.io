@@ -36,67 +36,10 @@ button:focus-visible {
   flex: none;
 }
 
-/* Theme tokens: dark is the default (dark-first), OS light preference overrides it,
-   and the manual [data-theme] attribute (set by script.js) always wins over both. */
-:root {
-  --color-bg: #080b0d;
-  --color-bg-elevated: #11171a;
-  --color-text: #f4f4f5;
-  --color-text-muted: #a9b5b4;
-  --color-accent: #ff6b2c;
-  --color-accent-hover: #ff8a4f;
-  --color-signal: #39d6b5;
-  --color-on-accent: #11110f;
-  --color-border: #233035;
-  --font-sans: 'Recursive', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --radius: 0.75rem;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: #f7f8f4;
-    --color-bg-elevated: #ffffff;
-    --color-text: #151b1e;
-    --color-text-muted: #4f5f60;
-    --color-accent: #bf4413;
-    --color-accent-hover: #aa3510;
-    --color-signal: #007e6b;
-    --color-on-accent: #ffffff;
-    --color-border: #dbe2df;
-  }
-}
-
-:root[data-theme="dark"] {
-  --color-bg: #080b0d;
-  --color-bg-elevated: #11171a;
-  --color-text: #f4f4f5;
-  --color-text-muted: #a9b5b4;
-  --color-accent: #ff6b2c;
-  --color-accent-hover: #ff8a4f;
-  --color-signal: #39d6b5;
-  --color-on-accent: #11110f;
-  --color-border: #233035;
-}
-
-:root[data-theme="light"] {
-  --color-bg: #f7f8f4;
-  --color-bg-elevated: #ffffff;
-  --color-text: #151b1e;
-  --color-text-muted: #4f5f60;
-  --color-accent: #bf4413;
-  --color-accent-hover: #aa3510;
-  --color-signal: #007e6b;
-  --color-on-accent: #ffffff;
-  --color-border: #dbe2df;
-}
+/* Design tokens (palette, type, spacing, shape) now live in the shared
+   shuffle-works-tokens.css so every product in the family draws from one
+   source. index.html links it before this file; the sync script injects it
+   into downstream pages. This file only consumes the tokens below. */
 
 body {
   background: var(--color-bg);

@@ -4,9 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SparkForensics</title>
+    <meta name="description" content="SparkForensics is a zero-backend browser app that parses Spark History Server event logs to surface stage-level bottlenecks — skew, spill, GC, shuffle, cold start — without uploading cluster data anywhere.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL@400..700,0..1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
       try {
-        var stored = localStorage.getItem('theme');
+        var stored = localStorage.getItem('shuffle-works-theme');
         // Persisted choice wins; otherwise honor the OS preference. Mirrors
         // initialTheme() in src/store/store.ts. Runs before paint to avoid a
         // dark-then-light flash on prefers-light systems.
@@ -14,9 +18,9 @@
           document.documentElement.setAttribute('data-theme', 'light');
       } catch (_) {}
     </script>
-    <script type="module" crossorigin src="./assets/index-B0whF5G-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-D7nT76Wc.css">
-<link rel="stylesheet" href="/shuffle-works-product-bar.css">
+    <script type="module" crossorigin src="./assets/index-DsTMIbU2.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CQam826V.css">
+<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">
   </head>
   <body>
 <header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/" aria-current="page">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html">Spark Tuning Reference</a></nav></header>

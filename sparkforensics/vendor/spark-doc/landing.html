@@ -17,35 +17,59 @@
     }());
   </script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Recursive:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     :root {
       color-scheme: dark;
-      --bg: #080b0d;
-      --surface: #11171a;
+      --color-bg: #080b0d;
+      --color-surface: #11171a;
+      --color-text: #f4f4f5;
+      --color-text-muted: #a9b5b4;
+      --color-border: #233035;
+      --color-accent: #ff6b2c;
+      --color-accent-hover: #ff8a4f;
+      --color-signal: #39d6b5;
+      --radius: 0.75rem;
+      --shadow-soft: 0 1.5rem 3rem -1rem rgba(0, 0, 0, 0.45);
+      --font-sans: 'Recursive', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      --bg: var(--color-bg);
+      --surface: var(--color-surface);
       --surface-strong: #172024;
-      --text: #f4f4f5;
-      --muted: #a9b5b4;
-      --line: #233035;
-      --orange: #ff6b2c;
-      --orange-hover: #ff8a4f;
-      --teal: #39d6b5;
+      --text: var(--color-text);
+      --muted: var(--color-text-muted);
+      --line: var(--color-border);
+      --orange: var(--color-accent);
+      --orange-hover: var(--color-accent-hover);
+      --teal: var(--color-signal);
       --teal-soft: rgba(57, 214, 181, 0.13);
       --orange-soft: rgba(255, 107, 44, 0.13);
       --on-orange: #17110e;
-      --sans: ui-rounded, "Avenir Next", Avenir, "Segoe UI", sans-serif;
-      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: var(--font-sans);
+      --mono: var(--font-mono);
     }
 
     :root[data-theme="light"] {
       color-scheme: light;
-      --bg: #f7f8f4;
-      --surface: #ffffff;
+      --color-bg: #f7f8f4;
+      --color-surface: #ffffff;
+      --color-text: #151b1e;
+      --color-text-muted: #4f5f60;
+      --color-border: #dbe2df;
+      --color-accent: #bf4413;
+      --color-accent-hover: #aa3510;
+      --color-signal: #007e6b;
+      --shadow-soft: 0 1.5rem 3rem -1rem rgba(21, 27, 30, 0.16);
+
+      --bg: var(--color-bg);
+      --surface: var(--color-surface);
       --surface-strong: #edf1ed;
-      --text: #151b1e;
-      --muted: #4f5f60;
-      --line: #dbe2df;
-      --orange: #bf4413;
-      --orange-hover: #a8350e;
-      --teal: #007e6b;
+      --text: var(--color-text);
+      --muted: var(--color-text-muted);
+      --line: var(--color-border);
+      --orange: var(--color-accent);
+      --orange-hover: var(--color-accent-hover);
+      --teal: var(--color-signal);
       --teal-soft: rgba(0, 126, 107, 0.1);
       --orange-soft: rgba(191, 68, 19, 0.1);
       --on-orange: #ffffff;
@@ -103,18 +127,7 @@
       justify-content: space-between;
       gap: 1rem;
     }
-    .brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 800; letter-spacing: -.02em; }
-    .brand-mark {
-      display: grid;
-      width: 1.75rem;
-      height: 1.75rem;
-      place-items: center;
-      border: 1px solid var(--orange);
-      color: var(--orange);
-      font-family: var(--mono);
-      font-size: .8rem;
-      line-height: 1;
-    }
+    .brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 500; letter-spacing: -.01em; color: var(--muted); font-size: .92rem; }
     .header-nav { display: flex; align-items: center; gap: .35rem; }
     .header-link, .theme-toggle {
       display: inline-flex;
@@ -135,6 +148,7 @@
       border-color: var(--line);
       color: var(--text);
       cursor: pointer;
+      border-radius: var(--radius);
     }
     .theme-toggle:hover { border-color: var(--teal); color: var(--teal); }
     .theme-icon { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
@@ -159,7 +173,7 @@
     .known-term { max-width: 40rem; margin-top: 1.5rem; }
     .known-term label { display: block; margin-bottom: .45rem; color: var(--text); font-family: var(--mono); font-size: .82rem; font-weight: 700; }
     .known-term-row { display: flex; flex-wrap: wrap; gap: .55rem; }
-    .known-term input { min-height: 3rem; min-width: min(100%, 19rem); flex: 1 1 14rem; padding: .65rem .75rem; border: 1px solid var(--line); border-radius: 0; background: var(--surface); color: var(--text); font: .88rem var(--mono); }
+    .known-term input { min-height: 3rem; min-width: min(100%, 19rem); flex: 1 1 14rem; padding: .65rem .75rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text); font: .88rem var(--mono); }
     .known-term input:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; border-color: var(--teal); }
     .known-term small { display: block; margin-top: .5rem; color: var(--muted); font-size: .82rem; }
     .button {
@@ -173,6 +187,7 @@
       font-family: var(--mono);
       font-size: .88rem;
       font-weight: 700;
+      border-radius: var(--radius);
     }
     .button-primary { border-color: var(--orange); background: var(--orange); color: var(--on-orange); }
     .button-primary:hover { background: var(--orange-hover); border-color: var(--orange-hover); }
@@ -185,7 +200,9 @@
       gap: 0;
       border: 1px solid var(--line);
       background: var(--surface);
-      box-shadow: .7rem .7rem 0 var(--orange-soft);
+      box-shadow: var(--shadow-soft);
+      border-radius: var(--radius);
+      overflow: hidden;
     }
     .board-label { padding: .8rem 1rem; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: .74rem; }
     .signal-list { display: grid; margin: 0; padding: 0; list-style: none; }
@@ -202,9 +219,9 @@
     .section-heading { max-width: 44rem; margin-bottom: 2rem; }
     .section-heading h2 { margin: 0 0 .8rem; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -.03em; line-height: 1.04; }
     .section-heading p { margin: 0; color: var(--muted); font-size: 1.05rem; }
-    .decision-note { max-width: 52rem; margin: -1rem 0 2rem; padding: 1rem 1.1rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+    .decision-note { max-width: 52rem; margin: -1rem 0 2rem; padding: 1rem 1.1rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: var(--radius); }
     .decision-note strong { color: var(--text); }
-    .symptom-grid { display: grid; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+    .symptom-grid { display: grid; border-top: 1px solid var(--line); border-left: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
     .symptom { display: flex; min-height: 12.5rem; flex-direction: column; justify-content: space-between; padding: 1.25rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); }
     .symptom:hover { background: var(--surface); }
     .symptom h3 { margin: 0 0 .45rem; font-size: 1.2rem; letter-spacing: -.025em; }
@@ -240,6 +257,7 @@
       .header-link.github { display: none; }
       h1 { font-size: clamp(2.85rem, 16vw, 4.25rem); }
       .signal-destination { display: none; }
+      .header-inner { min-height: 3.25rem; }
     }
     @media (max-width: 24rem) {
       .header-link:not(.github) { display: none; }
@@ -248,7 +266,7 @@
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-<link rel="stylesheet" href="/shuffle-works-product-bar.css">
+<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
 <header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
@@ -256,7 +274,6 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="landing.html" aria-label="Spark Tuning Reference home" aria-current="page">
-        <span class="brand-mark" aria-hidden="true">S/</span>
         <span class="brand-name">Spark Tuning Reference</span>
       </a>
       <nav class="header-nav" aria-label="Primary navigation">

@@ -17,27 +17,28 @@
 })();
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Recursive:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   color-scheme: dark;
-  --color-bg: #101516;
-  --color-surface: #161d1f;
-  --color-surface-raised: #1d2729;
-  --color-surface-code: #0d1213;
-  --color-text: #f1f5f2;
-  --color-text-muted: #a6b5b1;
-  --color-border: #344346;
-  --color-signal-orange: #f79747;
-  --color-signal-teal: #48d2c0;
-  --color-accent: var(--color-signal-orange);
-  --color-accent-hover: #ffc184;
+  --color-bg: #080b0d;
+  --color-surface: #11171a;
+  --color-surface-raised: #182124;
+  --color-surface-code: #05080a;
+  --color-text: #f4f4f5;
+  --color-text-muted: #a9b5b4;
+  --color-border: #233035;
+  --color-accent: #ff6b2c;
+  --color-accent-hover: #ff8a4f;
+  --color-signal: #39d6b5;
+  --color-signal-orange: var(--color-accent);
+  --color-signal-teal: var(--color-signal);
   --color-info: var(--color-signal-teal);
   --color-warning: var(--color-signal-orange);
   --color-critical: #ff8576;
 
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --font-sans: 'Recursive', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -53,17 +54,18 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-bg: #f5f7f5;
+  --color-bg: #f7f8f4;
   --color-surface: #ffffff;
   --color-surface-raised: #edf2ef;
   --color-surface-code: #e9efec;
-  --color-text: #16201f;
-  --color-text-muted: #50625e;
-  --color-border: #c9d4cf;
-  --color-signal-orange: #bb551d;
-  --color-signal-teal: #087b70;
-  --color-accent: var(--color-signal-orange);
-  --color-accent-hover: #8e3e13;
+  --color-text: #151b1e;
+  --color-text-muted: #4f5f60;
+  --color-border: #dbe2df;
+  --color-accent: #bf4413;
+  --color-accent-hover: #aa3510;
+  --color-signal: #007e6b;
+  --color-signal-orange: var(--color-accent);
+  --color-signal-teal: var(--color-signal);
   --color-info: var(--color-signal-teal);
   --color-warning: var(--color-signal-orange);
   --color-critical: #c34235;
@@ -562,7 +564,7 @@ sup {
 
 .symptom-router { max-width: var(--content-max-width); margin: 0 auto var(--space-5); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); } .symptom-router h3 { margin: 0 0 var(--space-2); font-size: 1rem; } .symptom-router p { margin: 0 0 var(--space-3); color: var(--color-text-muted); } .symptom-router-list { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; } .symptom-router-list a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text); font-weight: 600; } .symptom-router-list a:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }
 </style>
-<link rel="stylesheet" href="/shuffle-works-product-bar.css">
+<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
 <header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>

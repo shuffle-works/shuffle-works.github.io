@@ -1,1 +1,0 @@
-import{r as a}from"./index-B0whF5G-.js";import{C as o,a as t}from"./Dashboard-Bkv_CKHo.js";var p=["axis"],l=a.forwardRef((r,e)=>a.createElement(o,{chartName:"ComposedChart",defaultTooltipEventType:"axis",validateTooltipEventTypes:p,tooltipPayloadSearcher:t,categoricalChartProps:r,ref:e}));export{l as C};

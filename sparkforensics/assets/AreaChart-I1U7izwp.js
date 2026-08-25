@@ -1,1 +1,0 @@
-import{r as a}from"./index-B0whF5G-.js";import{C as t,a as o}from"./Dashboard-Bkv_CKHo.js";var p=["axis"],s=a.forwardRef((r,e)=>a.createElement(t,{chartName:"AreaChart",defaultTooltipEventType:"axis",validateTooltipEventTypes:p,tooltipPayloadSearcher:o,categoricalChartProps:r,ref:e}));export{s as A};

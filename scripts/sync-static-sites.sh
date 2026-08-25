@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLISH_ROOT="${PUBLISH_ROOT:-$REPO_ROOT}"
 PRODUCT_BAR_STYLESHEET="$REPO_ROOT/shuffle-works-product-bar.css"
+DESIGN_TOKENS_STYLESHEET="$REPO_ROOT/shuffle-works-tokens.css"
 
 # The Spark reference now ships embedded in the SparkForensics bundle; this is
 # where its entry page is published.
@@ -69,7 +70,8 @@ product_bar_markup() {
 
 inject_product_shell() {
   local page=$1 surface=$2 bar temp_page
-  local stylesheet='<link rel="stylesheet" href="/shuffle-works-product-bar.css">'
+  # Tokens first so the shared palette/type are defined before any consumer.
+  local stylesheet='<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">'
 
   if grep -Fq 'data-shuffle-product-bar' "$page"; then
     sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
@@ -168,6 +170,11 @@ if [ ! -f "$PRODUCT_BAR_STYLESHEET" ]; then
   exit 1
 fi
 
+if [ ! -f "$DESIGN_TOKENS_STYLESHEET" ]; then
+  echo "error: missing shared design-tokens stylesheet: $DESIGN_TOKENS_STYLESHEET" >&2
+  exit 1
+fi
+
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
 
@@ -206,6 +213,10 @@ EOF
 
 if [ ! "$PRODUCT_BAR_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-product-bar.css" ]; then
   cp "$PRODUCT_BAR_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-product-bar.css"
+fi
+
+if [ ! "$DESIGN_TOKENS_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-tokens.css" ]; then
+  cp "$DESIGN_TOKENS_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-tokens.css"
 fi
 
 printf 'Published SparkForensics (%s) with its embedded Spark reference\n' "$FORENSICS_REF"
