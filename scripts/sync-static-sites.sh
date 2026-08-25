@@ -5,6 +5,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLISH_ROOT="${PUBLISH_ROOT:-$REPO_ROOT}"
 PRODUCT_BAR_STYLESHEET="$REPO_ROOT/shuffle-works-product-bar.css"
 
+# The Spark reference now ships embedded in the SparkForensics bundle; this is
+# where its entry page is published.
+REFERENCE_LANDING_PATH="/sparkforensics/vendor/spark-doc/landing.html"
+
 if [ "$#" -gt 1 ]; then
   echo "error: expected at most one SparkForensics ref" >&2
   exit 64
@@ -179,6 +183,26 @@ done
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
 mv "$STAGED_DIR/sparkforensics" "$PUBLISH_ROOT/sparkforensics"
+
+# Keep the historical /spark-tuning-reference/ URL alive: it predates the
+# embedded reference and is still linked externally, so publish a redirect
+# stub to the current landing page instead of returning a 404.
+mkdir -p "$PUBLISH_ROOT/spark-tuning-reference"
+cat >"$PUBLISH_ROOT/spark-tuning-reference/index.html" <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Spark Tuning Reference moved</title>
+<link rel="canonical" href="$REFERENCE_LANDING_PATH">
+<meta http-equiv="refresh" content="0; url=$REFERENCE_LANDING_PATH">
+<script>location.replace("$REFERENCE_LANDING_PATH");</script>
+</head>
+<body>
+<p>The Spark Tuning Reference has moved to <a href="$REFERENCE_LANDING_PATH">its new home</a>.</p>
+</body>
+</html>
+EOF
 
 if [ ! "$PRODUCT_BAR_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-product-bar.css" ]; then
   cp "$PRODUCT_BAR_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-product-bar.css"

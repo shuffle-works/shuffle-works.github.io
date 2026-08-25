@@ -94,7 +94,8 @@ test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/anchors.json"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html"
-test ! -e "$PUBLISHED_ROOT/spark-tuning-reference"
+test -f "$PUBLISHED_ROOT/spark-tuning-reference/index.html"
+grep -F 'url=/sparkforensics/vendor/spark-doc/landing.html' "$PUBLISHED_ROOT/spark-tuning-reference/index.html" >/dev/null
 grep -F 'href="/sparkforensics/vendor/spark-doc/landing.html"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
 if grep -F 'href="/spark-tuning-reference/"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
   echo "expected embedded reference navigation to use its bundled path" >&2
