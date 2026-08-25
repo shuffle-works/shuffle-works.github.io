@@ -1,1 +1,0 @@
-import{r as a,b6 as t,b7 as o}from"./index-Cf58mfo2.js";var p=["axis"],l=a.forwardRef((r,e)=>a.createElement(t,{chartName:"ComposedChart",defaultTooltipEventType:"axis",validateTooltipEventTypes:p,tooltipPayloadSearcher:o,categoricalChartProps:r,ref:e}));export{l as C};

@@ -5,13 +5,12 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLISH_ROOT="${PUBLISH_ROOT:-$REPO_ROOT}"
 PRODUCT_BAR_STYLESHEET="$REPO_ROOT/shuffle-works-product-bar.css"
 
-if [ "$#" -gt 2 ]; then
-  echo "error: expected at most two refs" >&2
+if [ "$#" -gt 1 ]; then
+  echo "error: expected at most one SparkForensics ref" >&2
   exit 64
 fi
 
 FORENSICS_REF="${1:-main}"
-TUNING_REF="${2:-master}"
 
 if ! command -v gh >/dev/null 2>&1; then
   echo "error: GitHub CLI (gh) is required" >&2
@@ -52,10 +51,10 @@ product_bar_markup() {
 
   case "$surface" in
     sparkforensics)
-      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/" aria-current="page">SparkForensics</a><a class="shuffle-product-bar__product" href="/spark-tuning-reference/">Spark Tuning Reference</a></nav></header>'
+      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/" aria-current="page">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html">Spark Tuning Reference</a></nav></header>'
       ;;
     spark-tuning-reference)
-      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a></nav></header>'
+      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>'
       ;;
     *)
       echo "error: unknown product surface: $surface" >&2
@@ -69,6 +68,7 @@ inject_product_shell() {
   local stylesheet='<link rel="stylesheet" href="/shuffle-works-product-bar.css">'
 
   if grep -Fq 'data-shuffle-product-bar' "$page"; then
+    sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
     return
   fi
 
@@ -144,17 +144,18 @@ inject_reference_enhancements() {
 }
 
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
-TUNING_CHECKOUT="$CHECKOUT_DIR/spark-tuning-reference"
 clone_repo "shuffle-works/sparkforensics" "$FORENSICS_CHECKOUT" "$FORENSICS_REF"
-clone_repo "shuffle-works/spark-tuning-reference" "$TUNING_CHECKOUT" "$TUNING_REF"
 
 if [ ! -f "$FORENSICS_CHECKOUT/dist/index.html" ]; then
   echo "error: SparkForensics at ref $FORENSICS_REF is missing dist/index.html" >&2
   exit 1
 fi
 
-if [ ! -f "$TUNING_CHECKOUT/index.html" ] || [ ! -f "$TUNING_CHECKOUT/meta.html" ] || [ ! -f "$TUNING_CHECKOUT/anchors.json" ]; then
-  echo "error: spark-tuning-reference at ref $TUNING_REF is missing required artifacts" >&2
+if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/index.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/meta.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/anchors.json" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/landing.html" ]; then
+  echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference" >&2
   exit 1
 fi
 
@@ -164,15 +165,9 @@ if [ ! -f "$PRODUCT_BAR_STYLESHEET" ]; then
 fi
 
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
-mkdir -p "$STAGED_DIR/spark-tuning-reference"
-cp "$TUNING_CHECKOUT/index.html" "$TUNING_CHECKOUT/meta.html" "$TUNING_CHECKOUT/anchors.json" \
-  "$STAGED_DIR/spark-tuning-reference/"
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
-inject_product_shells "$STAGED_DIR/spark-tuning-reference" spark-tuning-reference
 
 for reference_page in \
-  "$STAGED_DIR/spark-tuning-reference/index.html" \
-  "$STAGED_DIR/spark-tuning-reference/meta.html" \
   "$STAGED_DIR/sparkforensics/vendor/spark-doc/index.html" \
   "$STAGED_DIR/sparkforensics/vendor/spark-doc/meta.html"
 do
@@ -184,11 +179,9 @@ done
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
 mv "$STAGED_DIR/sparkforensics" "$PUBLISH_ROOT/sparkforensics"
-mv "$STAGED_DIR/spark-tuning-reference" "$PUBLISH_ROOT/spark-tuning-reference"
 
 if [ ! "$PRODUCT_BAR_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-product-bar.css" ]; then
   cp "$PRODUCT_BAR_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-product-bar.css"
 fi
 
-printf 'Published SparkForensics (%s) and spark-tuning-reference (%s)\n' \
-  "$FORENSICS_REF" "$TUNING_REF"
+printf 'Published SparkForensics (%s) with its embedded Spark reference\n' "$FORENSICS_REF"

@@ -4,21 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spark Tuning Reference</title>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('spark-tuning-reference-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable in a sandboxed SparkForensics iframe.
+  }
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f8fafc;
-  --color-surface-code: #eef1f6;
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-border: #e2e8f0;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-info: #2563eb;
-  --color-warning: #b45309;
-  --color-critical: #dc2626;
+  color-scheme: dark;
+  --color-bg: #101516;
+  --color-surface: #161d1f;
+  --color-surface-raised: #1d2729;
+  --color-surface-code: #0d1213;
+  --color-text: #f1f5f2;
+  --color-text-muted: #a6b5b1;
+  --color-border: #344346;
+  --color-signal-orange: #f79747;
+  --color-signal-teal: #48d2c0;
+  --color-accent: var(--color-signal-orange);
+  --color-accent-hover: #ffc184;
+  --color-info: var(--color-signal-teal);
+  --color-warning: var(--color-signal-orange);
+  --color-critical: #ff8576;
 
   --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
@@ -32,37 +48,25 @@
 
   --sidebar-width: 260px;
   --content-max-width: 760px;
-  --transition-fast: 150ms ease-out;
+  --transition-fast: 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-:root[data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-surface-code: #182234;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #334155;
-  --color-accent: #60a5fa;
-  --color-accent-hover: #93c5fd;
-  --color-info: #60a5fa;
-  --color-warning: #fbbf24;
-  --color-critical: #f87171;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-surface-code: #182234;
-    --color-text: #f1f5f9;
-    --color-text-muted: #94a3b8;
-    --color-border: #334155;
-    --color-accent: #60a5fa;
-    --color-accent-hover: #93c5fd;
-    --color-info: #60a5fa;
-    --color-warning: #fbbf24;
-    --color-critical: #f87171;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f5f7f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #edf2ef;
+  --color-surface-code: #e9efec;
+  --color-text: #16201f;
+  --color-text-muted: #50625e;
+  --color-border: #c9d4cf;
+  --color-signal-orange: #bb551d;
+  --color-signal-teal: #087b70;
+  --color-accent: var(--color-signal-orange);
+  --color-accent-hover: #8e3e13;
+  --color-info: var(--color-signal-teal);
+  --color-warning: var(--color-signal-orange);
+  --color-critical: #c34235;
 }
 
 * {
@@ -102,8 +106,8 @@ a[href^="http"]::after {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-signal-teal);
+  outline-offset: 3px;
 }
 
 /* Layout */
@@ -121,9 +125,83 @@ a[href^="http"]::after {
   flex-shrink: 0;
   height: 100dvh;
   overflow-y: auto;
-  padding: var(--space-5) var(--space-3);
+  padding: var(--space-3);
   border-right: 1px solid var(--color-border);
   background: var(--color-surface);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-identity {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.site-identity:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-mark {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--color-signal-orange);
+  color: #101516;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.site-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-signal-teal);
+  background: color-mix(in srgb, var(--color-signal-teal) 12%, transparent);
+  color: var(--color-text);
+}
+
+.theme-toggle-icon {
+  color: var(--color-signal-teal);
+  font-size: 15px;
+  line-height: 1;
 }
 
 .content {
@@ -148,62 +226,16 @@ a[href^="http"]::after {
   max-width: var(--content-max-width);
   margin: var(--space-6) auto var(--space-4);
   padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-accent);
+  color: var(--color-signal-teal);
 }
 
 .content-group-title-first {
   margin-top: 0;
-}
-
-/* Symptom router */
-
-.symptom-router {
-  max-width: var(--content-max-width);
-  margin: 0 auto var(--space-5);
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-}
-
-.symptom-router h3 {
-  margin: 0 0 var(--space-2);
-  font-size: 1rem;
-}
-
-.symptom-router p {
-  margin: 0 0 var(--space-3);
-  color: var(--color-text-muted);
-}
-
-.symptom-router-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.symptom-router-list a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  color: var(--color-text);
-  font-weight: 600;
-}
-
-.symptom-router-list a:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent-hover);
 }
 
 /* Accessibility utilities */
@@ -264,7 +296,7 @@ a[href^="http"]::after {
   font-size: 14px;
   font-family: inherit;
   color: var(--color-text);
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
@@ -304,14 +336,14 @@ a[href^="http"]::after {
 }
 
 .nav-link:hover {
-  background: var(--color-border);
+  background: var(--color-surface-raised);
   text-decoration: none;
 }
 
 .nav-link.active {
-  color: var(--color-accent);
+  color: var(--color-signal-orange);
   font-weight: 600;
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--color-signal-orange) 14%, transparent);
 }
 
 /* Anchor-not-found fallback */
@@ -328,9 +360,8 @@ a[href^="http"]::after {
   max-width: var(--content-max-width);
   margin: 0 auto var(--space-4);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-signal-orange) 10%, var(--color-surface));
   border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-warning);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -379,9 +410,9 @@ p { color: var(--color-text); }
 blockquote {
   margin: var(--space-4) 0;
   padding: var(--space-3);
-  border-left: 3px solid var(--color-accent);
-  background: var(--color-surface);
-  border-radius: 0 6px 6px 0;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-signal-teal) 8%, var(--color-surface));
+  border-radius: 6px;
 }
 
 blockquote p:last-child {
@@ -436,7 +467,7 @@ th, td {
 
 th {
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   border-bottom: 2px solid var(--color-border);
 }
 
@@ -482,7 +513,7 @@ sup {
   padding: 0.1em 0.5em;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text-muted);
+  color: var(--color-signal-teal);
 }
 
 /* Responsive */
@@ -504,7 +535,7 @@ sup {
     left: 0;
     z-index: 10;
     transform: translateX(-100%);
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 8px 0 8px rgba(0, 0, 0, 0.18);
     transition: transform var(--transition-fast);
   }
 
@@ -529,17 +560,12 @@ sup {
   }
 }
 
+.symptom-router { max-width: var(--content-max-width); margin: 0 auto var(--space-5); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); } .symptom-router h3 { margin: 0 0 var(--space-2); font-size: 1rem; } .symptom-router p { margin: 0 0 var(--space-3); color: var(--color-text-muted); } .symptom-router-list { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; } .symptom-router-list a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text); font-weight: 600; } .symptom-router-list a:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }
 </style>
 <link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
-<header class="shuffle-product-bar" data-shuffle-product-bar>
-  <nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products">
-    <a class="shuffle-product-bar__brand" href="/">Shuffle Works</a>
-    <a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a>
-    <a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a>
-  </nav>
-</header>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
 <a href="#main-content" class="skip-link">Skip to content</a>
 <h1 class="visually-hidden">Spark Tuning Reference</h1>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
@@ -552,6 +578,16 @@ sup {
 
 <div class="layout">
   <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="#intro" aria-label="Spark Tuning Reference introduction">
+        <span class="site-mark" aria-hidden="true">S</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+        <span id="theme-toggle-label">Light</span>
+      </button>
+    </div>
     <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
     
     <div class="nav-group">
@@ -670,16 +706,7 @@ Adaptive Query Execution (AQE), and cluster tuning, followed by a bottleneck dia
 reference.</p>
 <p>Read it top to bottom for a full grounding in Spark performance, or jump straight to the
 <strong>Bottleneck Reference</strong> section below when you already know which symptom you're chasing.</p>
-<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title">
-<h3 id="symptom-router-title">Start with a symptom</h3>
-<p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p>
-<ul class="symptom-router-list">
-<li><a href="#bottleneck-slow-host">Slow stages</a></li>
-<li><a href="#bottleneck-skew">Skew, spill, or memory</a></li>
-<li><a href="#bottleneck-failures">Failures or retries</a></li>
-<li><a href="#spark-architecture">Configuration or architecture</a></li>
-</ul>
-</nav>
+<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title"><h3 id="symptom-router-title">Start with a symptom</h3><p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p><ul class="symptom-router-list"><li><a href="#bottleneck-slow-host">Slow stages</a></li><li><a href="#bottleneck-skew">Skew, spill, or memory</a></li><li><a href="#bottleneck-failures">Failures or retries</a></li><li><a href="#spark-architecture">Configuration or architecture</a></li></ul></nav>
 <h3>Severity dots</h3>
 <p>Each finding is marked with a severity dot:</p>
 <ul>
@@ -4094,62 +4121,20 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
     }
 
-  const toggle = document.getElementById('nav-toggle');
-  const sidebar = document.getElementById('sidebar');
-  if (toggle && sidebar) {
-    const mobileNavigation = window.matchMedia('(max-width: 900px)');
-    const closeDrawer = (restoreFocus = false) => {
-      sidebar.classList.remove('sidebar-open');
-      sidebar.toggleAttribute('inert', mobileNavigation.matches);
-      sidebar.setAttribute('aria-hidden', String(mobileNavigation.matches));
-      toggle.setAttribute('aria-expanded', 'false');
-      if (restoreFocus) {
-        toggle.focus({ preventScroll: true });
-      }
-    };
-    const openDrawer = () => {
-      sidebar.classList.add('sidebar-open');
-      sidebar.removeAttribute('inert');
-      sidebar.setAttribute('aria-hidden', 'false');
-      toggle.setAttribute('aria-expanded', 'true');
-      requestAnimationFrame(() => {
-        sidebar.querySelector('#nav-search, .nav-link')?.focus();
+    const toggle = document.getElementById('nav-toggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('sidebar-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
       });
-    };
-    const syncDrawerForViewport = () => {
-      if (mobileNavigation.matches) {
-        closeDrawer();
-      } else {
-        sidebar.classList.remove('sidebar-open');
-        sidebar.removeAttribute('inert');
-        sidebar.setAttribute('aria-hidden', 'false');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    };
-
-    syncDrawerForViewport();
-    mobileNavigation.addEventListener('change', syncDrawerForViewport);
-    toggle.addEventListener('click', () => {
-      if (!mobileNavigation.matches) return;
-      if (sidebar.classList.contains('sidebar-open')) {
-        closeDrawer();
-      } else {
-        openDrawer();
-      }
-    });
-    sidebar.querySelectorAll('.nav-link').forEach((link) => {
-      link.addEventListener('click', () => {
-        if (mobileNavigation.matches) {
-          closeDrawer(true);
-        }
+      sidebar.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', () => {
+          sidebar.classList.remove('sidebar-open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
       });
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && mobileNavigation.matches && sidebar.classList.contains('sidebar-open')) {
-        closeDrawer(true);
-      }
-    });
-  }
+    }
 
     const navSearch = document.getElementById('nav-search');
     if (navSearch) {
@@ -4193,5 +4178,33 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 }
 
 </script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const label = document.getElementById('theme-toggle-label');
+
+  const syncThemeToggle = () => {
+    const isLight = root.getAttribute('data-theme') === 'light';
+    toggle?.setAttribute('aria-pressed', String(isLight));
+    toggle?.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
+    if (label) label.textContent = isLight ? 'Dark' : 'Light';
+  };
+
+  syncThemeToggle();
+  new MutationObserver(syncThemeToggle).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+  toggle?.addEventListener('click', () => {
+    const theme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('spark-tuning-reference-theme', theme);
+    } catch (_) {
+      // The visual preference still works when persistent storage is blocked.
+    }
+  });
+})();
+</script>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
 </body>
 </html>

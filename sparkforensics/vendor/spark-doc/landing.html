@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes.">
+  <title>Spark Tuning Reference</title>
+  <script>
+    (function () {
+      var storageKey = 'spark-tuning-reference-theme';
+      var storedTheme = null;
+      try { storedTheme = localStorage.getItem(storageKey); } catch (error) {}
+      var theme = storedTheme === 'light' || storedTheme === 'dark'
+        ? storedTheme
+        : 'dark';
+      document.documentElement.dataset.theme = theme;
+    }());
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b0d;
+      --surface: #11171a;
+      --surface-strong: #172024;
+      --text: #f4f4f5;
+      --muted: #a9b5b4;
+      --line: #233035;
+      --orange: #ff6b2c;
+      --orange-hover: #ff8a4f;
+      --teal: #39d6b5;
+      --teal-soft: rgba(57, 214, 181, 0.13);
+      --orange-soft: rgba(255, 107, 44, 0.13);
+      --on-orange: #17110e;
+      --sans: ui-rounded, "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f7f8f4;
+      --surface: #ffffff;
+      --surface-strong: #edf1ed;
+      --text: #151b1e;
+      --muted: #4f5f60;
+      --line: #dbe2df;
+      --orange: #bf4413;
+      --orange-hover: #a8350e;
+      --teal: #007e6b;
+      --teal-soft: rgba(0, 126, 107, 0.1);
+      --orange-soft: rgba(191, 68, 19, 0.1);
+      --on-orange: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-width: 20rem;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: 3px;
+    }
+    .skip-link {
+      position: absolute;
+      z-index: 100;
+      top: -5rem;
+      left: 1rem;
+      padding: .65rem .85rem;
+      background: var(--teal);
+      color: #06221d;
+      font-weight: 800;
+    }
+    .skip-link:focus { top: 1rem; }
+    .container { width: min(100% - 2.5rem, 72rem); margin-inline: auto; }
+    .mono { font-family: var(--mono); }
+    .eyebrow {
+      margin: 0;
+      color: var(--teal);
+      font-family: var(--mono);
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .075em;
+      text-transform: uppercase;
+    }
+
+    .site-header {
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .header-inner {
+      display: flex;
+      min-height: 4.25rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 800; letter-spacing: -.02em; }
+    .brand-mark {
+      display: grid;
+      width: 1.75rem;
+      height: 1.75rem;
+      place-items: center;
+      border: 1px solid var(--orange);
+      color: var(--orange);
+      font-family: var(--mono);
+      font-size: .8rem;
+      line-height: 1;
+    }
+    .header-nav { display: flex; align-items: center; gap: .35rem; }
+    .header-link, .theme-toggle {
+      display: inline-flex;
+      min-height: 2.75rem;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      padding: .35rem .65rem;
+      border: 1px solid transparent;
+      color: var(--muted);
+      background: transparent;
+      font-size: .88rem;
+    }
+    .header-link:hover { color: var(--text); }
+    .theme-toggle {
+      width: 2.75rem;
+      padding: 0;
+      border-color: var(--line);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .theme-toggle:hover { border-color: var(--teal); color: var(--teal); }
+    .theme-icon { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+    .theme-icon.moon { display: none; }
+    :root[data-theme="light"] .theme-icon.sun { display: none; }
+    :root[data-theme="light"] .theme-icon.moon { display: block; }
+
+    .hero { padding: clamp(4.5rem, 10vw, 8rem) 0 clamp(4rem, 8vw, 6.5rem); }
+    .hero-grid { display: grid; gap: 3rem; align-items: center; }
+    .hero-copy { max-width: 44rem; }
+    h1, h2, h3 { text-wrap: balance; }
+    h1 {
+      max-width: 11ch;
+      margin: .65rem 0 1.15rem;
+      font-size: clamp(3.15rem, 8vw, 6.75rem);
+      font-weight: 850;
+      letter-spacing: -.03em;
+      line-height: .9;
+    }
+    .hero-summary { max-width: 40rem; margin: 0; color: var(--muted); font-size: clamp(1.08rem, 2.1vw, 1.3rem); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
+    .known-term { max-width: 40rem; margin-top: 1.5rem; }
+    .known-term label { display: block; margin-bottom: .45rem; color: var(--text); font-family: var(--mono); font-size: .82rem; font-weight: 700; }
+    .known-term-row { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .known-term input { min-height: 3rem; min-width: min(100%, 19rem); flex: 1 1 14rem; padding: .65rem .75rem; border: 1px solid var(--line); border-radius: 0; background: var(--surface); color: var(--text); font: .88rem var(--mono); }
+    .known-term input:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; border-color: var(--teal); }
+    .known-term small { display: block; margin-top: .5rem; color: var(--muted); font-size: .82rem; }
+    .button {
+      display: inline-flex;
+      min-height: 3rem;
+      align-items: center;
+      justify-content: center;
+      gap: .6rem;
+      padding: .65rem 1.05rem;
+      border: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: .88rem;
+      font-weight: 700;
+    }
+    .button-primary { border-color: var(--orange); background: var(--orange); color: var(--on-orange); }
+    .button-primary:hover { background: var(--orange-hover); border-color: var(--orange-hover); }
+    .button-secondary { background: transparent; color: var(--text); }
+    .button-secondary:hover { border-color: var(--teal); color: var(--teal); }
+    .arrow { font-size: 1.1em; }
+
+    .signal-board {
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: .7rem .7rem 0 var(--orange-soft);
+    }
+    .board-label { padding: .8rem 1rem; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--mono); font-size: .74rem; }
+    .signal-list { display: grid; margin: 0; padding: 0; list-style: none; }
+    .signal-list li { border-bottom: 1px solid var(--line); }
+    .signal-list li:last-child { border: 0; }
+    .signal-link { display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: center; padding: .95rem 1rem; }
+    .signal-link:hover { background: var(--surface-strong); }
+    .signal-marker { width: .6rem; height: .6rem; border-radius: 999px; background: var(--teal); box-shadow: 0 0 0 .22rem var(--teal-soft); }
+    .signal-list li:nth-child(2) .signal-marker { background: var(--orange); box-shadow: 0 0 0 .22rem var(--orange-soft); }
+    .signal-title { font-weight: 750; }
+    .signal-destination { color: var(--muted); font-family: var(--mono); font-size: .75rem; }
+
+    .section { padding: clamp(4rem, 8vw, 6.5rem) 0; }
+    .section-heading { max-width: 44rem; margin-bottom: 2rem; }
+    .section-heading h2 { margin: 0 0 .8rem; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -.03em; line-height: 1.04; }
+    .section-heading p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+    .decision-note { max-width: 52rem; margin: -1rem 0 2rem; padding: 1rem 1.1rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+    .decision-note strong { color: var(--text); }
+    .symptom-grid { display: grid; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+    .symptom { display: flex; min-height: 12.5rem; flex-direction: column; justify-content: space-between; padding: 1.25rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg); }
+    .symptom:hover { background: var(--surface); }
+    .symptom h3 { margin: 0 0 .45rem; font-size: 1.2rem; letter-spacing: -.025em; }
+    .symptom p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .symptom a { display: inline-flex; width: fit-content; margin-top: 1.25rem; color: var(--teal); font-family: var(--mono); font-size: .82rem; font-weight: 700; }
+    .symptom a:hover { color: var(--orange); }
+
+    .workflow { background: var(--surface); border-block: 1px solid var(--line); }
+    .workflow-grid { display: grid; gap: 2rem; }
+    .workflow-copy { max-width: 32rem; }
+    .workflow-copy h2 { margin: 0 0 .9rem; font-size: clamp(2rem, 4vw, 3.25rem); letter-spacing: -.03em; line-height: 1.04; }
+    .workflow-copy p { color: var(--muted); }
+    .steps { display: grid; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+    .steps li { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+    .step-label { color: var(--orange); font-family: var(--mono); font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .steps strong { display: block; margin-bottom: .15rem; }
+    .steps span:not(.step-label) { color: var(--muted); font-size: .93rem; }
+
+    footer { padding: 2rem 0; }
+    .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .85rem; color: var(--muted); font-size: .86rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .footer-links a:hover { color: var(--text); text-decoration: underline; text-underline-offset: .2em; }
+
+    @media (min-width: 46rem) {
+      .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(19rem, .75fr); }
+      .symptom-grid { grid-template-columns: repeat(2, 1fr); }
+      .workflow-grid { grid-template-columns: minmax(0, .88fr) minmax(24rem, 1.12fr); align-items: center; }
+    }
+    @media (min-width: 70rem) { .symptom-grid { grid-template-columns: repeat(5, 1fr); } }
+    @media (max-width: 34rem) {
+      .container { width: min(100% - 1.5rem, 72rem); }
+      .brand { gap: .4rem; font-size: .86rem; white-space: nowrap; }
+      .header-link.github { display: none; }
+      h1 { font-size: clamp(2.85rem, 16vw, 4.25rem); }
+      .signal-destination { display: none; }
+    }
+    @media (max-width: 24rem) {
+      .header-link:not(.github) { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+<link rel="stylesheet" href="/shuffle-works-product-bar.css">
+</head>
+<body>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="landing.html" aria-label="Spark Tuning Reference home" aria-current="page">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="brand-name">Spark Tuning Reference</span>
+      </a>
+      <nav class="header-nav" aria-label="Primary navigation">
+        <a class="header-link" href="index.html">Reference</a>
+        <a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+          <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+          <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Practical mechanics, stable references</p>
+          <h1 id="page-title">Spark Tuning Reference</h1>
+          <p class="hero-summary">Move from a job symptom to the Spark mechanics and settings that can change its outcome without treating a tuning guess as evidence.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="index.html">Browse the full reference <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="button button-secondary" href="#symptoms">Choose a symptom</a>
+            <form class="known-term" id="known-term-form" action="index.html#config" method="get">
+              <label for="known-term-input">Know the term or config key?</label>
+              <div class="known-term-row">
+                <input id="known-term-input" name="term" type="search" list="known-term-options" placeholder="e.g. spark.sql.shuffle.partitions" autocomplete="off">
+                <button class="button button-secondary" type="submit">Jump to topic</button>
+              </div>
+              <small>Known routes: memory, shuffle, joins, AQE, and config. Other terms open the configuration reference.</small>
+              <datalist id="known-term-options">
+                <option value="memory"></option><option value="shuffle"></option><option value="joins"></option><option value="AQE"></option><option value="config"></option>
+                <option value="spark.memory.fraction"></option><option value="spark.sql.shuffle.partitions"></option><option value="spark.sql.adaptive.enabled"></option><option value="spark.sql.autoBroadcastJoinThreshold"></option>
+              </datalist>
+            </form>
+          </div>
+        </div>
+        <aside class="signal-board" aria-label="Example symptom paths">
+          <div class="board-label">evidence → mechanic → lever</div>
+          <ul class="signal-list">
+            <li><a class="signal-link" href="index.html#memory-model"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Executor memory pressure</span><span class="signal-destination">#memory-model</span></a></li>
+            <li><a class="signal-link" href="index.html#shuffle"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Slow, wide stages</span><span class="signal-destination">#shuffle</span></a></li>
+            <li><a class="signal-link" href="index.html#joins"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Join strategy drift</span><span class="signal-destination">#joins</span></a></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="symptoms" aria-labelledby="symptoms-title">
+      <div class="container">
+        <div class="section-heading">
+          <h2 id="symptoms-title">Symptoms, mapped to the right lever</h2>
+          <p>Each path stays on the canonical reference document, so existing SparkForensics links and saved anchors continue to work.</p>
+          <p class="decision-note"><strong>How to use this:</strong> SparkForensics is the companion that reads your Spark event log and surfaces evidence; this reference explains the mechanics and settings behind it. Diagnose the symptom, change one informed lever, then validate against the next run’s evidence. Confirm behavior and defaults against your deployed Spark version and distribution.</p>
+        </div>
+        <div class="symptom-grid">
+          <article class="symptom">
+            <div><h3>Spill or GC pressure</h3><p>Trace executor memory, object lifetime, and the trade-offs behind changing memory settings.</p></div>
+            <a href="index.html#memory-model">Open memory model <span aria-hidden="true">→</span></a>
+          </article>
+          <article class="symptom">
+            <div><h3>Shuffle-heavy stages</h3><p>Understand write/read costs, partition size, and why moving data becomes the bottleneck.</p></div>
+            <a href="index.html#shuffle">Open shuffle guide <span aria-hidden="true">→</span></a>
+          </article>
+          <article class="symptom">
+            <div><h3>Slow or skewed joins</h3><p>Compare join mechanics before changing broadcast thresholds or reshaping a plan.</p></div>
+            <a href="index.html#joins">Open join optimization <span aria-hidden="true">→</span></a>
+          </article>
+          <article class="symptom">
+            <div><h3>Plan adapts poorly</h3><p>Use AQE’s runtime choices as an inspectable mechanism, not a checkbox to enable blindly.</p></div>
+            <a href="index.html#aqe">Open AQE guide <span aria-hidden="true">→</span></a>
+          </article>
+          <article class="symptom">
+            <div><h3>Need the exact setting</h3><p>Check a setting’s scope, default, and interaction before applying it to a cluster.</p></div>
+            <a href="index.html#config">Open config reference <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section workflow" aria-labelledby="workflow-title">
+      <div class="container workflow-grid">
+        <div class="workflow-copy">
+          <h2 id="workflow-title">Let SparkForensics surface the evidence. Use this reference to reason about it.</h2>
+          <p>The two tools stay deliberately separate: SparkForensics reads the event log; this static reference explains the mechanics and settings behind what you find.</p>
+        </div>
+        <ol class="steps">
+          <li><span class="step-label">Observe</span><div><strong>Read the stage or executor behavior</strong><span>Start with the event log, metrics, and plan details Spark already produces.</span></div></li>
+          <li><span class="step-label">Explain</span><div><strong>Name the mechanism at work</strong><span>Use the stable reference anchors to connect symptoms to memory, shuffle, joins, AQE, or configuration.</span></div></li>
+          <li><span class="step-label">Test</span><div><strong>Change one informed lever</strong><span>Make a measured change, then compare the evidence again rather than carrying a tuning superstition forward.</span></div></li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>Evidence-first Spark operations.</span>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="https://shuffle-works.github.io/" target="_blank" rel="noopener">Shuffle Works <span aria-hidden="true">↗</span></a>
+        <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">Source <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var storageKey = 'spark-tuning-reference-theme';
+      var root = document.documentElement;
+      var button = document.getElementById('theme-toggle');
+
+      function updateControl() {
+        var isLight = root.dataset.theme === 'light';
+        button.setAttribute('aria-pressed', String(isLight));
+        button.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+      }
+
+      button.addEventListener('click', function () {
+        var theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+        root.dataset.theme = theme;
+        try { localStorage.setItem('spark-tuning-reference-theme', theme); } catch (error) {}
+        updateControl();
+      });
+      updateControl();
+
+      var knownTermForm = document.getElementById('known-term-form');
+      var knownTermInput = document.getElementById('known-term-input');
+      var knownTermRoutes = {
+        memory: 'memory-model',
+        'memory-model': 'memory-model',
+        spill: 'memory-model',
+        'spark.memory.fraction': 'memory-model',
+        shuffle: 'shuffle',
+        'spark.sql.shuffle.partitions': 'shuffle',
+        joins: 'joins',
+        join: 'joins',
+        'spark.sql.autobroadcastjointhreshold': 'joins',
+        aqe: 'aqe',
+        'spark.sql.adaptive.enabled': 'aqe',
+        config: 'config',
+      };
+      knownTermForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        var term = knownTermInput.value.trim().toLowerCase();
+        var route = knownTermRoutes[term] || 'config';
+        window.location.href = 'index.html#' + route;
+      });
+    }());
+  </script>
+</body>
+</html>

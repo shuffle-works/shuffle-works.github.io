@@ -40,22 +40,19 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
   target_dir="${4:-}"
   case "${3:-}" in
     shuffle-works/sparkforensics)
-      mkdir -p "$target_dir/dist/vendor"
+      mkdir -p "$target_dir/dist/vendor/spark-doc"
       printf '%s\n' 'spark forensics index' >"$target_dir/dist/index.html"
       printf '%s\n' 'worker' >"$target_dir/dist/vendor/worker.js"
-      exit 0
-      ;;
-    shuffle-works/spark-tuning-reference)
-      mkdir -p "$target_dir"
-      printf '%s\n' 'tuning index' >"$target_dir/index.html"
-      printf '%s\n' 'tuning metadata' >"$target_dir/meta.html"
-      if [ "${MOCK_MISSING_TUNING_INDEX:-0}" = 1 ]; then
-        rm -f "$target_dir/index.html"
+      printf '%s\n' '<!doctype html><html><head></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header></body></html>' >"$target_dir/dist/vendor/spark-doc/index.html"
+      printf '%s\n' 'embedded tuning metadata' >"$target_dir/dist/vendor/spark-doc/meta.html"
+      printf '%s\n' '{}' >"$target_dir/dist/vendor/spark-doc/anchors.json"
+      printf '%s\n' '<!doctype html><html><head></head><body><h1>Spark Tuning Reference</h1></body></html>' >"$target_dir/dist/vendor/spark-doc/landing.html"
+      if [ "${MOCK_MISSING_EMBEDDED_REFERENCE:-0}" = 1 ]; then
+        rm -f "$target_dir/dist/vendor/spark-doc/index.html"
       fi
-      if [ "${MOCK_MISSING_TUNING_META:-0}" = 1 ]; then
-        rm -f "$target_dir/meta.html"
+      if [ "${MOCK_MISSING_EMBEDDED_LANDING:-0}" = 1 ]; then
+        rm -f "$target_dir/dist/vendor/spark-doc/landing.html"
       fi
-      printf '%s\n' '{}' >"$target_dir/anchors.json"
       exit 0
       ;;
   esac
@@ -81,59 +78,51 @@ run_sync() {
 assert_last_invocations() {
   expected_auth="$1"
   expected_forensics="$2"
-  expected_tuning="$3"
 
-  actual="$(tail -n 3 "$MOCK_LOG")"
+  actual="$(tail -n 2 "$MOCK_LOG")"
   printf '%s\n' "$actual" | sed -n '1p' | grep -Fx "$expected_auth" >/dev/null
   printf '%s\n' "$actual" | sed -n '2p' | grep -Ex "$expected_forensics" >/dev/null
-  printf '%s\n' "$actual" | sed -n '3p' | grep -Ex "$expected_tuning" >/dev/null
 }
 
 run_sync "$PUBLISHED_ROOT"
 assert_last_invocations \
   "gh auth status" \
-  "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch main" \
-  "gh repo clone shuffle-works/spark-tuning-reference .*/checkout/spark-tuning-reference -- --depth 1 --branch master"
+  "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch main"
 test -f "$PUBLISHED_ROOT/sparkforensics/index.html"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/worker.js"
-test -f "$PUBLISHED_ROOT/spark-tuning-reference/index.html"
-test -f "$PUBLISHED_ROOT/spark-tuning-reference/meta.html"
-test -f "$PUBLISHED_ROOT/spark-tuning-reference/anchors.json"
+test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html"
+test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html"
+test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/anchors.json"
+test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html"
+test ! -e "$PUBLISHED_ROOT/spark-tuning-reference"
+grep -F 'href="/sparkforensics/vendor/spark-doc/landing.html"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
+if grep -F 'href="/spark-tuning-reference/"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
+  echo "expected embedded reference navigation to use its bundled path" >&2
+  exit 1
+fi
 
 run_sync "$TEST_ROOT/one-ref" SparkForensics
 assert_last_invocations \
   "gh auth status" \
-  "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch SparkForensics" \
-  "gh repo clone shuffle-works/spark-tuning-reference .*/checkout/spark-tuning-reference -- --depth 1 --branch master"
+  "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch SparkForensics"
 
-FORensics_REF="sparkforensics-ref"
-TUNING_REF="tuning-ref"
-run_sync "$TEST_ROOT/two-refs" "$FORensics_REF" "$TUNING_REF"
-assert_last_invocations \
-  "gh auth status" \
-  "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch $FORensics_REF" \
-  "gh repo clone shuffle-works/spark-tuning-reference .*/checkout/spark-tuning-reference -- --depth 1 --branch $TUNING_REF"
-
-mkdir -p "$TEST_ROOT/unchanged/sparkforensics" "$TEST_ROOT/unchanged/spark-tuning-reference"
+mkdir -p "$TEST_ROOT/unchanged/sparkforensics"
 printf '%s\n' 'old forensics' >"$TEST_ROOT/unchanged/sparkforensics/index.html"
-printf '%s\n' 'old tuning' >"$TEST_ROOT/unchanged/spark-tuning-reference/index.html"
 
-if MOCK_MISSING_TUNING_INDEX=1 PUBLISH_ROOT="$TEST_ROOT/unchanged" PATH="$MOCK_BIN:$PATH" \
+if MOCK_MISSING_EMBEDDED_REFERENCE=1 PUBLISH_ROOT="$TEST_ROOT/unchanged" PATH="$MOCK_BIN:$PATH" \
   "$REPO_ROOT/scripts/sync-static-sites.sh"
 then
-  echo "expected missing source artifact to fail" >&2
+  echo "expected missing embedded reference to fail" >&2
   exit 1
 fi
 
 test "$(cat "$TEST_ROOT/unchanged/sparkforensics/index.html")" = "old forensics"
-test "$(cat "$TEST_ROOT/unchanged/spark-tuning-reference/index.html")" = "old tuning"
 
-printf '%s\n' 'old tuning metadata' >"$TEST_ROOT/unchanged/spark-tuning-reference/meta.html"
-if MOCK_MISSING_TUNING_META=1 PUBLISH_ROOT="$TEST_ROOT/unchanged" PATH="$MOCK_BIN:$PATH" \
+if MOCK_MISSING_EMBEDDED_LANDING=1 PUBLISH_ROOT="$TEST_ROOT/unchanged" PATH="$MOCK_BIN:$PATH" \
   "$REPO_ROOT/scripts/sync-static-sites.sh"
 then
-  echo "expected missing tuning metadata to fail" >&2
+  echo "expected missing embedded landing page to fail" >&2
   exit 1
 fi
 
-test "$(cat "$TEST_ROOT/unchanged/spark-tuning-reference/meta.html")" = "old tuning metadata"
+test "$(cat "$TEST_ROOT/unchanged/sparkforensics/index.html")" = "old forensics"

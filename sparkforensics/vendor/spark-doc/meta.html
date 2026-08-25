@@ -4,21 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How This Site Works</title>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('spark-tuning-reference-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable in a sandboxed SparkForensics iframe.
+  }
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f8fafc;
-  --color-surface-code: #eef1f6;
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-border: #e2e8f0;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-info: #2563eb;
-  --color-warning: #b45309;
-  --color-critical: #dc2626;
+  color-scheme: dark;
+  --color-bg: #101516;
+  --color-surface: #161d1f;
+  --color-surface-raised: #1d2729;
+  --color-surface-code: #0d1213;
+  --color-text: #f1f5f2;
+  --color-text-muted: #a6b5b1;
+  --color-border: #344346;
+  --color-signal-orange: #f79747;
+  --color-signal-teal: #48d2c0;
+  --color-accent: var(--color-signal-orange);
+  --color-accent-hover: #ffc184;
+  --color-info: var(--color-signal-teal);
+  --color-warning: var(--color-signal-orange);
+  --color-critical: #ff8576;
 
   --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
@@ -32,37 +48,25 @@
 
   --sidebar-width: 260px;
   --content-max-width: 760px;
-  --transition-fast: 150ms ease-out;
+  --transition-fast: 160ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-:root[data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-surface-code: #182234;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: #334155;
-  --color-accent: #60a5fa;
-  --color-accent-hover: #93c5fd;
-  --color-info: #60a5fa;
-  --color-warning: #fbbf24;
-  --color-critical: #f87171;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-surface-code: #182234;
-    --color-text: #f1f5f9;
-    --color-text-muted: #94a3b8;
-    --color-border: #334155;
-    --color-accent: #60a5fa;
-    --color-accent-hover: #93c5fd;
-    --color-info: #60a5fa;
-    --color-warning: #fbbf24;
-    --color-critical: #f87171;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #f5f7f5;
+  --color-surface: #ffffff;
+  --color-surface-raised: #edf2ef;
+  --color-surface-code: #e9efec;
+  --color-text: #16201f;
+  --color-text-muted: #50625e;
+  --color-border: #c9d4cf;
+  --color-signal-orange: #bb551d;
+  --color-signal-teal: #087b70;
+  --color-accent: var(--color-signal-orange);
+  --color-accent-hover: #8e3e13;
+  --color-info: var(--color-signal-teal);
+  --color-warning: var(--color-signal-orange);
+  --color-critical: #c34235;
 }
 
 * {
@@ -102,8 +106,8 @@ a[href^="http"]::after {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-signal-teal);
+  outline-offset: 3px;
 }
 
 /* Layout */
@@ -121,9 +125,83 @@ a[href^="http"]::after {
   flex-shrink: 0;
   height: 100dvh;
   overflow-y: auto;
-  padding: var(--space-5) var(--space-3);
+  padding: var(--space-3);
   border-right: 1px solid var(--color-border);
   background: var(--color-surface);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-identity {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.site-identity:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.site-mark {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--color-signal-orange);
+  color: #101516;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.site-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-signal-teal);
+  background: color-mix(in srgb, var(--color-signal-teal) 12%, transparent);
+  color: var(--color-text);
+}
+
+.theme-toggle-icon {
+  color: var(--color-signal-teal);
+  font-size: 15px;
+  line-height: 1;
 }
 
 .content {
@@ -148,12 +226,12 @@ a[href^="http"]::after {
   max-width: var(--content-max-width);
   margin: var(--space-6) auto var(--space-4);
   padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-border);
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-accent);
+  color: var(--color-signal-teal);
 }
 
 .content-group-title-first {
@@ -218,7 +296,7 @@ a[href^="http"]::after {
   font-size: 14px;
   font-family: inherit;
   color: var(--color-text);
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
@@ -258,14 +336,14 @@ a[href^="http"]::after {
 }
 
 .nav-link:hover {
-  background: var(--color-border);
+  background: var(--color-surface-raised);
   text-decoration: none;
 }
 
 .nav-link.active {
-  color: var(--color-accent);
+  color: var(--color-signal-orange);
   font-weight: 600;
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: color-mix(in srgb, var(--color-signal-orange) 14%, transparent);
 }
 
 /* Anchor-not-found fallback */
@@ -282,9 +360,8 @@ a[href^="http"]::after {
   max-width: var(--content-max-width);
   margin: 0 auto var(--space-4);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-signal-orange) 10%, var(--color-surface));
   border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-warning);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -333,9 +410,9 @@ p { color: var(--color-text); }
 blockquote {
   margin: var(--space-4) 0;
   padding: var(--space-3);
-  border-left: 3px solid var(--color-accent);
-  background: var(--color-surface);
-  border-radius: 0 6px 6px 0;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-signal-teal) 8%, var(--color-surface));
+  border-radius: 6px;
 }
 
 blockquote p:last-child {
@@ -390,7 +467,7 @@ th, td {
 
 th {
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   border-bottom: 2px solid var(--color-border);
 }
 
@@ -436,7 +513,7 @@ sup {
   padding: 0.1em 0.5em;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text-muted);
+  color: var(--color-signal-teal);
 }
 
 /* Responsive */
@@ -458,7 +535,7 @@ sup {
     left: 0;
     z-index: 10;
     transform: translateX(-100%);
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 8px 0 8px rgba(0, 0, 0, 0.18);
     transition: transform var(--transition-fast);
   }
 
@@ -487,13 +564,7 @@ sup {
 <link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
-<header class="shuffle-product-bar" data-shuffle-product-bar>
-  <nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products">
-    <a class="shuffle-product-bar__brand" href="/">Shuffle Works</a>
-    <a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a>
-    <a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a>
-  </nav>
-</header>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
 <a href="#main-content" class="skip-link">Skip to content</a>
 <h1 class="visually-hidden">How This Site Works</h1>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
@@ -506,6 +577,16 @@ sup {
 
 <div class="layout">
   <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="#pipeline-overview" aria-label="How This Site Works introduction">
+        <span class="site-mark" aria-hidden="true">S</span>
+        <span class="site-name">How This Site Works</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <span class="theme-toggle-icon" aria-hidden="true">◐</span>
+        <span id="theme-toggle-label">Light</span>
+      </button>
+    </div>
     <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
     
     <div class="nav-group">
@@ -559,10 +640,10 @@ sup {
     <section id="pipeline-overview" class="doc-section">
       <h2>Pipeline Overview</h2>
 <h3>What this repository builds</h3>
-<p>This repository runs a question-granular, citation-backed answering pipeline that turns a registry of research questions into a reviewed reference site, and it does so twice: once for a Spark optimization reference and once for the pipeline's own architecture<sup id="fnref:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Selection between the two happens via <code>--corpus {spark,meta}</code> on every pipeline script, defaulting to <code>spark</code>. <code>scripts/corpus.py</code> holds a <code>Corpus</code> dataclass with <code>SPARK</code>/<code>META</code> profiles, and every path a script touches (registry, per-question answers dir, section-projection dir, content-state sidecar, content manifest, references dir, Chroma path/collection, embedding model, build output, site title) comes from the selected profile rather than a hardcoded constant<sup id="fnref2:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>spark</code> corpus is the Spark optimization reference itself, built over <code>references/</code> and indexed with the asymmetric question→passage retriever <code>multi-qa-mpnet-base-dot-v1</code>; its build output is <code>index.html</code><sup id="fnref3:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>meta</code> corpus is this project's own architecture doc (<code>docs/architecture.md</code>, <code>docs/runbook.md</code>, <code>docs/rules/*.md</code>, <code>AGENTS.md</code>, and the agent/skill files that make up the pipeline). It is indexed via symlinks under <code>references-meta/</code> with the general symmetric model <code>all-mpnet-base-v2</code> into a separate Chroma collection, and its build output is <code>meta.html</code><sup id="fnref4:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The two corpora never share a registry, a Chroma collection, or a content manifest; each is an independent instance of the same pipeline shape<sup id="fnref5:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
+<p>This repository runs a question-granular, citation-backed answering pipeline that turns a registry of research questions into a reviewed reference site, and it does so twice: once for a Spark Tuning Reference and once for the pipeline's own architecture<sup id="fnref:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Selection between the two happens via <code>--corpus {spark,meta}</code> on every pipeline script, defaulting to <code>spark</code>. <code>scripts/corpus.py</code> holds a <code>Corpus</code> dataclass with <code>SPARK</code>/<code>META</code> profiles, and every path a script touches (registry, per-question answers dir, section-projection dir, content-state sidecar, content manifest, references dir, Chroma path/collection, embedding model, build output, site title) comes from the selected profile rather than a hardcoded constant<sup id="fnref2:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>spark</code> corpus is the Spark Tuning Reference itself, built over <code>references/</code> and indexed with the asymmetric question→passage retriever <code>multi-qa-mpnet-base-dot-v1</code>; its build output is <code>index.html</code><sup id="fnref3:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The <code>meta</code> corpus is this project's own architecture doc (<code>docs/architecture.md</code>, <code>docs/runbook.md</code>, <code>docs/rules/*.md</code>, <code>AGENTS.md</code>, and the agent/skill files that make up the pipeline). It is indexed via symlinks under <code>references-meta/</code> with the general symmetric model <code>all-mpnet-base-v2</code> into a separate Chroma collection, and its build output is <code>meta.html</code><sup id="fnref4:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The two corpora never share a registry, a Chroma collection, or a content manifest; each is an independent instance of the same pipeline shape<sup id="fnref5:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
 <p>Within either corpus, the atomic unit of the pipeline is the question, not the section: the registry (<code>research/questions.yaml</code>, or its meta counterpart) is the single source of truth holding sections and questions, and every other artifact is a derived projection, never edited directly as a source of truth<sup id="fnref6:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Content flows one way through the pipeline: registry → per-question answer files (prose plus footnotes and their own <code>## Sources</code>) → section projections (an ordered concatenation of a section's question answers, with sources merged and deduped) → content pages (brief-driven on first generation, human-owned after that) → the built site, and a downstream artifact is never treated as a source of truth for an upstream one<sup id="fnref7:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. The project's own <code>AGENTS.md</code> restates the operator-facing consequence: every content page is real cited prose, not a placeholder, and new or changed content still flows registry → answer → projection → page<sup id="fnref:3-agents-md"><a class="footnote-ref" href="#fn:3-agents-md" title="agents-md — references-meta/AGENTS.md">2</a></sup>.</p>
 <p>The build output is produced regardless of whether every content page is current. A committed hash sidecar tracks each content page against the sha256 of the section projection it was last generated or accepted from, classifying pages as ungenerated, stale, or ok; the build script checks this before rendering and prints a non-fatal warning banner listing any stale or ungenerated pages, but the build still produces <code>index.html</code> either way<sup id="fnref8:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. Recompute never triggers regeneration on its own; it only flags a page stale, since content pages are human-owned once generated<sup id="fnref9:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
-<p>On the Spark side, the resulting pages carry a further constraint tied to why the site exists: its manifest-level anchor IDs are a frozen cross-repo Integration Contract with the sibling <code>../eventLogsVisualizer</code> repo, so renaming or removing one is a breaking change, and content assembly must read anchors from <code>content/manifest.yaml</code> rather than deriving them from a filename or heading<sup id="fnref:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. That contract applies only to the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, and their anchors may change freely<sup id="fnref2:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. <code>docs/anchor-map.md</code> reconciles the two, mapping each research answer file to its content file and frozen anchor<sup id="fnref:3-anchor-map"><a class="footnote-ref" href="#fn:3-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">4</a></sup>.</p>
+<p>On the Spark side, the resulting pages carry a further constraint tied to why the site exists: its manifest-level anchor IDs are a frozen cross-repo Integration Contract with the sibling <code>sparkforensics</code> repo, so renaming or removing one is a breaking change, and content assembly must read anchors from <code>content/manifest.yaml</code> rather than deriving them from a filename or heading<sup id="fnref:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. That contract applies only to the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, and their anchors may change freely<sup id="fnref2:3-rules-content"><a class="footnote-ref" href="#fn:3-rules-content" title="rules-content — references-meta/docs/rules/content.md">3</a></sup>. <code>docs/anchor-map.md</code> reconciles the two, mapping each research answer file to its content file and frozen anchor<sup id="fnref:3-anchor-map"><a class="footnote-ref" href="#fn:3-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">4</a></sup>.</p>
 <h3>The one-way derive chain</h3>
 <p>The chain runs in one direction, front to back:</p>
 <p><code>research/questions.yaml</code> → <code>research/answers/q/&lt;id&gt;.md</code> → <code>research/answers/&lt;section-id&gt;.md</code> → <code>content/*.md</code> (and <code>content/bottlenecks/*.md</code>) → <code>index.html</code><sup id="fnref10:3-architecture"><a class="footnote-ref" href="#fn:3-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>.</p>
@@ -712,7 +793,7 @@ sup {
 <p><code>content_state.py</code> distinguishes the two states by comparing a page's recorded hash in the committed sidecar <code>research/content-state.yaml</code> against the sha256 of the section projection it was assembled from<sup id="fnref:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. A page with no entry in that sidecar has never been generated from its section projection, and <code>content_state.py</code> reports it <strong>ungenerated</strong><sup id="fnref:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>. A page has an entry whose recorded hash no longer matches the current projection hash when the section's underlying answers changed since the page was generated or last accepted; <code>content_state.py</code> reports it <strong>stale</strong><sup id="fnref2:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup><sup id="fnref2:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>.</p>
 <p>The required human action differs accordingly. For an <strong>ungenerated</strong> page, the pipeline generates it: the answer-meta-question skill reads the page's <code>brief:</code> and <code>assembled_from:</code> entries from <code>content/meta/manifest.yaml</code>, writes the page from the projection, humanizes it, then runs <code>content_state --accept &lt;page&gt;</code> to stamp its hash<sup id="fnref:6-skill-answer-meta-question"><a class="footnote-ref" href="#fn:6-skill-answer-meta-question" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md">3</a></sup>. For a <strong>stale</strong> page, nothing is overwritten automatically. The pipeline does not edit the page; a human hand-edits it to reflect the changed answers, and only then does <code>content_state.py --accept &lt;page&gt;</code> re-stamp the hash so the page is no longer flagged<sup id="fnref3:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup><sup id="fnref3:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. This follows from content pages being human-owned once generated: the pipeline never silently overwrites a generated page<sup id="fnref:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
 <h3>Anchors as a frozen cross-repo contract</h3>
-<p><code>content/manifest.yaml</code> is the single authority for section order, titles, and anchor IDs; content assembly reads anchors from it and never derives them from a Markdown heading or a filename<sup id="fnref2:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Because the anchors are looked up rather than generated from content, other repos can depend on them staying stable, so the project documents them as a frozen cross-repo Integration Contract with the sibling repo <code>../eventLogsVisualizer</code><sup id="fnref3:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref2:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Renaming or removing an anchor is a breaking change, and if the two repos' descriptions of an anchor diverge, the sibling repo's own contract doc wins<sup id="fnref4:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
+<p><code>content/manifest.yaml</code> is the single authority for section order, titles, and anchor IDs; content assembly reads anchors from it and never derives them from a Markdown heading or a filename<sup id="fnref2:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Because the anchors are looked up rather than generated from content, other repos can depend on them staying stable, so the project documents them as a frozen cross-repo Integration Contract with the sibling repo <code>sparkforensics</code><sup id="fnref3:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup><sup id="fnref2:6-anchor-map"><a class="footnote-ref" href="#fn:6-anchor-map" title="anchor-map — references-meta/docs/anchor-map.md">5</a></sup>. Renaming or removing an anchor is a breaking change, and if the two repos' descriptions of an anchor diverge, the sibling repo's own contract doc wins<sup id="fnref4:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
 <p>The contract covers two sets of IDs: the 26 manifest-level anchors, one per <code>content/manifest.yaml</code> entry (enforced by <code>scripts/smoke_content.py</code>'s 26-section count check), and 4 config-page sub-anchors nested inside the single <code>config</code> manifest entry (<code>config-shuffle-service</code>, <code>config-autoscale-bounds</code>, <code>config-serializer</code>, <code>config-memory-overhead</code>). These four aren't manifest entries themselves but are also enforced by <code>scripts/smoke_content.py</code><sup id="fnref5:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>. The contract applies only to <code>content/manifest.yaml</code>/<code>index.html</code>, i.e. the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, so this meta corpus's own anchors may change freely<sup id="fnref6:6-rules-content"><a class="footnote-ref" href="#fn:6-rules-content" title="rules-content — references-meta/docs/rules/content.md">4</a></sup>.</p>
 <h3>The build's non-fatal staleness warning</h3>
 <p>Before rendering, <code>build.py</code> calls <code>content_state.report(...)</code>, which compares each content page's recorded hash (from <code>research/content-state.yaml</code>) against the current section-projection hash and classifies the page as ungenerated (no recorded entry), stale (hash differs), or up to date (hash matches)<sup id="fnref4:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup>. If any pages come back ungenerated or stale, <code>build.py</code> prints a non-fatal warning banner listing them, but proceeds to produce <code>index.html</code> regardless<sup id="fnref5:6-architecture"><a class="footnote-ref" href="#fn:6-architecture" title="architecture — references-meta/docs/architecture.md">1</a></sup><sup id="fnref4:6-runbook"><a class="footnote-ref" href="#fn:6-runbook" title="runbook — references-meta/docs/runbook.md">2</a></sup>.</p>
@@ -744,130 +825,152 @@ sup {
 </div>
 
 <script>
-// postMessage bridge to the embedding Spark Event Log Visualizer.
-// Contract: Integration Contract with ../eventLogsVisualizer (anchor IDs frozen).
+// postMessage bridge to the embedding sparkforensics app.
+// Contract: Integration Contract with sparkforensics (anchor IDs frozen).
+//
+// SDOC-021 handshake nonce: the parent loads this iframe at an opaque
+// (file:// / null) origin, so an origin allowlist can't be the trust anchor.
+// Instead the parent passes a per-load token as ?tok=... in the iframe URL; we
+// only accept inbound messages carrying that same token and echo it on every
+// message we post. postMessage target stays '*' (parent origin is opaque) — the
+// nonce is what makes '*' safe.
 
-window.addEventListener('message', (e) => {
-  if (e.data?.type === 'theme') {
-    document.documentElement.setAttribute('data-theme', e.data.theme);
-  }
-  if (e.data?.type === 'navigate') {
-    document.querySelector(e.data.anchor)?.scrollIntoView({ behavior: 'smooth' });
-  }
-});
+// Pure, side-effect-free trust decision so it can be unit-tested in Node.
+// Transitional: only a truly ABSENT token (docs opened directly, or a pre-nonce
+// parent that hasn't shipped its ?tok= side yet) falls back to accepting
+// everything so nothing breaks before sparkforensics ships the matching change. A present-
+// but-empty token (?tok= with no value) is a real, if degenerate, token and
+// still gates. `expectedTok` comes from URLSearchParams.get('tok'), which is
+// null when absent and '' when present-but-empty; `== null` covers null and the
+// undefined passed when isTrusted is called with no token at all.
+// Remove the null-expectedTok branch once sparkforensics always injects ?tok=.
+function isTrusted(expectedTok, data) {
+  if (expectedTok == null) return true; // transitional: no handshake configured
+  return !!data && data.tok === expectedTok;
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-  window.parent.postMessage({ type: 'ready' }, '*');
+// CommonJS export for tests. Inert in the browser: this file is inlined into a
+// classic <script> (see templates/page.html.jinja2) where `module` is
+// undefined, so a bare ESM `export` would be a parse error — this guard isn't.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { isTrusted };
+}
 
-  const hash = window.location.hash;
-  if (hash && !document.querySelector(hash)) {
-    document.querySelector('#intro')?.scrollIntoView();
-    const fallback = document.getElementById('anchor-fallback');
-    if (fallback) {
-      fallback.hidden = false;
-      document.getElementById('anchor-fallback-dismiss')?.addEventListener('click', () => {
-        fallback.hidden = true;
+// Browser wiring only — skipped when the module is required in Node for tests.
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  // Handshake token from the query string (?tok=...). NOT the hash — the hash is
+  // reserved for #anchor navigation. Kept in this closure for the page's life.
+  const expectedTok = new URLSearchParams(window.location.search).get('tok');
+
+  window.addEventListener('message', (e) => {
+    if (!isTrusted(expectedTok, e.data)) return;
+    if (e.data?.type === 'theme') {
+      document.documentElement.setAttribute('data-theme', e.data.theme);
+    }
+    if (e.data?.type === 'navigate') {
+      document.querySelector(e.data.anchor)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    window.parent.postMessage({ type: 'ready', tok: expectedTok }, '*');
+
+    const hash = window.location.hash;
+    if (hash && !document.querySelector(hash)) {
+      document.querySelector('#intro')?.scrollIntoView();
+      const fallback = document.getElementById('anchor-fallback');
+      if (fallback) {
+        fallback.hidden = false;
+        document.getElementById('anchor-fallback-dismiss')?.addEventListener('click', () => {
+          fallback.hidden = true;
+        });
+      }
+    }
+
+    const toggle = document.getElementById('nav-toggle');
+    const sidebar = document.getElementById('sidebar');
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        const isOpen = sidebar.classList.toggle('sidebar-open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+      });
+      sidebar.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', () => {
+          sidebar.classList.remove('sidebar-open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
       });
     }
-  }
 
-  const toggle = document.getElementById('nav-toggle');
-  const sidebar = document.getElementById('sidebar');
-  if (toggle && sidebar) {
-    const mobileNavigation = window.matchMedia('(max-width: 900px)');
-    const closeDrawer = (restoreFocus = false) => {
-      sidebar.classList.remove('sidebar-open');
-      sidebar.toggleAttribute('inert', mobileNavigation.matches);
-      sidebar.setAttribute('aria-hidden', String(mobileNavigation.matches));
-      toggle.setAttribute('aria-expanded', 'false');
-      if (restoreFocus) {
-        toggle.focus({ preventScroll: true });
-      }
-    };
-    const openDrawer = () => {
-      sidebar.classList.add('sidebar-open');
-      sidebar.removeAttribute('inert');
-      sidebar.setAttribute('aria-hidden', 'false');
-      toggle.setAttribute('aria-expanded', 'true');
-      requestAnimationFrame(() => {
-        sidebar.querySelector('#nav-search, .nav-link')?.focus();
-      });
-    };
-    const syncDrawerForViewport = () => {
-      if (mobileNavigation.matches) {
-        closeDrawer();
-      } else {
-        sidebar.classList.remove('sidebar-open');
-        sidebar.removeAttribute('inert');
-        sidebar.setAttribute('aria-hidden', 'false');
-        toggle.setAttribute('aria-expanded', 'false');
-      }
-    };
-
-    syncDrawerForViewport();
-    mobileNavigation.addEventListener('change', syncDrawerForViewport);
-    toggle.addEventListener('click', () => {
-      if (!mobileNavigation.matches) return;
-      if (sidebar.classList.contains('sidebar-open')) {
-        closeDrawer();
-      } else {
-        openDrawer();
-      }
-    });
-    sidebar.querySelectorAll('.nav-link').forEach((link) => {
-      link.addEventListener('click', () => {
-        if (mobileNavigation.matches) {
-          closeDrawer(true);
-        }
-      });
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && mobileNavigation.matches && sidebar.classList.contains('sidebar-open')) {
-        closeDrawer(true);
-      }
-    });
-  }
-
-  const navSearch = document.getElementById('nav-search');
-  if (navSearch) {
-    navSearch.addEventListener('input', () => {
-      const query = navSearch.value.trim().toLowerCase();
-      document.querySelectorAll('.nav-group').forEach((group) => {
-        let anyVisible = false;
-        group.querySelectorAll('.nav-list > li').forEach((item) => {
-          const matches = !query || item.textContent.toLowerCase().includes(query);
-          item.hidden = !matches;
-          anyVisible = anyVisible || matches;
+    const navSearch = document.getElementById('nav-search');
+    if (navSearch) {
+      navSearch.addEventListener('input', () => {
+        const query = navSearch.value.trim().toLowerCase();
+        document.querySelectorAll('.nav-group').forEach((group) => {
+          let anyVisible = false;
+          group.querySelectorAll('.nav-list > li').forEach((item) => {
+            const matches = !query || item.textContent.toLowerCase().includes(query);
+            item.hidden = !matches;
+            anyVisible = anyVisible || matches;
+          });
+          group.hidden = !anyVisible;
         });
-        group.hidden = !anyVisible;
       });
-    });
-  }
+    }
 
-  const navLinks = document.querySelectorAll('.nav-link');
-  const setActive = (anchor) => {
-    navLinks.forEach((link) => {
-      link.classList.toggle('active', link.getAttribute('href') === `#${anchor}`);
-    });
-  };
-  const sections = document.querySelectorAll('.doc-section[id]');
-  if (navLinks.length && sections.length && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting);
-        if (visible.length) {
-          const topmost = visible.reduce((a, b) =>
-            a.boundingClientRect.top <= b.boundingClientRect.top ? a : b
-          );
-          setActive(topmost.target.id);
-        }
-      },
-      { rootMargin: '0px 0px -70% 0px', threshold: 0 }
-    );
-    sections.forEach((section) => observer.observe(section));
-  }
-});
+    const navLinks = document.querySelectorAll('.nav-link');
+    const setActive = (anchor) => {
+      navLinks.forEach((link) => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${anchor}`);
+      });
+    };
+    const sections = document.querySelectorAll('.doc-section[id]');
+    if (navLinks.length && sections.length && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.filter((entry) => entry.isIntersecting);
+          if (visible.length) {
+            const topmost = visible.reduce((a, b) =>
+              a.boundingClientRect.top <= b.boundingClientRect.top ? a : b
+            );
+            setActive(topmost.target.id);
+          }
+        },
+        { rootMargin: '0px 0px -70% 0px', threshold: 0 }
+      );
+      sections.forEach((section) => observer.observe(section));
+    }
+  });
+}
 
 </script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const label = document.getElementById('theme-toggle-label');
+
+  const syncThemeToggle = () => {
+    const isLight = root.getAttribute('data-theme') === 'light';
+    toggle?.setAttribute('aria-pressed', String(isLight));
+    toggle?.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
+    if (label) label.textContent = isLight ? 'Dark' : 'Light';
+  };
+
+  syncThemeToggle();
+  new MutationObserver(syncThemeToggle).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+
+  toggle?.addEventListener('click', () => {
+    const theme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('spark-tuning-reference-theme', theme);
+    } catch (_) {
+      // The visual preference still works when persistent storage is blocked.
+    }
+  });
+})();
+</script>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
 </body>
 </html>
