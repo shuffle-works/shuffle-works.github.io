@@ -484,8 +484,16 @@ sup {
 }
 
 </style>
+<link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
+<header class="shuffle-product-bar" data-shuffle-product-bar>
+  <nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products">
+    <a class="shuffle-product-bar__brand" href="/">Shuffle Works</a>
+    <a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a>
+    <a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a>
+  </nav>
+</header>
 <a href="#main-content" class="skip-link">Skip to content</a>
 <h1 class="visually-hidden">How This Site Works</h1>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
@@ -766,15 +774,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.getElementById('nav-toggle');
   const sidebar = document.getElementById('sidebar');
   if (toggle && sidebar) {
+    const mobileNavigation = window.matchMedia('(max-width: 900px)');
+    const closeDrawer = (restoreFocus = false) => {
+      sidebar.classList.remove('sidebar-open');
+      sidebar.toggleAttribute('inert', mobileNavigation.matches);
+      sidebar.setAttribute('aria-hidden', String(mobileNavigation.matches));
+      toggle.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) {
+        toggle.focus({ preventScroll: true });
+      }
+    };
+    const openDrawer = () => {
+      sidebar.classList.add('sidebar-open');
+      sidebar.removeAttribute('inert');
+      sidebar.setAttribute('aria-hidden', 'false');
+      toggle.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(() => {
+        sidebar.querySelector('#nav-search, .nav-link')?.focus();
+      });
+    };
+    const syncDrawerForViewport = () => {
+      if (mobileNavigation.matches) {
+        closeDrawer();
+      } else {
+        sidebar.classList.remove('sidebar-open');
+        sidebar.removeAttribute('inert');
+        sidebar.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    syncDrawerForViewport();
+    mobileNavigation.addEventListener('change', syncDrawerForViewport);
     toggle.addEventListener('click', () => {
-      const isOpen = sidebar.classList.toggle('sidebar-open');
-      toggle.setAttribute('aria-expanded', String(isOpen));
+      if (!mobileNavigation.matches) return;
+      if (sidebar.classList.contains('sidebar-open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
     });
     sidebar.querySelectorAll('.nav-link').forEach((link) => {
       link.addEventListener('click', () => {
-        sidebar.classList.remove('sidebar-open');
-        toggle.setAttribute('aria-expanded', 'false');
+        if (mobileNavigation.matches) {
+          closeDrawer(true);
+        }
       });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && mobileNavigation.matches && sidebar.classList.contains('sidebar-open')) {
+        closeDrawer(true);
+      }
     });
   }
 

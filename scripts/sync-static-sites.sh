@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLISH_ROOT="${PUBLISH_ROOT:-$REPO_ROOT}"
+PRODUCT_BAR_STYLESHEET="$REPO_ROOT/shuffle-works-product-bar.css"
 
 if [ "$#" -gt 2 ]; then
   echo "error: expected at most two refs" >&2
@@ -46,6 +47,102 @@ stage_tree() {
   cp -R "$source"/. "$target"/
 }
 
+product_bar_markup() {
+  local surface=$1
+
+  case "$surface" in
+    sparkforensics)
+      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/" aria-current="page">SparkForensics</a><a class="shuffle-product-bar__product" href="/spark-tuning-reference/">Spark Tuning Reference</a></nav></header>'
+      ;;
+    spark-tuning-reference)
+      printf '%s' '<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a></nav></header>'
+      ;;
+    *)
+      echo "error: unknown product surface: $surface" >&2
+      exit 1
+      ;;
+  esac
+}
+
+inject_product_shell() {
+  local page=$1 surface=$2 bar temp_page
+  local stylesheet='<link rel="stylesheet" href="/shuffle-works-product-bar.css">'
+
+  if grep -Fq 'data-shuffle-product-bar' "$page"; then
+    return
+  fi
+
+  # Leave non-HTML source placeholders untouched rather than making publication
+  # depend on a particular HTML formatter.
+  if ! grep -Fq '</head>' "$page" || ! grep -Eq '<body([[:space:]>])' "$page"; then
+    return
+  fi
+
+  bar="$(product_bar_markup "$surface")"
+  temp_page="$(mktemp)"
+
+  awk -v stylesheet="$stylesheet" '
+    index($0, "</head>") { print stylesheet }
+    { print }
+  ' "$page" >"$temp_page"
+
+  awk -v bar="$bar" '
+    /<body([[:space:]>])/ { print; print bar; next }
+    { print }
+  ' "$temp_page" >"$page"
+  rm -f "$temp_page"
+}
+
+inject_product_shells() {
+  local root=$1 default_surface=$2 page surface
+
+  while IFS= read -r -d '' page; do
+    surface=$default_surface
+    case "$page" in
+      "$root"/vendor/spark-doc/*)
+        surface=spark-tuning-reference
+        ;;
+    esac
+    inject_product_shell "$page" "$surface"
+  done < <(find "$root" -type f -name '*.html' -print0)
+}
+
+inject_before() {
+  local page=$1 marker=$2 content=$3 temp_page
+  temp_page="$(mktemp)"
+
+  awk -v marker="$marker" -v content="$content" '
+    index($0, marker) { print content }
+    { print }
+  ' "$page" >"$temp_page"
+  mv "$temp_page" "$page"
+}
+
+reference_router_markup() {
+  printf '%s' '<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title"><h3 id="symptom-router-title">Start with a symptom</h3><p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p><ul class="symptom-router-list"><li><a href="#bottleneck-slow-host">Slow stages</a></li><li><a href="#bottleneck-skew">Skew, spill, or memory</a></li><li><a href="#bottleneck-failures">Failures or retries</a></li><li><a href="#spark-architecture">Configuration or architecture</a></li></ul></nav>'
+}
+
+reference_router_styles() {
+  printf '%s' '.symptom-router { max-width: var(--content-max-width); margin: 0 auto var(--space-5); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); } .symptom-router h3 { margin: 0 0 var(--space-2); font-size: 1rem; } .symptom-router p { margin: 0 0 var(--space-3); color: var(--color-text-muted); } .symptom-router-list { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; } .symptom-router-list a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text); font-weight: 600; } .symptom-router-list a:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }'
+}
+
+reference_drawer_script() {
+  printf '%s' '<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>'
+}
+
+inject_reference_enhancements() {
+  local page=$1
+
+  if grep -Fq '<h3>Severity dots</h3>' "$page" && ! grep -Fq 'data-shuffle-symptom-router' "$page"; then
+    inject_before "$page" '</style>' "$(reference_router_styles)"
+    inject_before "$page" '<h3>Severity dots</h3>' "$(reference_router_markup)"
+  fi
+
+  if grep -Fq 'id="nav-toggle"' "$page" && ! grep -Fq 'data-shuffle-reference-a11y' "$page"; then
+    inject_before "$page" '</body>' "$(reference_drawer_script)"
+  fi
+}
+
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
 TUNING_CHECKOUT="$CHECKOUT_DIR/spark-tuning-reference"
 clone_repo "shuffle-works/sparkforensics" "$FORENSICS_CHECKOUT" "$FORENSICS_REF"
@@ -61,15 +158,37 @@ if [ ! -f "$TUNING_CHECKOUT/index.html" ] || [ ! -f "$TUNING_CHECKOUT/meta.html"
   exit 1
 fi
 
+if [ ! -f "$PRODUCT_BAR_STYLESHEET" ]; then
+  echo "error: missing shared product-bar stylesheet: $PRODUCT_BAR_STYLESHEET" >&2
+  exit 1
+fi
+
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
 mkdir -p "$STAGED_DIR/spark-tuning-reference"
 cp "$TUNING_CHECKOUT/index.html" "$TUNING_CHECKOUT/meta.html" "$TUNING_CHECKOUT/anchors.json" \
   "$STAGED_DIR/spark-tuning-reference/"
+inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
+inject_product_shells "$STAGED_DIR/spark-tuning-reference" spark-tuning-reference
+
+for reference_page in \
+  "$STAGED_DIR/spark-tuning-reference/index.html" \
+  "$STAGED_DIR/spark-tuning-reference/meta.html" \
+  "$STAGED_DIR/sparkforensics/vendor/spark-doc/index.html" \
+  "$STAGED_DIR/sparkforensics/vendor/spark-doc/meta.html"
+do
+  if [ -f "$reference_page" ]; then
+    inject_reference_enhancements "$reference_page"
+  fi
+done
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
 mv "$STAGED_DIR/sparkforensics" "$PUBLISH_ROOT/sparkforensics"
 mv "$STAGED_DIR/spark-tuning-reference" "$PUBLISH_ROOT/spark-tuning-reference"
+
+if [ ! "$PRODUCT_BAR_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-product-bar.css" ]; then
+  cp "$PRODUCT_BAR_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-product-bar.css"
+fi
 
 printf 'Published SparkForensics (%s) and spark-tuning-reference (%s)\n' \
   "$FORENSICS_REF" "$TUNING_REF"

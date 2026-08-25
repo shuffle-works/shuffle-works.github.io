@@ -160,6 +160,52 @@ a[href^="http"]::after {
   margin-top: 0;
 }
 
+/* Symptom router */
+
+.symptom-router {
+  max-width: var(--content-max-width);
+  margin: 0 auto var(--space-5);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.symptom-router h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+}
+
+.symptom-router p {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.symptom-router-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.symptom-router-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.symptom-router-list a:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
 /* Accessibility utilities */
 
 .visually-hidden {
@@ -484,8 +530,16 @@ sup {
 }
 
 </style>
+<link rel="stylesheet" href="/shuffle-works-product-bar.css">
 </head>
 <body>
+<header class="shuffle-product-bar" data-shuffle-product-bar>
+  <nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products">
+    <a class="shuffle-product-bar__brand" href="/">Shuffle Works</a>
+    <a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a>
+    <a class="shuffle-product-bar__product" href="/spark-tuning-reference/" aria-current="page">Spark Tuning Reference</a>
+  </nav>
+</header>
 <a href="#main-content" class="skip-link">Skip to content</a>
 <h1 class="visually-hidden">Spark Tuning Reference</h1>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
@@ -616,6 +670,16 @@ Adaptive Query Execution (AQE), and cluster tuning, followed by a bottleneck dia
 reference.</p>
 <p>Read it top to bottom for a full grounding in Spark performance, or jump straight to the
 <strong>Bottleneck Reference</strong> section below when you already know which symptom you're chasing.</p>
+<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title">
+<h3 id="symptom-router-title">Start with a symptom</h3>
+<p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p>
+<ul class="symptom-router-list">
+<li><a href="#bottleneck-slow-host">Slow stages</a></li>
+<li><a href="#bottleneck-skew">Skew, spill, or memory</a></li>
+<li><a href="#bottleneck-failures">Failures or retries</a></li>
+<li><a href="#spark-architecture">Configuration or architecture</a></li>
+</ul>
+</nav>
 <h3>Severity dots</h3>
 <p>Each finding is marked with a severity dot:</p>
 <ul>
@@ -4030,20 +4094,62 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
     }
 
-    const toggle = document.getElementById('nav-toggle');
-    const sidebar = document.getElementById('sidebar');
-    if (toggle && sidebar) {
-      toggle.addEventListener('click', () => {
-        const isOpen = sidebar.classList.toggle('sidebar-open');
-        toggle.setAttribute('aria-expanded', String(isOpen));
+  const toggle = document.getElementById('nav-toggle');
+  const sidebar = document.getElementById('sidebar');
+  if (toggle && sidebar) {
+    const mobileNavigation = window.matchMedia('(max-width: 900px)');
+    const closeDrawer = (restoreFocus = false) => {
+      sidebar.classList.remove('sidebar-open');
+      sidebar.toggleAttribute('inert', mobileNavigation.matches);
+      sidebar.setAttribute('aria-hidden', String(mobileNavigation.matches));
+      toggle.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) {
+        toggle.focus({ preventScroll: true });
+      }
+    };
+    const openDrawer = () => {
+      sidebar.classList.add('sidebar-open');
+      sidebar.removeAttribute('inert');
+      sidebar.setAttribute('aria-hidden', 'false');
+      toggle.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(() => {
+        sidebar.querySelector('#nav-search, .nav-link')?.focus();
       });
-      sidebar.querySelectorAll('.nav-link').forEach((link) => {
-        link.addEventListener('click', () => {
-          sidebar.classList.remove('sidebar-open');
-          toggle.setAttribute('aria-expanded', 'false');
-        });
+    };
+    const syncDrawerForViewport = () => {
+      if (mobileNavigation.matches) {
+        closeDrawer();
+      } else {
+        sidebar.classList.remove('sidebar-open');
+        sidebar.removeAttribute('inert');
+        sidebar.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    syncDrawerForViewport();
+    mobileNavigation.addEventListener('change', syncDrawerForViewport);
+    toggle.addEventListener('click', () => {
+      if (!mobileNavigation.matches) return;
+      if (sidebar.classList.contains('sidebar-open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+    sidebar.querySelectorAll('.nav-link').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (mobileNavigation.matches) {
+          closeDrawer(true);
+        }
       });
-    }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && mobileNavigation.matches && sidebar.classList.contains('sidebar-open')) {
+        closeDrawer(true);
+      }
+    });
+  }
 
     const navSearch = document.getElementById('nav-search');
     if (navSearch) {

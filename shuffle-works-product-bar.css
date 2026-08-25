@@ -1,0 +1,101 @@
+/* Shared navigation shell for published Shuffle Works products. */
+.shuffle-product-bar,
+.shuffle-product-bar * {
+  box-sizing: border-box;
+}
+
+.shuffle-product-bar {
+  --shuffle-shell-bg: var(--surface, var(--color-surface, #111823));
+  --shuffle-shell-text: var(--text, var(--color-text, #d6dee9));
+  --shuffle-shell-muted: var(--text-muted, var(--color-text-muted, #8493a4));
+  --shuffle-shell-border: var(--border, var(--color-border, #26313f));
+  --shuffle-shell-accent: var(--accent, var(--color-accent, #35d3ba));
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.45rem clamp(1rem, 4vw, 2rem);
+  color: var(--shuffle-shell-text);
+  background: var(--shuffle-shell-bg);
+  border-bottom: 1px solid var(--shuffle-shell-border);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.shuffle-product-bar__nav {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.shuffle-product-bar a {
+  color: var(--shuffle-shell-muted);
+  text-decoration: none;
+}
+
+.shuffle-product-bar a:hover {
+  color: var(--shuffle-shell-text);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.shuffle-product-bar__brand {
+  margin-right: 0.35rem;
+  color: var(--shuffle-shell-text) !important;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.shuffle-product-bar__product {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.35rem;
+}
+
+.shuffle-product-bar__product[aria-current="page"] {
+  color: var(--shuffle-shell-text);
+  background: color-mix(in srgb, var(--shuffle-shell-accent) 16%, transparent);
+  font-weight: 600;
+}
+
+.shuffle-product-bar a:focus-visible {
+  outline: 2px solid var(--shuffle-shell-accent);
+  outline-offset: 2px;
+  border-radius: 0.2rem;
+}
+
+/* Keep the tuning reference's sticky section menu below the product bar. */
+.shuffle-product-bar ~ .layout .sidebar {
+  top: 2.75rem;
+  height: calc(100dvh - 2.75rem);
+}
+
+/* The tuning reference's compact-menu button is fixed on narrow screens. */
+.shuffle-product-bar ~ .nav-toggle {
+  top: calc(2.75rem + 0.75rem);
+}
+
+@media (max-width: 34rem) {
+  .shuffle-product-bar {
+    padding-inline: 0.75rem;
+  }
+
+  .shuffle-product-bar__brand {
+    flex-basis: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .shuffle-product-bar__product[aria-current="page"] {
+    outline: 1px solid currentColor;
+  }
+}
