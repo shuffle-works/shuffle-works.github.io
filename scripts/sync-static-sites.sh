@@ -186,7 +186,7 @@ inject_page_controls_hoist() {
 mark_page_controls() {
   local page=$1
 
-  if grep -Fq '<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>' "$page"; then
+  if grep -Fq 'data-shuffle-page-controls' "$page"; then
     return
   fi
 
@@ -316,6 +316,12 @@ if [ ! -f "$FOOTER_PARTIAL" ]; then
 fi
 
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
+
+landing_page="$STAGED_DIR/sparkforensics/vendor/spark-doc/landing.html"
+if [ -f "$landing_page" ]; then
+  mark_page_controls "$landing_page"
+fi
+
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
 
 for reference_page in \
@@ -326,11 +332,6 @@ do
     inject_reference_enhancements "$reference_page"
   fi
 done
-
-landing_page="$STAGED_DIR/sparkforensics/vendor/spark-doc/landing.html"
-if [ -f "$landing_page" ]; then
-  mark_page_controls "$landing_page"
-fi
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
