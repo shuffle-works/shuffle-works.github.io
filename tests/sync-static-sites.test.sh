@@ -46,7 +46,7 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
       printf '%s\n' '<!doctype html><html><head></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header></body></html>' >"$target_dir/dist/vendor/spark-doc/index.html"
       printf '%s\n' 'embedded tuning metadata' >"$target_dir/dist/vendor/spark-doc/meta.html"
       printf '%s\n' '{}' >"$target_dir/dist/vendor/spark-doc/anchors.json"
-      printf '%s\n' '<!doctype html><html><head><style>footer{padding:2rem 0}</style></head><body><header class="site-header"><nav class="header-nav" data-shuffle-page-controls><a href="index.html">Reference</a></nav></header><h1>Spark Tuning Reference</h1><footer><div class="footer-inner"><span>Evidence-first Spark operations.</span></div></footer></body></html>' >"$target_dir/dist/vendor/spark-doc/landing.html"
+      printf '%s\n' '<!doctype html><html><head><style>footer{padding:2rem 0}</style></head><body><header class="site-header"><nav class="header-nav" aria-label="Primary navigation"><a href="index.html">Reference</a></nav></header><h1>Spark Tuning Reference</h1><footer><div class="footer-inner"><span>Evidence-first Spark operations.</span></div></footer></body></html>' >"$target_dir/dist/vendor/spark-doc/landing.html"
       if [ "${MOCK_MISSING_EMBEDDED_REFERENCE:-0}" = 1 ]; then
         rm -f "$target_dir/dist/vendor/spark-doc/index.html"
       fi
@@ -120,7 +120,7 @@ fi
 # sync must inject the runtime hoist script so it merges onto the product
 # bar's row instead of rendering as a second stacked bar.
 grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F 'data-shuffle-page-controls' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
+grep -F '<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 
 # The hoist script is injected on every page unconditionally, not gated on
 # finding the marker in the page's own static HTML: a client-rendered page

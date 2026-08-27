@@ -177,6 +177,22 @@ inject_page_controls_hoist() {
   inject_before "$page" '</body>' "$(page_controls_hoist_script)"
 }
 
+# spark-tuning-reference's landing.html ships its own <nav class="header-nav">
+# as its only header controls. inject_page_controls_hoist already knows how
+# to relocate anything marked data-shuffle-page-controls onto the shared
+# product bar at runtime. This keys the marker's injection off that nav's
+# own known, stable selector and applies it to the copied build output only,
+# so the vendored source never needs the attribute pre-authored into it.
+mark_page_controls() {
+  local page=$1
+
+  if grep -Fq '<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>' "$page"; then
+    return
+  fi
+
+  sed -i 's|<nav class="header-nav" aria-label="Primary navigation">|<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>|' "$page"
+}
+
 inject_product_shell() {
   local page=$1 surface=$2 bar temp_page
   # Tokens first so the shared palette/type are defined before any consumer.
@@ -310,6 +326,11 @@ do
     inject_reference_enhancements "$reference_page"
   fi
 done
+
+landing_page="$STAGED_DIR/sparkforensics/vendor/spark-doc/landing.html"
+if [ -f "$landing_page" ]; then
+  mark_page_controls "$landing_page"
+fi
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
