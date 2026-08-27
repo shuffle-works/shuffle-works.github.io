@@ -279,6 +279,29 @@ inject_reference_enhancements() {
   fi
 }
 
+# The shared product-bar (injected above the doc reference pages at publish
+# time) already names the current product as the active tab. This hides the
+# sidebar's own repeated product-name text so there's no duplicate nav. It's
+# scoped by DOM presence, so it's inert on a standalone open of the page
+# (no .shuffle-product-bar exists there to match against).
+sidebar_dedup_style() {
+  printf '%s' '<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>'
+}
+
+inject_sidebar_dedup_style() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-sidebar-dedup' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</head>' "$(sidebar_dedup_style)"
+}
+
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
 clone_repo "shuffle-works/sparkforensics" "$FORENSICS_CHECKOUT" "$FORENSICS_REF"
 
@@ -330,6 +353,7 @@ for reference_page in \
 do
   if [ -f "$reference_page" ]; then
     inject_reference_enhancements "$reference_page"
+    inject_sidebar_dedup_style "$reference_page"
   fi
 done
 

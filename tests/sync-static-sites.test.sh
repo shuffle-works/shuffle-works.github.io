@@ -44,7 +44,7 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
       printf '%s\n' 'spark forensics index' >"$target_dir/dist/index.html"
       printf '%s\n' 'worker' >"$target_dir/dist/vendor/worker.js"
       printf '%s\n' '<!doctype html><html><head></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header></body></html>' >"$target_dir/dist/vendor/spark-doc/index.html"
-      printf '%s\n' 'embedded tuning metadata' >"$target_dir/dist/vendor/spark-doc/meta.html"
+      printf '%s\n' '<!doctype html><html><head></head><body><div class="layout"><span class="site-name">Spark Tuning Reference</span></div></body></html>' >"$target_dir/dist/vendor/spark-doc/meta.html"
       printf '%s\n' '{}' >"$target_dir/dist/vendor/spark-doc/anchors.json"
       printf '%s\n' '<!doctype html><html><head><style>footer{padding:2rem 0}</style></head><body><header class="site-header"><nav class="header-nav" aria-label="Primary navigation"><a href="index.html">Reference</a></nav></header><h1>Spark Tuning Reference</h1><footer><div class="footer-inner"><span>Evidence-first Spark operations.</span></div></footer></body></html>' >"$target_dir/dist/vendor/spark-doc/landing.html"
       if [ "${MOCK_MISSING_EMBEDDED_REFERENCE:-0}" = 1 ]; then
@@ -137,6 +137,12 @@ grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendo
 # its own rule.
 grep -F 'data-shuffle-footer-override' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 grep -F 'footer[data-shuffle-footer]{padding:0!important}' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
+
+# The doc reference pages (index.html/meta.html) get the sidebar-dedup style
+# appended too. It's DOM-presence-scoped, so it's harmless on index.html's mock
+# (no .layout .site-name there) and effective on meta.html's.
+grep -F 'data-shuffle-sidebar-dedup' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
+grep -F 'header.shuffle-product-bar ~ .layout .site-name{display:none}' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
 
 run_sync "$TEST_ROOT/one-ref" SparkForensics
 assert_last_invocations \
