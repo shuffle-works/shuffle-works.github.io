@@ -183,14 +183,21 @@ inject_page_controls_hoist() {
 # product bar at runtime. This keys the marker's injection off that nav's
 # own known, stable selector and applies it to the copied build output only,
 # so the vendored source never needs the attribute pre-authored into it.
+# No grep guard here: the hoist script injected elsewhere on the page also
+# contains the literal substring "data-shuffle-page-controls" (in its
+# querySelector call), so a broad guard would false-positive on a page that
+# already carries the hoist script and silently skip marking the nav. The
+# sed pattern below only matches the unmarked nav (no trailing attribute),
+# so it's naturally idempotent on rerun without needing a guard.
 mark_page_controls() {
   local page=$1
 
-  if grep -Fq 'data-shuffle-page-controls' "$page"; then
-    return
-  fi
-
   sed -i 's|<nav class="header-nav" aria-label="Primary navigation">|<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>|' "$page"
+
+  if ! grep -Fq 'data-shuffle-page-controls' "$page"; then
+    echo "error: could not mark page controls in $page (nav selector drifted upstream?)" >&2
+    exit 1
+  fi
 }
 
 inject_product_shell() {
