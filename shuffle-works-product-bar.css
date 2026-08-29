@@ -13,6 +13,7 @@
   --shuffle-shell-muted: var(--color-text-muted, var(--text-muted, #a9b5b4));
   --shuffle-shell-border: var(--color-border, var(--border, #233035));
   --shuffle-shell-accent: var(--color-accent, var(--accent, #ff6b2c));
+  --shuffle-shell-signal: var(--color-signal, var(--teal, #39d6b5));
   position: sticky;
   top: 0;
   z-index: 30;
@@ -74,6 +75,55 @@
   outline: 2px solid var(--shuffle-shell-accent);
   outline-offset: 2px;
   border-radius: 0.2rem;
+}
+
+.shuffle-product-bar .header-link,
+.shuffle-product-bar .theme-toggle {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid transparent;
+  color: var(--shuffle-shell-muted);
+  background: transparent;
+  font-size: 0.88rem;
+}
+
+.shuffle-product-bar .theme-toggle {
+  width: 2.75rem;
+  padding: 0;
+  border-color: var(--shuffle-shell-border);
+  color: var(--shuffle-shell-text);
+  cursor: pointer;
+  border-radius: var(--radius, 0.75rem);
+}
+
+.shuffle-product-bar .theme-toggle:hover {
+  border-color: var(--shuffle-shell-signal);
+  color: var(--shuffle-shell-signal);
+}
+
+.shuffle-product-bar .theme-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.shuffle-product-bar .theme-icon.moon {
+  display: none;
+}
+
+:root[data-theme="light"] .shuffle-product-bar .theme-icon.sun {
+  display: none;
+}
+
+:root[data-theme="light"] .shuffle-product-bar .theme-icon.moon {
+  display: block;
 }
 
 /* Keep the tuning reference's sticky section menu below the product bar. */

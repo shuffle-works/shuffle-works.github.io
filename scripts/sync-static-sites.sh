@@ -81,7 +81,9 @@ product_bar_markup() {
     exit 1
   fi
 
-  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}</nav></header>"
+  local header_links='<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>'
+
+  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${header_links}</nav></header>"
 }
 
 footer_markup() {
@@ -177,25 +179,86 @@ inject_page_controls_hoist() {
   inject_before "$page" '</body>' "$(page_controls_hoist_script)"
 }
 
+favicon_link_markup() {
+  printf '%s' '<link rel="icon" href="/icon.svg" type="image/svg+xml">'
+}
+
+inject_favicon() {
+  local page=$1
+
+  if grep -Fq 'rel="icon"' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</head>' "$(favicon_link_markup)"
+}
+
+social_meta_markup() {
+  local title=$1 description=$2 tags
+
+  tags="<meta property=\"og:site_name\" content=\"Shuffle Works\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:title\" content=\"$title\"><meta name=\"twitter:card\" content=\"summary\"><meta name=\"twitter:title\" content=\"$title\">"
+  if [ -n "$description" ]; then
+    tags+="<meta property=\"og:description\" content=\"$description\"><meta name=\"twitter:description\" content=\"$description\">"
+  fi
+
+  printf '%s' "$tags"
+}
+
+# Reuses each page's own <title> and <meta name="description"> instead of
+# hand-authoring per-page Open Graph/Twitter-card copy that would drift from
+# what's already there. Pages that carry no <title> (none observed here, but
+# nothing structurally prevents it) get skipped rather than shipping an
+# empty og:title.
+inject_social_meta() {
+  local page=$1 title description
+
+  if grep -Fq 'property="og:title"' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  # grep -o exits 1 on no match, which (via pipefail, inside a plain
+  # assignment) would otherwise trip set -e and abort the whole publish
+  # instead of just skipping this one page; `|| true` keeps a missing
+  # <title>/description a no-op here.
+  title="$(grep -o '<title>[^<]*</title>' "$page" | head -n1 | sed -e 's#^<title>##' -e 's#</title>$##' || true)"
+  if [ -z "$title" ]; then
+    return
+  fi
+
+  description="$(grep -o '<meta name="description" content="[^"]*"' "$page" | head -n1 | sed -e 's#^<meta name="description" content="##' -e 's#"$##' || true)"
+
+  inject_before "$page" '</head>' "$(social_meta_markup "$title" "$description")"
+}
+
 # spark-tuning-reference's landing.html ships its own <nav class="header-nav">
-# as its only header controls. inject_page_controls_hoist already knows how
-# to relocate anything marked data-shuffle-page-controls onto the shared
-# product bar at runtime. This keys the marker's injection off that nav's
-# own known, stable selector and applies it to the copied build output only,
-# so the vendored source never needs the attribute pre-authored into it.
+# with a Reference link, a GitHub link, and a theme toggle. The hub's
+# product_bar_markup() now supplies the Reference/GitHub links itself, so
+# marking the whole nav would duplicate those links once they're already
+# coming from the hub: only the theme toggle still needs to move. This
+# keys the marker's injection off the toggle button's own known, stable
+# selector and applies it to the copied build output only, so the vendored
+# source never needs the attribute pre-authored into it.
 # No grep guard here: the hoist script injected elsewhere on the page also
 # contains the literal substring "data-shuffle-page-controls" (in its
 # querySelector call), so a broad guard would false-positive on a page that
-# already carries the hoist script and silently skip marking the nav. The
-# sed pattern below only matches the unmarked nav (no trailing attribute),
-# so it's naturally idempotent on rerun without needing a guard.
+# already carries the hoist script and silently skip marking the button. The
+# sed pattern below only matches the unmarked button (no trailing
+# attribute), so it's naturally idempotent on rerun without needing a guard.
 mark_page_controls() {
   local page=$1
 
-  sed -i 's|<nav class="header-nav" aria-label="Primary navigation">|<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>|' "$page"
+  sed -i 's|<button id="theme-toggle" class="theme-toggle"|<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls|' "$page"
 
   if ! grep -Fq 'data-shuffle-page-controls' "$page"; then
-    echo "error: could not mark page controls in $page (nav selector drifted upstream?)" >&2
+    echo "error: could not mark page controls in $page (theme-toggle selector drifted upstream?)" >&2
     exit 1
   fi
 }
@@ -209,6 +272,8 @@ inject_product_shell() {
     sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
+    inject_favicon "$page"
+    inject_social_meta "$page"
     return
   fi
 
@@ -234,6 +299,8 @@ inject_product_shell() {
 
   inject_product_footer "$page"
   inject_page_controls_hoist "$page"
+  inject_favicon "$page"
+  inject_social_meta "$page"
 }
 
 inject_product_shells() {
@@ -399,5 +466,21 @@ fi
 if [ ! "$FOOTER_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-footer.css" ]; then
   cp "$FOOTER_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-footer.css"
 fi
+
+# One sitemap for the whole published family, listing each surface's
+# canonical URL (the /spark-tuning-reference/ redirect stub above is
+# deliberately excluded: its own canonical link already points crawlers at
+# the landing page instead).
+SITEMAP_LASTMOD="$(date -u +%Y-%m-%d)"
+cat >"$PUBLISH_ROOT/sitemap.xml" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://shuffle-works.github.io/</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/index.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/meta.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
+</urlset>
+EOF
 
 printf 'Published SparkForensics (%s) with its embedded Spark reference\n' "$FORENSICS_REF"
