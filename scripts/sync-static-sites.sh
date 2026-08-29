@@ -60,6 +60,10 @@ PRODUCT_BAR_KEYS=(sparkforensics spark-tuning-reference)
 PRODUCT_BAR_LABELS=("SparkForensics" "Spark Tuning Reference")
 PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-doc/landing.html")
 
+# Identical on every surface (docs/product-bar-contract.md), unlike the
+# per-surface arrays above.
+PRODUCT_BAR_HEADER_LINKS='<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>'
+
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""
   local known=0
@@ -81,9 +85,7 @@ product_bar_markup() {
     exit 1
   fi
 
-  local header_links='<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>'
-
-  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${header_links}</nav></header>"
+  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${PRODUCT_BAR_HEADER_LINKS}</nav></header>"
 }
 
 footer_markup() {
@@ -470,17 +472,26 @@ fi
 # One sitemap for the whole published family, listing each surface's
 # canonical URL (the /spark-tuning-reference/ redirect stub above is
 # deliberately excluded: its own canonical link already points crawlers at
-# the landing page instead).
+# the landing page instead). Derived from PRODUCT_BAR_HREFS and
+# REFERENCE_LANDING_PATH rather than hand-typed, so a renamed/added product
+# can't drift out of sync with the sitemap.
+REFERENCE_DOC_DIR="$(dirname "$REFERENCE_LANDING_PATH")"
+SITEMAP_PATHS=(
+  "/"
+  "${PRODUCT_BAR_HREFS[@]}"
+  "$REFERENCE_DOC_DIR/index.html"
+  "$REFERENCE_DOC_DIR/meta.html"
+)
+
 SITEMAP_LASTMOD="$(date -u +%Y-%m-%d)"
-cat >"$PUBLISH_ROOT/sitemap.xml" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://shuffle-works.github.io/</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/index.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/meta.html</loc><lastmod>$SITEMAP_LASTMOD</lastmod></url>
-</urlset>
-EOF
+{
+  printf '<?xml version="1.0" encoding="UTF-8"?>\n'
+  printf '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+  for sitemap_path in "${SITEMAP_PATHS[@]}"; do
+    printf '<url><loc>https://shuffle-works.github.io%s</loc><lastmod>%s</lastmod></url>\n' \
+      "$sitemap_path" "$SITEMAP_LASTMOD"
+  done
+  printf '</urlset>\n'
+} >"$PUBLISH_ROOT/sitemap.xml"
 
 printf 'Published SparkForensics (%s) with its embedded Spark reference\n' "$FORENSICS_REF"

@@ -158,9 +158,10 @@ grep -F 'header.shuffle-product-bar ~ .layout .site-name{display:none}' "$PUBLIS
 # inject_product_shell branch it took: index.html already ships its own
 # product bar (the early-return, link-rewrite-only branch); landing.html and
 # meta.html get a freshly-injected one.
-grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
-grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
+for reference_page in index.html landing.html meta.html; do
+  grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' \
+    "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/$reference_page" >/dev/null
+done
 
 # Open Graph/Twitter tags are built from each page's own <title>/<meta
 # name="description">. index.html's mock has a title but no description, so
