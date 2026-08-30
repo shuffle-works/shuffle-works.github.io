@@ -345,7 +345,6 @@ inject_product_shell() {
   local stylesheet='<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">'
 
   if grep -Fq 'data-shuffle-product-bar' "$page"; then
-    sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
     inject_product_bar_height_sync "$page"
@@ -383,17 +382,41 @@ inject_product_shell() {
   inject_social_meta "$page"
 }
 
+# Vendored reference pages can ship pre-existing links to the reference's old
+# standalone URL in their own content, independent of whether that page gets
+# the product-bar/footer shell; keep this a plain per-page rewrite so it runs
+# regardless of which branch below a page takes.
+rewrite_legacy_reference_links() {
+  local page=$1
+  sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
+}
+
+# Only each product's own landing page carries the shared product bar and
+# footer: sparkforensics/index.html (SparkForensics itself) and
+# vendor/spark-doc/landing.html (Spark Tuning Reference's entry point). Every
+# other page under the tree -- notably the embedded reference's own
+# index.html/meta.html content pages -- is a sub-page of a product, not a
+# product surface in its own right, so it only gets the family-wide,
+# bar/footer-independent touches (favicon, Open Graph/Twitter tags).
 inject_product_shells() {
-  local root=$1 default_surface=$2 page surface
+  local root=$1 default_surface=$2 page relative
 
   while IFS= read -r -d '' page; do
-    surface=$default_surface
-    case "$page" in
-      "$root"/vendor/spark-doc/*)
-        surface=spark-tuning-reference
+    relative="${page#"$root"/}"
+    rewrite_legacy_reference_links "$page"
+
+    case "$relative" in
+      index.html)
+        inject_product_shell "$page" "$default_surface"
+        ;;
+      vendor/spark-doc/landing.html)
+        inject_product_shell "$page" spark-tuning-reference
+        ;;
+      *)
+        inject_favicon "$page"
+        inject_social_meta "$page"
         ;;
     esac
-    inject_product_shell "$page" "$surface"
   done < <(find "$root" -type f -name '*.html' -print0)
 }
 

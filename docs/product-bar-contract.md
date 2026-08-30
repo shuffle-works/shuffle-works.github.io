@@ -7,6 +7,16 @@ publish-time injection in `scripts/sync-static-sites.sh`, applied to a
 copy of each product's build output. It never edits a product's tracked
 source.
 
+## Which pages get the shell
+
+The product bar and footer are injected only into each product's own
+landing page: `sparkforensics/index.html` for SparkForensics, and
+`vendor/spark-doc/landing.html` for Spark Tuning Reference. A sub-page of a
+product -- the embedded reference's own `index.html` (its API/config doc)
+and `meta.html` ("how this site works") -- is not a product surface in its
+own right, so it does not carry the bar or footer, only the family-wide,
+bar/footer-independent touches (favicon, Open Graph/Twitter tags).
+
 ## What the hub guarantees
 
 `[data-shuffle-product-bar]` exists in the DOM before any product bundle

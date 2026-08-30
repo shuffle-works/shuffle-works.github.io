@@ -105,9 +105,13 @@ fi
 test -f "$PUBLISHED_ROOT/shuffle-works-footer.css"
 grep -F 'href="/shuffle-works-footer.css"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 
-# index.html already carries data-shuffle-product-bar from a prior publish
-# (the link-rewrite-only branch); it must still get the canonical footer.
-grep -F 'data-shuffle-footer' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
+# index.html is not a product's landing page (only sparkforensics/index.html
+# and vendor/spark-doc/landing.html are), so sync must not add the shared
+# footer to it, even though its mock already carries its own bar-like header.
+if grep -F 'data-shuffle-footer' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
+  echo "expected index.html (not a landing page) to not get the shared footer" >&2
+  exit 1
+fi
 
 # landing.html ships with its own bespoke footer; sync must replace it.
 grep -F 'data-shuffle-footer' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
@@ -124,20 +128,23 @@ fi
 grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 grep -F '<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 
-# The hub's own product bar now carries the Reference/GitHub links directly,
-# on every freshly-injected bar (landing.html and meta.html both get a fresh
-# bar; spark-doc/index.html already ships its own pre-baked bar upstream, so
-# it is out of scope for this injection).
+# The hub's own product bar carries the Reference/GitHub links directly, on
+# landing.html's freshly-injected bar -- the only page in this tree that gets
+# one. meta.html is a reference sub-page, not a landing page, so it gets no
+# bar at all.
 grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a>' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
 grep -F '<a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a>' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
+if grep -F 'data-shuffle-product-bar' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null; then
+  echo "expected meta.html (not a landing page) to not get the product bar" >&2
+  exit 1
+fi
 
-# The hoist script is injected on every page unconditionally, not gated on
-# finding the marker in the page's own static HTML: a client-rendered page
-# (e.g. SparkForensics' React shell) never has data-shuffle-page-controls in
-# its source at all, only ever produced by its JS bundle after mount. This
-# mock page carries no such marker either, yet must still get the script.
-grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
+# The hoist script only ships alongside the product-bar shell, so a
+# non-landing page like index.html never gets it.
+if grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
+  echo "expected index.html (not a landing page) to not get the page-controls hoist script" >&2
+  exit 1
+fi
 
 # landing.html's own <style> block still carries a bare `footer { padding }`
 # tag-selector rule. Since the canonical footer element still matches that
