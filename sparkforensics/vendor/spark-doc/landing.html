@@ -7,12 +7,17 @@
   <title>Spark Tuning Reference</title>
   <script>
     (function () {
-      var storageKey = 'spark-tuning-reference-theme';
+      var storageKey = 'shuffle-works-theme';
       var storedTheme = null;
       try { storedTheme = localStorage.getItem(storageKey); } catch (error) {}
-      var theme = storedTheme === 'light' || storedTheme === 'dark'
-        ? storedTheme
-        : 'dark';
+      var theme;
+      if (storedTheme === 'light' || storedTheme === 'dark') {
+        theme = storedTheme;
+      } else {
+        theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark';
+      }
       document.documentElement.dataset.theme = theme;
     }());
   </script>
@@ -128,6 +133,7 @@
       gap: 1rem;
     }
     .brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 500; letter-spacing: -.01em; color: var(--muted); font-size: .92rem; }
+    .brand-mark { font-family: var(--mono); font-weight: 800; color: var(--text); }
     .header-nav { display: flex; align-items: center; gap: .35rem; }
     .header-link, .theme-toggle {
       display: inline-flex;
@@ -240,11 +246,6 @@
     .steps strong { display: block; margin-bottom: .15rem; }
     .steps span:not(.step-label) { color: var(--muted); font-size: .93rem; }
 
-    footer { padding: 2rem 0; }
-    .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .85rem; color: var(--muted); font-size: .86rem; }
-    .footer-links { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .footer-links a:hover { color: var(--text); text-decoration: underline; text-underline-offset: .2em; }
-
     @media (min-width: 46rem) {
       .hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(19rem, .75fr); }
       .symptom-grid { grid-template-columns: repeat(2, 1fr); }
@@ -261,25 +262,29 @@
     }
     @media (max-width: 24rem) {
       .header-link:not(.github) { display: none; }
+      .brand-name { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">
+<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Spark Tuning Reference"><meta property="og:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes."><meta name="twitter:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes.">
 </head>
 <body>
-<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a><span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span></nav></header>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="landing.html" aria-label="Spark Tuning Reference home" aria-current="page">
+        <span class="brand-mark" aria-hidden="true">S/</span>
         <span class="brand-name">Spark Tuning Reference</span>
       </a>
       <nav class="header-nav" aria-label="Primary navigation">
         <a class="header-link" href="index.html">Reference</a>
         <a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+        <button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
           <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
         </button>
@@ -369,19 +374,9 @@
     </section>
   </main>
 
-  <footer>
-    <div class="container footer-inner">
-      <span>Evidence-first Spark operations.</span>
-      <nav class="footer-links" aria-label="Footer navigation">
-        <a href="https://shuffle-works.github.io/" target="_blank" rel="noopener">Shuffle Works <span aria-hidden="true">↗</span></a>
-        <a href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">Source <span aria-hidden="true">↗</span></a>
-      </nav>
-    </div>
-  </footer>
-
   <script>
     (function () {
-      var storageKey = 'spark-tuning-reference-theme';
+      var storageKey = 'shuffle-works-theme';
       var root = document.documentElement;
       var button = document.getElementById('theme-toggle');
 
@@ -394,7 +389,7 @@
       button.addEventListener('click', function () {
         var theme = root.dataset.theme === 'light' ? 'dark' : 'light';
         root.dataset.theme = theme;
-        try { localStorage.setItem('spark-tuning-reference-theme', theme); } catch (error) {}
+        try { localStorage.setItem(storageKey, theme); } catch (error) {}
         updateControl();
       });
       updateControl();
@@ -423,5 +418,8 @@
       });
     }());
   </script>
+<footer class="shuffle-footer" data-shuffle-footer><div class="footer-inner"><a class="shuffle-footer__link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub</a><p class="shuffle-footer__credit">Created by <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba</a><span aria-hidden="true"> &middot; </span><a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn</a></p><p class="shuffle-footer__copyright">&copy; 2026 Shuffle Works.</p></div></footer>
+<style data-shuffle-footer-override>footer[data-shuffle-footer]{padding:0!important}</style>
+<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); bar.after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>
 </body>
 </html>

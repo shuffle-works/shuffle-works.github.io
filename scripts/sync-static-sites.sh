@@ -61,8 +61,10 @@ PRODUCT_BAR_LABELS=("SparkForensics" "Spark Tuning Reference")
 PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-doc/landing.html")
 
 # Identical on every surface (docs/product-bar-contract.md), unlike the
-# per-surface arrays above.
-PRODUCT_BAR_HEADER_LINKS='<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>'
+# per-surface arrays above. Wrapped in its own flex group (CSS: margin-left:
+# auto) so it, and whatever page control gets hoisted after it, sit
+# right-aligned instead of trailing directly after the product tabs.
+PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
 
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""

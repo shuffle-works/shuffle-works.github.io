@@ -159,17 +159,10 @@ a[href^="http"]::after {
   text-decoration: none;
 }
 
-.site-mark {
-  display: grid;
-  width: 26px;
-  height: 26px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 7px;
-  background: var(--color-signal-orange);
-  color: #101516;
-  font-size: 14px;
-  font-weight: 700;
+.brand-mark {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--color-text);
 }
 
 .site-name {
@@ -179,32 +172,36 @@ a[href^="http"]::after {
 
 .theme-toggle {
   display: inline-flex;
+  width: 44px;
   min-height: 44px;
   align-items: center;
-  gap: 5px;
-  padding: 4px 7px;
+  justify-content: center;
+  flex: 0 0 auto;
   border: 1px solid var(--color-border);
   border-radius: 7px;
   background: transparent;
-  color: var(--color-text-muted);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--color-text);
   cursor: pointer;
   transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .theme-toggle:hover {
   border-color: var(--color-signal-teal);
-  background: color-mix(in srgb, var(--color-signal-teal) 12%, transparent);
-  color: var(--color-text);
+  color: var(--color-signal-teal);
 }
 
-.theme-toggle-icon {
-  color: var(--color-signal-teal);
-  font-size: 15px;
-  line-height: 1;
+.theme-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
 }
+
+.theme-icon.moon { display: none; }
+:root[data-theme="light"] .theme-icon.sun { display: none; }
+:root[data-theme="light"] .theme-icon.moon { display: block; }
 
 .content {
   flex: 1;
@@ -563,10 +560,13 @@ sup {
 }
 
 </style>
-<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css">
+<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="How This Site Works"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="How This Site Works">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
 </head>
 <body>
-<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a></nav></header>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a><span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span></nav></header>
 <a href="#main-content" class="skip-link">Skip to content</a>
 <h1 class="visually-hidden">How This Site Works</h1>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
@@ -581,12 +581,12 @@ sup {
   <nav class="sidebar" id="sidebar" aria-label="Sections">
     <div class="sidebar-header">
       <a class="site-identity" href="#pipeline-overview" aria-label="How This Site Works introduction">
-        <span class="site-mark" aria-hidden="true">S</span>
+        <span class="brand-mark" aria-hidden="true">S/</span>
         <span class="site-name">How This Site Works</span>
       </a>
       <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
-        <span class="theme-toggle-icon" aria-hidden="true">◐</span>
-        <span id="theme-toggle-label">Light</span>
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
       </button>
     </div>
     <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
@@ -950,13 +950,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 (() => {
   const root = document.documentElement;
   const toggle = document.getElementById('theme-toggle');
-  const label = document.getElementById('theme-toggle-label');
 
   const syncThemeToggle = () => {
     const isLight = root.getAttribute('data-theme') === 'light';
     toggle?.setAttribute('aria-pressed', String(isLight));
     toggle?.setAttribute('aria-label', `Switch to ${isLight ? 'dark' : 'light'} theme`);
-    if (label) label.textContent = isLight ? 'Dark' : 'Light';
   };
 
   syncThemeToggle();
@@ -973,6 +971,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   });
 })();
 </script>
+<footer class="shuffle-footer" data-shuffle-footer><div class="footer-inner"><a class="shuffle-footer__link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub</a><p class="shuffle-footer__credit">Created by <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba</a><span aria-hidden="true"> &middot; </span><a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn</a></p><p class="shuffle-footer__copyright">&copy; 2026 Shuffle Works.</p></div></footer>
+<style data-shuffle-footer-override>footer[data-shuffle-footer]{padding:0!important}</style>
+<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); bar.after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>
 <script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
 </body>
 </html>
