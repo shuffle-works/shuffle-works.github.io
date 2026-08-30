@@ -171,8 +171,21 @@ inject_product_footer() {
 # __end row it's meant to sit beside. A sibling-of-nav placement instead
 # centers it against nav's full wrapped height (via the header's own
 # single-row flex layout), orphaning it from that row on narrow viewports.
+#
+# SparkForensics' own bundle already does the merge itself via
+# ReactDOM.createPortal(controlsNode, productBarEl) once it finds the bar in
+# the DOM, so `controls` can already be a live React-managed node sitting
+# inside the bar by the time this runs. Physically relocating it with
+# .after() leaves React's fiber still pointing at the bar as that node's
+# parent; the next time React tears down or updates it, its removeChild call
+# targets a parent the node was silently moved out of and throws
+# NotFoundError, which React (with no error boundary here) treats as fatal
+# and unmounts the whole app. So: skip the move entirely when `controls` is
+# already inside the bar — nothing to hoist, it's already merged — and only
+# physically relocate it for the genuinely-separate-header case (e.g. Spark
+# Tuning Reference's static pages, never touched by React).
 page_controls_hoist_script() {
-  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); const end = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
+  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const productBar = document.querySelector("[data-shuffle-product-bar]"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!productBar || !controls) return false; if (productBar.contains(controls)) return true; const bar = productBar.querySelector(".shuffle-product-bar__nav"); if (!bar) return false; const oldHeader = controls.closest("header"); const end = productBar.querySelector(".shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== productBar) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
 }
 
 inject_page_controls_hoist() {

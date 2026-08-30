@@ -96,12 +96,23 @@
    spark-tuning-reference's: it can be a wrapping element (icon + label +
    toggle) with no layout of its own, so its inline children wrap onto extra
    lines once placed here, taller than the bar's own row. Force it into the
-   same single-row flex layout regardless of what the source app put inside. */
-.shuffle-product-bar__nav > [data-shuffle-page-controls] {
+   same single-row flex layout regardless of what the source app put inside.
+   A descendant selector (not `__nav >`) on purpose: SparkForensics' own
+   bundle can portal this node directly onto the bar itself, as a sibling of
+   __nav rather than a child of it — see the sync script's page-controls-hoist
+   comment for why that node is never physically moved into __nav. */
+.shuffle-product-bar [data-shuffle-page-controls] {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
   flex-shrink: 0;
+}
+
+/* Give a directly-portaled control (a sibling of __nav, not nested inside
+   it) the same breathing room __nav's own `gap` gives its hoisted-in-nav
+   counterpart. A no-op when __nav is the bar's only child. */
+.shuffle-product-bar {
+  gap: 0.5rem;
 }
 
 /* SparkForensics' hoisted control repeats its own product name next to an
@@ -109,7 +120,7 @@
    the duplicate label. Scoped to a direct span child, nested under the
    injected bar, so a standalone (unpublished) open of the app — no
    .shuffle-product-bar there — is unaffected. */
-.shuffle-product-bar__nav > [data-shuffle-page-controls] > span {
+.shuffle-product-bar [data-shuffle-page-controls] > span {
   display: none;
 }
 
@@ -119,7 +130,7 @@
    a bare `svg` child selector — on pages where data-shuffle-page-controls
    sits directly on the theme-toggle button (e.g. the Reference doc's
    static pages), a bare `svg` selector would hide its sun/moon icon too. */
-.shuffle-product-bar__nav > [data-shuffle-page-controls] > svg.lucide-activity {
+.shuffle-product-bar [data-shuffle-page-controls] > svg.lucide-activity {
   display: none;
 }
 
