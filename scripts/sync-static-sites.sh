@@ -60,6 +60,12 @@ PRODUCT_BAR_KEYS=(sparkforensics spark-tuning-reference)
 PRODUCT_BAR_LABELS=("SparkForensics" "Spark Tuning Reference")
 PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-doc/landing.html")
 
+# Identical on every surface (docs/product-bar-contract.md), unlike the
+# per-surface arrays above. Wrapped in its own flex group (CSS: margin-left:
+# auto) so it, and whatever page control gets hoisted after it, sit
+# right-aligned instead of trailing directly after the product tabs.
+PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
+
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""
   local known=0
@@ -81,7 +87,7 @@ product_bar_markup() {
     exit 1
   fi
 
-  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}</nav></header>"
+  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${PRODUCT_BAR_HEADER_LINKS}</nav></header>"
 }
 
 footer_markup() {
@@ -159,8 +165,27 @@ inject_product_footer() {
 # app's own JS bundle after mount — so grepping the static HTML for the
 # marker can't gate this injection the way inject_product_footer gates on
 # <footer>; it's injected unconditionally alongside the product bar instead).
+# Inserting the hoisted control after .shuffle-product-bar__end (rather than
+# as a sibling of nav, after the whole .shuffle-product-bar__nav block) makes
+# it a flex item participating in nav's own flex-wrap, so it wraps onto the
+# __end row it's meant to sit beside. A sibling-of-nav placement instead
+# centers it against nav's full wrapped height (via the header's own
+# single-row flex layout), orphaning it from that row on narrow viewports.
+#
+# SparkForensics' own bundle already does the merge itself via
+# ReactDOM.createPortal(controlsNode, productBarEl) once it finds the bar in
+# the DOM, so `controls` can already be a live React-managed node sitting
+# inside the bar by the time this runs. Physically relocating it with
+# .after() leaves React's fiber still pointing at the bar as that node's
+# parent; the next time React tears down or updates it, its removeChild call
+# targets a parent the node was silently moved out of and throws
+# NotFoundError, which React (with no error boundary here) treats as fatal
+# and unmounts the whole app. So: skip the move entirely when `controls` is
+# already inside the bar — nothing to hoist, it's already merged — and only
+# physically relocate it for the genuinely-separate-header case (e.g. Spark
+# Tuning Reference's static pages, never touched by React).
 page_controls_hoist_script() {
-  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); bar.after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
+  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const productBar = document.querySelector("[data-shuffle-product-bar]"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!productBar || !controls) return false; if (productBar.contains(controls)) return true; const bar = productBar.querySelector(".shuffle-product-bar__nav"); if (!bar) return false; const oldHeader = controls.closest("header"); const end = productBar.querySelector(".shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== productBar) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
 }
 
 inject_page_controls_hoist() {
@@ -177,25 +202,139 @@ inject_page_controls_hoist() {
   inject_before "$page" '</body>' "$(page_controls_hoist_script)"
 }
 
+# The product bar's rendered height isn't a constant: the product tabs, the
+# Reference/GitHub link group, and a hoisted page control can each wrap it
+# onto more rows as the viewport narrows, and which controls get hoisted
+# varies by page. CSS consumers that need to sit below the bar (the mobile
+# nav-toggle, the sidebar) can't hardcode a single-row height, so this keeps
+# a --shuffle-product-bar-height custom property in sync with the bar's
+# actual offsetHeight at runtime, resyncing on any resize of the bar itself.
+product_bar_height_sync_script() {
+  printf '%s' '<script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>'
+}
+
+inject_product_bar_height_sync() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-product-bar-height-sync' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</body>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</body>' "$(product_bar_height_sync_script)"
+}
+
+# SparkForensics marks its dashboard root with data-testid="dashboard" once a
+# log is loaded; hide the hub's own bar/footer chrome there so the dashboard
+# gets the full viewport instead of losing rows to chrome it didn't ask for.
+# Every other page (the landing view, both reference surfaces) never has that
+# node, so this is a no-op there — no per-page gating needed.
+# Toggles inline style rather than a class: a class could lose a specificity
+# fight with the bar/footer's own stylesheet rules, inline style always wins.
+# Stays subscribed (no disconnect) since the app can return to the landing
+# view — loading a different file, a "start over" action — and the chrome
+# needs to reappear then, not just disappear once.
+dashboard_chrome_toggle_script() {
+  printf '%s' '<script data-shuffle-dashboard-chrome-toggle>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); const footer = document.querySelector("[data-shuffle-footer]"); if (!bar && !footer) return; const sync = () => { const inDashboard = !!document.querySelector("[data-testid=dashboard]"); if (bar) bar.style.display = inDashboard ? "none" : ""; if (footer) footer.style.display = inDashboard ? "none" : ""; }; sync(); new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); })();</script>'
+}
+
+inject_dashboard_chrome_toggle() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-dashboard-chrome-toggle' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</body>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</body>' "$(dashboard_chrome_toggle_script)"
+}
+
+favicon_link_markup() {
+  printf '%s' '<link rel="icon" href="/icon.svg" type="image/svg+xml">'
+}
+
+inject_favicon() {
+  local page=$1
+
+  if grep -Fq 'rel="icon"' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</head>' "$(favicon_link_markup)"
+}
+
+social_meta_markup() {
+  local title=$1 description=$2 tags
+
+  tags="<meta property=\"og:site_name\" content=\"Shuffle Works\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:title\" content=\"$title\"><meta name=\"twitter:card\" content=\"summary\"><meta name=\"twitter:title\" content=\"$title\">"
+  if [ -n "$description" ]; then
+    tags+="<meta property=\"og:description\" content=\"$description\"><meta name=\"twitter:description\" content=\"$description\">"
+  fi
+
+  printf '%s' "$tags"
+}
+
+# Reuses each page's own <title> and <meta name="description"> instead of
+# hand-authoring per-page Open Graph/Twitter-card copy that would drift from
+# what's already there. Pages that carry no <title> (none observed here, but
+# nothing structurally prevents it) get skipped rather than shipping an
+# empty og:title.
+inject_social_meta() {
+  local page=$1 title description
+
+  if grep -Fq 'property="og:title"' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  # grep -o exits 1 on no match, which (via pipefail, inside a plain
+  # assignment) would otherwise trip set -e and abort the whole publish
+  # instead of just skipping this one page; `|| true` keeps a missing
+  # <title>/description a no-op here.
+  title="$(grep -o '<title>[^<]*</title>' "$page" | head -n1 | sed -e 's#^<title>##' -e 's#</title>$##' || true)"
+  if [ -z "$title" ]; then
+    return
+  fi
+
+  description="$(grep -o '<meta name="description" content="[^"]*"' "$page" | head -n1 | sed -e 's#^<meta name="description" content="##' -e 's#"$##' || true)"
+
+  inject_before "$page" '</head>' "$(social_meta_markup "$title" "$description")"
+}
+
 # spark-tuning-reference's landing.html ships its own <nav class="header-nav">
-# as its only header controls. inject_page_controls_hoist already knows how
-# to relocate anything marked data-shuffle-page-controls onto the shared
-# product bar at runtime. This keys the marker's injection off that nav's
-# own known, stable selector and applies it to the copied build output only,
-# so the vendored source never needs the attribute pre-authored into it.
+# with a Reference link, a GitHub link, and a theme toggle. The hub's
+# product_bar_markup() now supplies the Reference/GitHub links itself, so
+# marking the whole nav would duplicate those links once they're already
+# coming from the hub: only the theme toggle still needs to move. This
+# keys the marker's injection off the toggle button's own known, stable
+# selector and applies it to the copied build output only, so the vendored
+# source never needs the attribute pre-authored into it.
 # No grep guard here: the hoist script injected elsewhere on the page also
 # contains the literal substring "data-shuffle-page-controls" (in its
 # querySelector call), so a broad guard would false-positive on a page that
-# already carries the hoist script and silently skip marking the nav. The
-# sed pattern below only matches the unmarked nav (no trailing attribute),
-# so it's naturally idempotent on rerun without needing a guard.
+# already carries the hoist script and silently skip marking the button. The
+# sed pattern below only matches the unmarked button (no trailing
+# attribute), so it's naturally idempotent on rerun without needing a guard.
 mark_page_controls() {
   local page=$1
 
-  sed -i 's|<nav class="header-nav" aria-label="Primary navigation">|<nav class="header-nav" aria-label="Primary navigation" data-shuffle-page-controls>|' "$page"
+  sed -i 's|<button id="theme-toggle" class="theme-toggle"|<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls|' "$page"
 
   if ! grep -Fq 'data-shuffle-page-controls' "$page"; then
-    echo "error: could not mark page controls in $page (nav selector drifted upstream?)" >&2
+    echo "error: could not mark page controls in $page (theme-toggle selector drifted upstream?)" >&2
     exit 1
   fi
 }
@@ -209,6 +348,10 @@ inject_product_shell() {
     sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
+    inject_product_bar_height_sync "$page"
+    inject_dashboard_chrome_toggle "$page"
+    inject_favicon "$page"
+    inject_social_meta "$page"
     return
   fi
 
@@ -234,6 +377,10 @@ inject_product_shell() {
 
   inject_product_footer "$page"
   inject_page_controls_hoist "$page"
+  inject_product_bar_height_sync "$page"
+  inject_dashboard_chrome_toggle "$page"
+  inject_favicon "$page"
+  inject_social_meta "$page"
 }
 
 inject_product_shells() {
@@ -254,8 +401,20 @@ inject_before() {
   local page=$1 marker=$2 content=$3 temp_page
   temp_page="$(mktemp)"
 
-  awk -v marker="$marker" -v content="$content" '
-    index($0, marker) { print content }
+  # Only the first matching line counts: some already-injected one-liners
+  # (e.g. footer_override_style's <style>...</style>) contain the same
+  # marker substring as plain text later in the page, and inserting before
+  # every match would duplicate content outside its intended tag.
+  #
+  # `content` goes through the environment (ENVIRON), not -v: awk's -v
+  # assignment runs the value through the same backslash-escape processing
+  # as a string literal in the program text, so a -v'd `\"` silently
+  # collapses to `"` and `\n` becomes a real newline — corrupting any
+  # injected content that legitimately contains a backslash escape (e.g. a
+  # JS string literal with an escaped quote). ENVIRON values are passed
+  # through verbatim.
+  content="$content" awk -v marker="$marker" '
+    !found && index($0, marker) { print ENVIRON["content"]; found=1 }
     { print }
   ' "$page" >"$temp_page"
   mv "$temp_page" "$page"
@@ -307,6 +466,32 @@ inject_sidebar_dedup_style() {
   fi
 
   inject_before "$page" '</head>' "$(sidebar_dedup_style)"
+}
+
+# The vendored Spark Tuning Reference pages ship with their own theme-storage
+# key, distinct from the one landing.html and the rest of the site use. That
+# split means a visitor's theme choice on landing.html silently reverts when
+# they land on index.html/meta.html. Realigning the key here keeps the choice
+# shared across the whole vendored doc set. sed's global flag makes this
+# naturally idempotent: once the literal is gone, rerunning is a no-op.
+align_reference_theme_key() {
+  local page=$1
+
+  sed -i 's/spark-tuning-reference-theme/shuffle-works-theme/g' "$page"
+}
+
+# The vendored pages' own generic external-link-arrow rule also matches the
+# GitHub link inside the injected product-bar header, which already carries
+# its own literal arrow glyph -- doubling it on that one link. Scoping the
+# rule to .content keeps it limited to the page's own prose, where the
+# product bar (outside .content) can't match. The ^-anchor keeps this
+# idempotent on rerun: once the selector already starts with ".content ",
+# it no longer matches the unanchored pattern, so a rerun is a no-op instead
+# of re-prefixing an already-scoped rule.
+scope_reference_external_link_arrow() {
+  local page=$1
+
+  sed -i 's/^a\[href\^="http"\]::after {/.content a[href^="http"]::after {/' "$page"
 }
 
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
@@ -361,6 +546,8 @@ do
   if [ -f "$reference_page" ]; then
     inject_reference_enhancements "$reference_page"
     inject_sidebar_dedup_style "$reference_page"
+    align_reference_theme_key "$reference_page"
+    scope_reference_external_link_arrow "$reference_page"
   fi
 done
 
@@ -399,5 +586,30 @@ fi
 if [ ! "$FOOTER_STYLESHEET" -ef "$PUBLISH_ROOT/shuffle-works-footer.css" ]; then
   cp "$FOOTER_STYLESHEET" "$PUBLISH_ROOT/shuffle-works-footer.css"
 fi
+
+# One sitemap for the whole published family, listing each surface's
+# canonical URL (the /spark-tuning-reference/ redirect stub above is
+# deliberately excluded: its own canonical link already points crawlers at
+# the landing page instead). Derived from PRODUCT_BAR_HREFS and
+# REFERENCE_LANDING_PATH rather than hand-typed, so a renamed/added product
+# can't drift out of sync with the sitemap.
+REFERENCE_DOC_DIR="$(dirname "$REFERENCE_LANDING_PATH")"
+SITEMAP_PATHS=(
+  "/"
+  "${PRODUCT_BAR_HREFS[@]}"
+  "$REFERENCE_DOC_DIR/index.html"
+  "$REFERENCE_DOC_DIR/meta.html"
+)
+
+SITEMAP_LASTMOD="$(date -u +%Y-%m-%d)"
+{
+  printf '<?xml version="1.0" encoding="UTF-8"?>\n'
+  printf '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+  for sitemap_path in "${SITEMAP_PATHS[@]}"; do
+    printf '<url><loc>https://shuffle-works.github.io%s</loc><lastmod>%s</lastmod></url>\n' \
+      "$sitemap_path" "$SITEMAP_LASTMOD"
+  done
+  printf '</urlset>\n'
+} >"$PUBLISH_ROOT/sitemap.xml"
 
 printf 'Published SparkForensics (%s) with its embedded Spark reference\n' "$FORENSICS_REF"

@@ -1,0 +1,61 @@
+/* Shared footer for published Shuffle Works products. */
+.shuffle-footer,
+.shuffle-footer * {
+  box-sizing: border-box;
+}
+
+.shuffle-footer {
+  --shuffle-footer-bg: var(--color-bg, var(--bg, #080b0d));
+  --shuffle-footer-text: var(--color-text, var(--text, #f4f4f5));
+  --shuffle-footer-muted: var(--color-text-muted, var(--text-muted, #a9b5b4));
+  --shuffle-footer-border: var(--color-border, var(--border, #233035));
+  --shuffle-footer-accent: var(--color-accent, var(--accent, #ff6b2c));
+  border-top: 1px solid var(--shuffle-footer-border);
+  background: var(--shuffle-footer-bg);
+  color: var(--shuffle-footer-muted);
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 0.875rem;
+}
+
+.shuffle-footer .footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 4vw, 2rem);
+  text-align: center;
+}
+
+.shuffle-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.shuffle-footer a:hover {
+  color: var(--shuffle-footer-text);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.shuffle-footer a:focus-visible {
+  outline: 2px solid var(--shuffle-footer-accent);
+  outline-offset: 2px;
+  border-radius: 0.2rem;
+}
+
+.shuffle-footer__link {
+  font-weight: 600;
+  color: var(--shuffle-footer-accent) !important;
+}
+
+.shuffle-footer__credit {
+  margin: 0;
+  color: var(--shuffle-footer-text);
+}
+
+.shuffle-footer__copyright {
+  margin: 0;
+  font-size: 0.75rem;
+}
