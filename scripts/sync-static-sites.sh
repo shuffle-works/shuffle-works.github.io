@@ -358,8 +358,12 @@ inject_before() {
   local page=$1 marker=$2 content=$3 temp_page
   temp_page="$(mktemp)"
 
+  # Only the first matching line counts: some already-injected one-liners
+  # (e.g. footer_override_style's <style>...</style>) contain the same
+  # marker substring as plain text later in the page, and inserting before
+  # every match would duplicate content outside its intended tag.
   awk -v marker="$marker" -v content="$content" '
-    index($0, marker) { print content }
+    !found && index($0, marker) { print content; found=1 }
     { print }
   ' "$page" >"$temp_page"
   mv "$temp_page" "$page"
