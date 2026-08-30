@@ -405,8 +405,16 @@ inject_before() {
   # (e.g. footer_override_style's <style>...</style>) contain the same
   # marker substring as plain text later in the page, and inserting before
   # every match would duplicate content outside its intended tag.
-  awk -v marker="$marker" -v content="$content" '
-    !found && index($0, marker) { print content; found=1 }
+  #
+  # `content` goes through the environment (ENVIRON), not -v: awk's -v
+  # assignment runs the value through the same backslash-escape processing
+  # as a string literal in the program text, so a -v'd `\"` silently
+  # collapses to `"` and `\n` becomes a real newline — corrupting any
+  # injected content that legitimately contains a backslash escape (e.g. a
+  # JS string literal with an escaped quote). ENVIRON values are passed
+  # through verbatim.
+  content="$content" awk -v marker="$marker" '
+    !found && index($0, marker) { print ENVIRON["content"]; found=1 }
     { print }
   ' "$page" >"$temp_page"
   mv "$temp_page" "$page"
