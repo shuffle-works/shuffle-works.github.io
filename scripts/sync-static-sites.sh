@@ -227,6 +227,34 @@ inject_product_bar_height_sync() {
   inject_before "$page" '</body>' "$(product_bar_height_sync_script)"
 }
 
+# SparkForensics marks its dashboard root with data-testid="dashboard" once a
+# log is loaded; hide the hub's own bar/footer chrome there so the dashboard
+# gets the full viewport instead of losing rows to chrome it didn't ask for.
+# Every other page (the landing view, both reference surfaces) never has that
+# node, so this is a no-op there — no per-page gating needed.
+# Toggles inline style rather than a class: a class could lose a specificity
+# fight with the bar/footer's own stylesheet rules, inline style always wins.
+# Stays subscribed (no disconnect) since the app can return to the landing
+# view — loading a different file, a "start over" action — and the chrome
+# needs to reappear then, not just disappear once.
+dashboard_chrome_toggle_script() {
+  printf '%s' '<script data-shuffle-dashboard-chrome-toggle>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); const footer = document.querySelector("[data-shuffle-footer]"); if (!bar && !footer) return; const sync = () => { const inDashboard = !!document.querySelector("[data-testid=dashboard]"); if (bar) bar.style.display = inDashboard ? "none" : ""; if (footer) footer.style.display = inDashboard ? "none" : ""; }; sync(); new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); })();</script>'
+}
+
+inject_dashboard_chrome_toggle() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-dashboard-chrome-toggle' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</body>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</body>' "$(dashboard_chrome_toggle_script)"
+}
+
 favicon_link_markup() {
   printf '%s' '<link rel="icon" href="/icon.svg" type="image/svg+xml">'
 }
@@ -321,6 +349,7 @@ inject_product_shell() {
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
     inject_product_bar_height_sync "$page"
+    inject_dashboard_chrome_toggle "$page"
     inject_favicon "$page"
     inject_social_meta "$page"
     return
@@ -349,6 +378,7 @@ inject_product_shell() {
   inject_product_footer "$page"
   inject_page_controls_hoist "$page"
   inject_product_bar_height_sync "$page"
+  inject_dashboard_chrome_toggle "$page"
   inject_favicon "$page"
   inject_social_meta "$page"
 }
