@@ -97,7 +97,7 @@
    toggle) with no layout of its own, so its inline children wrap onto extra
    lines once placed here, taller than the bar's own row. Force it into the
    same single-row flex layout regardless of what the source app put inside. */
-.shuffle-product-bar > [data-shuffle-page-controls] {
+.shuffle-product-bar__nav > [data-shuffle-page-controls] {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
@@ -109,7 +109,7 @@
    the duplicate label. Scoped to a direct span child, nested under the
    injected bar, so a standalone (unpublished) open of the app — no
    .shuffle-product-bar there — is unaffected. */
-.shuffle-product-bar > [data-shuffle-page-controls] > span {
+.shuffle-product-bar__nav > [data-shuffle-page-controls] > span {
   display: none;
 }
 
@@ -119,7 +119,7 @@
    a bare `svg` child selector — on pages where data-shuffle-page-controls
    sits directly on the theme-toggle button (e.g. the Reference doc's
    static pages), a bare `svg` selector would hide its sun/moon icon too. */
-.shuffle-product-bar > [data-shuffle-page-controls] > svg.lucide-activity {
+.shuffle-product-bar__nav > [data-shuffle-page-controls] > svg.lucide-activity {
   display: none;
 }
 
@@ -172,15 +172,20 @@
   display: block;
 }
 
+/* The bar's height isn't a fixed 2.75rem: the product tabs, the
+   Reference/GitHub link group, and a hoisted page control can wrap it onto
+   multiple rows on narrow screens, so a constant can't track it. The
+   product-bar-height-sync script keeps --shuffle-product-bar-height current
+   at runtime; 2.75rem (its single-row height) is only the pre-JS fallback. */
 /* Keep the tuning reference's sticky section menu below the product bar. */
 .shuffle-product-bar ~ .layout .sidebar {
-  top: 2.75rem;
-  height: calc(100dvh - 2.75rem);
+  top: var(--shuffle-product-bar-height, 2.75rem);
+  height: calc(100dvh - var(--shuffle-product-bar-height, 2.75rem));
 }
 
 /* The tuning reference's compact-menu button is fixed on narrow screens. */
 .shuffle-product-bar ~ .nav-toggle {
-  top: calc(2.75rem + 0.75rem);
+  top: calc(var(--shuffle-product-bar-height, 2.75rem) + 0.75rem);
 }
 
 @media (max-width: 34rem) {

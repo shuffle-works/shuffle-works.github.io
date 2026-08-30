@@ -165,8 +165,14 @@ inject_product_footer() {
 # app's own JS bundle after mount — so grepping the static HTML for the
 # marker can't gate this injection the way inject_product_footer gates on
 # <footer>; it's injected unconditionally alongside the product bar instead).
+# Inserting the hoisted control after .shuffle-product-bar__end (rather than
+# as a sibling of nav, after the whole .shuffle-product-bar__nav block) makes
+# it a flex item participating in nav's own flex-wrap, so it wraps onto the
+# __end row it's meant to sit beside. A sibling-of-nav placement instead
+# centers it against nav's full wrapped height (via the header's own
+# single-row flex layout), orphaning it from that row on narrow viewports.
 page_controls_hoist_script() {
-  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); bar.after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
+  printf '%s' '<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); const end = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>'
 }
 
 inject_page_controls_hoist() {
@@ -181,6 +187,31 @@ inject_page_controls_hoist() {
   fi
 
   inject_before "$page" '</body>' "$(page_controls_hoist_script)"
+}
+
+# The product bar's rendered height isn't a constant: the product tabs, the
+# Reference/GitHub link group, and a hoisted page control can each wrap it
+# onto more rows as the viewport narrows, and which controls get hoisted
+# varies by page. CSS consumers that need to sit below the bar (the mobile
+# nav-toggle, the sidebar) can't hardcode a single-row height, so this keeps
+# a --shuffle-product-bar-height custom property in sync with the bar's
+# actual offsetHeight at runtime, resyncing on any resize of the bar itself.
+product_bar_height_sync_script() {
+  printf '%s' '<script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>'
+}
+
+inject_product_bar_height_sync() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-product-bar-height-sync' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</body>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</body>' "$(product_bar_height_sync_script)"
 }
 
 favicon_link_markup() {
@@ -276,6 +307,7 @@ inject_product_shell() {
     sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
+    inject_product_bar_height_sync "$page"
     inject_favicon "$page"
     inject_social_meta "$page"
     return
@@ -303,6 +335,7 @@ inject_product_shell() {
 
   inject_product_footer "$page"
   inject_page_controls_hoist "$page"
+  inject_product_bar_height_sync "$page"
   inject_favicon "$page"
   inject_social_meta "$page"
 }
@@ -380,6 +413,32 @@ inject_sidebar_dedup_style() {
   inject_before "$page" '</head>' "$(sidebar_dedup_style)"
 }
 
+# The vendored Spark Tuning Reference pages ship with their own theme-storage
+# key, distinct from the one landing.html and the rest of the site use. That
+# split means a visitor's theme choice on landing.html silently reverts when
+# they land on index.html/meta.html. Realigning the key here keeps the choice
+# shared across the whole vendored doc set. sed's global flag makes this
+# naturally idempotent: once the literal is gone, rerunning is a no-op.
+align_reference_theme_key() {
+  local page=$1
+
+  sed -i 's/spark-tuning-reference-theme/shuffle-works-theme/g' "$page"
+}
+
+# The vendored pages' own generic external-link-arrow rule also matches the
+# GitHub link inside the injected product-bar header, which already carries
+# its own literal arrow glyph -- doubling it on that one link. Scoping the
+# rule to .content keeps it limited to the page's own prose, where the
+# product bar (outside .content) can't match. The ^-anchor keeps this
+# idempotent on rerun: once the selector already starts with ".content ",
+# it no longer matches the unanchored pattern, so a rerun is a no-op instead
+# of re-prefixing an already-scoped rule.
+scope_reference_external_link_arrow() {
+  local page=$1
+
+  sed -i 's/^a\[href\^="http"\]::after {/.content a[href^="http"]::after {/' "$page"
+}
+
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
 clone_repo "shuffle-works/sparkforensics" "$FORENSICS_CHECKOUT" "$FORENSICS_REF"
 
@@ -432,6 +491,8 @@ do
   if [ -f "$reference_page" ]; then
     inject_reference_enhancements "$reference_page"
     inject_sidebar_dedup_style "$reference_page"
+    align_reference_theme_key "$reference_page"
+    scope_reference_external_link_arrow "$reference_page"
   fi
 done
 

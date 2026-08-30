@@ -7,7 +7,7 @@
 <script>
 (() => {
   try {
-    const theme = localStorage.getItem('spark-tuning-reference-theme');
+    const theme = localStorage.getItem('shuffle-works-theme');
     if (theme === 'light' || theme === 'dark') {
       document.documentElement.setAttribute('data-theme', theme);
     }
@@ -99,7 +99,7 @@ a:hover {
   text-decoration: underline;
 }
 
-a[href^="http"]::after {
+.content a[href^="http"]::after {
   content: "\2197";
   display: inline-block;
   margin-left: 0.2em;
@@ -4198,17 +4198,17 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const theme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     root.setAttribute('data-theme', theme);
     try {
-      localStorage.setItem('spark-tuning-reference-theme', theme);
+      localStorage.setItem('shuffle-works-theme', theme);
     } catch (_) {
       // The visual preference still works when persistent storage is blocked.
     }
   });
 })();
 </script>
-<footer class="shuffle-footer" data-shuffle-footer><div class="footer-inner"><a class="shuffle-footer__link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub</a><p class="shuffle-footer__credit">Created by <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba</a><span aria-hidden="true"> &middot; </span><a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn</a></p><p class="shuffle-footer__copyright">&copy; 2026 Shuffle Works.</p></div></footer>
+<footer class="shuffle-footer" data-shuffle-footer><div class="footer-inner"><a class="shuffle-footer__link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub<span class="sr-only"> (opens in new tab)</span></a><p class="shuffle-footer__credit">Created by <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba<span class="sr-only"> (opens in new tab)</span></a><span aria-hidden="true"> &middot; </span><a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn<span class="sr-only"> (opens in new tab)</span></a></p><p class="shuffle-footer__copyright">&copy; 2026 Shuffle Works.</p></div></footer>
 .symptom-router { max-width: var(--content-max-width); margin: 0 auto var(--space-5); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); } .symptom-router h3 { margin: 0 0 var(--space-2); font-size: 1rem; } .symptom-router p { margin: 0 0 var(--space-3); color: var(--color-text-muted); } .symptom-router-list { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; } .symptom-router-list a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text); font-weight: 600; } .symptom-router-list a:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }
 <style data-shuffle-footer-override>footer[data-shuffle-footer]{padding:0!important}</style>
-<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); bar.after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>
+<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const bar = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__nav"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!bar || !controls) return false; const oldHeader = controls.closest("header"); const end = document.querySelector("[data-shuffle-product-bar] .shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== document.querySelector("[data-shuffle-product-bar]")) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script><script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>
 <script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
 </body>
 </html>
