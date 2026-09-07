@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrics Glossary — Spark Tuning Reference</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Metrics Glossary — Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Metrics Glossary — Spark Tuning Reference">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="intro.html" aria-label="Spark Tuning Reference introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <ul class="nav-list">
+        <li><a href="intro.html" class="nav-link">Introduction</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Optimization Guide</div>
+      <ul class="nav-list">
+        <li><a href="spark-architecture.html" class="nav-link">Spark Execution Model</a></li>
+        <li><a href="memory-model.html" class="nav-link">Memory Management</a></li>
+        <li><a href="partitioning.html" class="nav-link">Partitioning</a></li>
+        <li><a href="joins.html" class="nav-link">Join Optimization</a></li>
+        <li><a href="shuffle.html" class="nav-link">Shuffle</a></li>
+        <li><a href="data-formats.html" class="nav-link">Data Formats</a></li>
+        <li><a href="table-formats.html" class="nav-link">Table Formats</a></li>
+        <li><a href="caching.html" class="nav-link">Caching &amp; Persistence</a></li>
+        <li><a href="pyspark.html" class="nav-link">PySpark Specifics</a></li>
+        <li><a href="aqe.html" class="nav-link">Adaptive Query Execution</a></li>
+        <li><a href="cluster-config.html" class="nav-link">Cluster Tuning</a></li>
+        <li><a href="anti-patterns.html" class="nav-link">Anti-Patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Detector Catalog</div>
+      <ul class="nav-list">
+        <li><a href="bottleneck-skew.html" class="nav-link">Task Skew</a></li>
+        <li><a href="bottleneck-shuffle.html" class="nav-link">Shuffle I/O</a></li>
+        <li><a href="bottleneck-spill.html" class="nav-link">Memory / Disk Spill</a></li>
+        <li><a href="bottleneck-gc.html" class="nav-link">GC Pressure</a></li>
+        <li><a href="bottleneck-cold-start.html" class="nav-link">Cold Start</a></li>
+        <li><a href="bottleneck-utilization.html" class="nav-link">Executor Utilization</a></li>
+        <li><a href="bottleneck-slow-host.html" class="nav-link">Slow Host</a></li>
+        <li><a href="bottleneck-failures.html" class="nav-link">Task Failures</a></li>
+        <li><a href="bottleneck-straggler.html" class="nav-link">Stragglers</a></li>
+        <li><a href="bottleneck-retry-waste.html" class="nav-link">Retry Waste</a></li>
+        <li><a href="bottleneck-tiny-tasks.html" class="nav-link">Tiny Tasks</a></li>
+        <li><a href="bottleneck-job-failure-rate.html" class="nav-link">Job Failure Rate</a></li>
+        <li><a href="bottleneck-memory-utilization.html" class="nav-link">Memory Utilization</a></li>
+        <li><a href="bottleneck-duplicate-plan-subtree.html" class="nav-link">Duplicate Plan Subtree</a></li>
+        <li><a href="bottleneck-small-files.html" class="nav-link">Small Files</a></li>
+        <li><a href="bottleneck-broadcast-sizing.html" class="nav-link">Broadcast Sizing</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Reference</div>
+      <ul class="nav-list">
+        <li><a href="metrics.html" class="nav-link" aria-current="page">Metrics Glossary</a></li>
+        <li><a href="config.html" class="nav-link">Spark Config Quick-Reference</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../meta/index.html" class="nav-link">How this site works</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="metrics" class="doc-section">
+      <h1>Metrics Glossary</h1>
+<!-- #metric-* IDs are docs-internal, forward-compatible; the sibling contract consumes only #bottleneck-*. Rename-safe until the sibling deep-links metrics. -->
+<p>Reference for every metric surfaced elsewhere in this guide: what it measures, where Spark records it in the event log, and what a problematic value looks like.</p>
+<h2 id="metric-task-duration">Task duration (P50/P95/max)</h2>
+<p>Per-task wall-clock duration, aggregated across a stage's tasks into percentiles (P50, P95, max) to surface skew and stragglers. It is computed from <code>SparkListenerTaskEnd</code> events rather than read off a single field: each task end carries its own duration, and the percentiles are derived by aggregating those values across the stage.</p>
+<p>A problematic value looks like a small fraction of tasks running far past the rest: a stage is classified as a straggler when more than 5% of tasks run at least 4x the median duration (with at least 10 tasks in the stage), or when speculative tasks were fired.</p>
+<h2 id="metric-shuffle-read-bytes">Shuffle read bytes</h2>
+<p>The volume of shuffle data a task reads from remote executors, recorded in <code>taskMetrics.shuffleReadMetrics.remoteBytesRead</code>.</p>
+<h2 id="metric-shuffle-write-bytes">Shuffle write bytes</h2>
+<p>The size of the shuffle output a task writes, recorded in <code>taskMetrics.shuffleWriteMetrics.bytesWritten</code>. Spark's own metric description calls it simply the &quot;Number of bytes written in shuffle operations,&quot; without stating compression state on its own<sup class="footnote-ref"><a href="#fn1" title="Monitoring and Instrumentation ↩︎ ↩︎ ↩︎ ↩︎" id="fnref1">[1]</a></sup>.</p>
+<p>The sort-based shuffle writer fills in the mechanics: incoming records are serialized as soon as they reach the shuffle writer and buffered in serialized form while sorting<sup class="footnote-ref"><a href="#fn2" title="SortShuffleManager.scala ↩︎" id="fnref2">[2]</a></sup>. When the spill compression codec supports concatenating compressed data, the final merge step concatenates the already-compressed spill partitions directly into the output file, using <code>transferTo</code> rather than decompressing and recompressing<sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup>. So <code>bytesWritten</code> counts compressed, post-serialization bytes, and in this common fast-merge path the final written output is built directly from data that had already been spilled to disk during sorting, rather than written fresh at merge time.</p>
+<h2 id="metric-memory-bytes-spilled">Memory bytes spilled</h2>
+<p>Bytes a task spilled from in-memory structures, recorded in <code>taskMetrics.memoryBytesSpilled</code>. Any value above zero is a spill warning, with the skew-vs-volume classification (based on what fraction of a stage's tasks show zero spill) as the actionable signal.</p>
+<h2 id="metric-disk-bytes-spilled">Disk bytes spilled</h2>
+<p>The on-disk counterpart to memory spill: bytes a task spilled to disk, recorded in <code>taskMetrics.diskBytesSpilled</code>. It feeds the same spill classification as memory bytes spilled.</p>
+<h2 id="metric-jvm-gc-time">JVM GC time</h2>
+<p>Elapsed time the JVM spent in garbage collection while a task executed, recorded in <code>taskMetrics.jvmGCTime</code> and expressed in milliseconds<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>. The value is cumulative across the task's full execution window: the sum of every GC pause that occurred during that task's run, not just the most recent one<sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>. This matches how it's serialized: as a single scalar long, consistent with an accumulator rather than a per-GC-event log entry<sup class="footnote-ref"><a href="#fn3" title="JsonProtocol.scala ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref3">[3]</a></sup>.</p>
+<h2 id="metric-gcpct">gcPct</h2>
+<p>A synthetic ratio, <code>jvmGCTime / executorRunTime</code>, not a raw Spark field. It drives GC-bottleneck classification: above 10% is a warning, above 20% is critical.</p>
+<h2 id="metric-executor-run-time">Executor run time</h2>
+<p>Elapsed time the executor spent running a task, recorded in <code>taskMetrics.executorRunTime</code> and expressed in milliseconds<sup class="footnote-ref"><a href="#fn1" id="fnref1:3">[1:3]</a></sup>. <code>TaskMetrics</code> (and therefore <code>executorRunTime</code>) is serialized as an optional part of the <code>SparkListenerTaskEnd</code> payload, not guaranteed on every task end<sup class="footnote-ref"><a href="#fn3" id="fnref3:1">[3:1]</a></sup>. In practice it is available for failed tasks that got far enough to actually run, such as <code>ExceptionFailure</code> or <code>TaskKilled</code>. The event-log deserialization code even falls back to reading accumulator updates out of the embedded <code>TaskMetrics</code> for old, Spark-1.x-era logs, which only makes sense if the metrics object is normally populated for that failure type<sup class="footnote-ref"><a href="#fn3" id="fnref3:2">[3:2]</a></sup>. It can be absent for reasons like <code>Resubmitted</code>, where the task attempt never completed on that executor<sup class="footnote-ref"><a href="#fn3" id="fnref3:3">[3:3]</a></sup>.</p>
+<h2 id="metric-fetch-wait-time-ratio">Fetch wait time ratio</h2>
+<p>A synthetic ratio, <code>fetchWaitTime / taskDuration</code>, not a raw Spark field: the time a task spent blocked waiting on remote shuffle blocks, relative to its total duration.</p>
+<h2 id="metric-input-bytes">Input bytes</h2>
+<p>Bytes a task read as input, recorded in <code>taskMetrics.inputMetrics.bytesRead</code>.</p>
+<h2 id="metric-output-bytes">Output bytes</h2>
+<p>Bytes a task wrote as output, recorded in <code>taskMetrics.outputMetrics.bytesWritten</code>.</p>
+<h2 id="metric-io-ratio">I/O ratio</h2>
+<p>A synthetic ratio, <code>outputBytes / inputBytes</code>, not a raw Spark field.</p>
+<h2 id="metric-peak-execution-memory">Peak execution memory</h2>
+<p>Peak memory recorded in <code>taskMetrics.peakExecutionMemory</code>. This is a task-level accumulator, distinct from the separate executor-level <code>peakMemoryMetrics.OnHeapExecutionMemory</code> and <code>.OffHeapExecutionMemory</code> gauges, which report the on-heap and off-heap execution pools as two separate numbers at the executor level rather than as a single per-task figure<sup class="footnote-ref"><a href="#fn1" id="fnref1:4">[1:4]</a></sup>.</p>
+<h2 id="metric-failed-tasks">Failed tasks / failure rate</h2>
+<p>Tasks whose <code>SparkListenerTaskEnd</code> reason is not <code>Success</code>. The <code>Reason</code> field holds the formatted class name of whichever <code>TaskEndReason</code> was assigned to that task end<sup class="footnote-ref"><a href="#fn3" id="fnref3:4">[3:4]</a></sup>, and the canonical set of reasons includes <code>FetchFailed</code>, <code>ExceptionFailure</code>, <code>TaskResultLost</code>, <code>TaskKilled</code>, <code>TaskCommitDenied</code>, <code>ExecutorLostFailure</code>, and <code>UnknownReason</code><sup class="footnote-ref"><a href="#fn3" id="fnref3:5">[3:5]</a></sup>. Because <code>TaskMetrics</code> is only an optional part of the task-end payload, it can be absent for some of these reasons: for example <code>Resubmitted</code>, where the task attempt never actually completed on that executor<sup class="footnote-ref"><a href="#fn3" id="fnref3:6">[3:6]</a></sup>.</p>
+<h2 id="metric-speculative-tasks">Speculative tasks / straggler count</h2>
+<p>Tasks launched as speculative retries of a slow-running task, recorded via <code>SparkListenerTaskStart</code> where <code>speculative = true</code>. Any speculative task firing (or more than 5% of a stage's tasks running at least 4x the median duration, with at least 10 tasks in the stage) is a straggler signal.</p>
+<h2 id="metric-executor-count">Executor count (added/removed/concurrent)</h2>
+<p>The number of executors added, removed, or concurrently running, recorded via <code>SparkListenerExecutorAdded</code> / <code>SparkListenerExecutorRemoved</code> events.</p>
+<h2 id="metric-stage-duration">Stage wall-clock duration</h2>
+<p>A stage's total elapsed time, recorded from <code>SparkListenerStageCompleted</code>: <code>completionTime − submissionTime</code>.</p>
+<h2 id="metric-first-stage-submitted-at">firstStageSubmittedAt</h2>
+<p>A synthetic field: the timestamp of the first <code>SparkListenerStageSubmitted</code> event in the event log. The gap between this timestamp and the application's start time drives cold-start classification: more than 30 seconds is a warning.</p>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/monitoring.html#spark-history-server">Monitoring and Instrumentation</a> <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a> <a href="#fnref1:3" class="footnote-backref">↩︎</a> <a href="#fnref1:4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/core/src/main/scala/org/apache/spark/shuffle/sort/SortShuffleManager.scala">SortShuffleManager.scala</a> <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/core/src/main/scala/org/apache/spark/util/JsonProtocol.scala">JsonProtocol.scala</a> <a href="#fnref3" class="footnote-backref">↩︎</a> <a href="#fnref3:1" class="footnote-backref">↩︎</a> <a href="#fnref3:2" class="footnote-backref">↩︎</a> <a href="#fnref3:3" class="footnote-backref">↩︎</a> <a href="#fnref3:4" class="footnote-backref">↩︎</a> <a href="#fnref3:5" class="footnote-backref">↩︎</a> <a href="#fnref3:6" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="bottleneck-broadcast-sizing.html">&larr; Broadcast Sizing</a>
+      <a class="chapter-pager-link chapter-pager-next" href="config.html">Spark Config Quick-Reference &rarr;</a>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shuffle — Spark Tuning Reference</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Shuffle — Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Shuffle — Spark Tuning Reference">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="intro.html" aria-label="Spark Tuning Reference introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <ul class="nav-list">
+        <li><a href="intro.html" class="nav-link">Introduction</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Optimization Guide</div>
+      <ul class="nav-list">
+        <li><a href="spark-architecture.html" class="nav-link">Spark Execution Model</a></li>
+        <li><a href="memory-model.html" class="nav-link">Memory Management</a></li>
+        <li><a href="partitioning.html" class="nav-link">Partitioning</a></li>
+        <li><a href="joins.html" class="nav-link">Join Optimization</a></li>
+        <li><a href="shuffle.html" class="nav-link" aria-current="page">Shuffle</a></li>
+        <li><a href="data-formats.html" class="nav-link">Data Formats</a></li>
+        <li><a href="table-formats.html" class="nav-link">Table Formats</a></li>
+        <li><a href="caching.html" class="nav-link">Caching &amp; Persistence</a></li>
+        <li><a href="pyspark.html" class="nav-link">PySpark Specifics</a></li>
+        <li><a href="aqe.html" class="nav-link">Adaptive Query Execution</a></li>
+        <li><a href="cluster-config.html" class="nav-link">Cluster Tuning</a></li>
+        <li><a href="anti-patterns.html" class="nav-link">Anti-Patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Detector Catalog</div>
+      <ul class="nav-list">
+        <li><a href="bottleneck-skew.html" class="nav-link">Task Skew</a></li>
+        <li><a href="bottleneck-shuffle.html" class="nav-link">Shuffle I/O</a></li>
+        <li><a href="bottleneck-spill.html" class="nav-link">Memory / Disk Spill</a></li>
+        <li><a href="bottleneck-gc.html" class="nav-link">GC Pressure</a></li>
+        <li><a href="bottleneck-cold-start.html" class="nav-link">Cold Start</a></li>
+        <li><a href="bottleneck-utilization.html" class="nav-link">Executor Utilization</a></li>
+        <li><a href="bottleneck-slow-host.html" class="nav-link">Slow Host</a></li>
+        <li><a href="bottleneck-failures.html" class="nav-link">Task Failures</a></li>
+        <li><a href="bottleneck-straggler.html" class="nav-link">Stragglers</a></li>
+        <li><a href="bottleneck-retry-waste.html" class="nav-link">Retry Waste</a></li>
+        <li><a href="bottleneck-tiny-tasks.html" class="nav-link">Tiny Tasks</a></li>
+        <li><a href="bottleneck-job-failure-rate.html" class="nav-link">Job Failure Rate</a></li>
+        <li><a href="bottleneck-memory-utilization.html" class="nav-link">Memory Utilization</a></li>
+        <li><a href="bottleneck-duplicate-plan-subtree.html" class="nav-link">Duplicate Plan Subtree</a></li>
+        <li><a href="bottleneck-small-files.html" class="nav-link">Small Files</a></li>
+        <li><a href="bottleneck-broadcast-sizing.html" class="nav-link">Broadcast Sizing</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Reference</div>
+      <ul class="nav-list">
+        <li><a href="metrics.html" class="nav-link">Metrics Glossary</a></li>
+        <li><a href="config.html" class="nav-link">Spark Config Quick-Reference</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../meta/index.html" class="nav-link">How this site works</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="shuffle" class="doc-section">
+      <h1>Shuffle</h1>
+<h2>What it is</h2>
+<p>A shuffle is Spark's mechanism for exchanging, sorting, grouping, and merging data across executors whenever an operation needs rows that share a key to land on the same partition. At the DataFrame/SQL level, the classic wide transformations that trigger one are <code>groupBy()</code>, <code>join()</code>, <code>agg()</code>, <code>sortBy()</code>, and <code>reduceByKey()</code>-style aggregations; any join implementation that isn't a broadcast join (shuffle hash join, shuffle sort-merge join, or shuffle-and-replicated nested loop / Cartesian product join) also moves a large amount of data across executors<sup class="footnote-ref"><a href="#fn1" title="Learning Spark, 2nd Edition, Damji, Wenig, Das, Lee, ch. 7: Optimizing and Tuning Spark Applications ↩︎ ↩︎" id="fnref1">[1]</a></sup>. At the RDD layer underneath, the operations that can cause a shuffle are repartitioning (<code>repartition</code>, <code>coalesce</code>), <code>'ByKey</code> operations other than counting (<code>groupByKey</code>, <code>reduceByKey</code>), and join-family operations (<code>cogroup</code>, <code>join</code>)<sup class="footnote-ref"><a href="#fn2" title="RDD Programming Guide" id="fnref2">[2]</a></sup>.</p>
+<p>Spark can skip the shuffle outright in a few well-defined cases where it already knows the data layout. Storage Partition Join (SPJ) avoids the shuffle phase entirely when Spark can use the partitioning already reported by a compatible V2 data source (<code>spark.sql.sources.v2.bucketing.enabled</code>, default <code>true</code> since 3.3.0), generalizing bucket joins to functions registered in a <code>FunctionCatalog</code><sup class="footnote-ref"><a href="#fn3" title="Performance Tuning: Spark SQL, DataFrames and Datasets Guide ↩︎ ↩︎" id="fnref3">[3]</a></sup>. Classic Hive-style bucketing gets the same effect: once both sides of a join are bucketed and sorted the same way, the physical plan shows no <code>Exchange</code> operator at all<sup class="footnote-ref"><a href="#fn4" title="Bucketing (The Internals of Spark SQL) ↩︎" id="fnref4">[4]</a></sup>. <code>DataFrameWriter.partitionBy</code>, by contrast, does not trigger a shuffle by itself on write, though it can still leave you with a large number of small output files<sup class="footnote-ref"><a href="#fn5" title="Spark Tips: Partition Tuning ↩︎ ↩︎ ↩︎" id="fnref5">[5]</a></sup>.</p>
+<p>Modern Spark ships a single shuffle manager, <code>SortShuffleManager</code> (3.5 source). Incoming records are sorted by their target partition id and written to one map output file per task; reducers then fetch contiguous regions of that file for their share of the map output, spilling sorted subsets to disk and merging them if the data doesn't fit in memory<sup class="footnote-ref"><a href="#fn6" title="SortShuffleManager.scala ↩︎ ↩︎" id="fnref6">[6]</a></sup>. Internally it has two write paths: a &quot;serialized sorting&quot; path used when there's no map-side combine, the serializer supports relocation of serialized values (Kryo or Spark SQL's custom serializers), and the shuffle produces at most 16,777,216 output partitions; and a &quot;deserialized sorting&quot; path used for everything else<sup class="footnote-ref"><a href="#fn6" id="fnref6:1">[6:1]</a></sup>. Framed against the older hash-based approach (where each map task produces a separate output file per reduce task rather than one sorted file), sort-based shuffle pays a sorting cost but scales better once shuffle data gets large, which is why Spark and Flink both moved to it and pair it with an external shuffle service<sup class="footnote-ref"><a href="#fn7" title="SPARK-30602: Support push-based shuffle to improve shuffle efficiency (Magnet) ↩︎ ↩︎ ↩︎ ↩︎" id="fnref7">[7]</a></sup>.</p>
+<p>Two pieces of supporting infrastructure sit alongside the core shuffle manager. The external shuffle service (<code>spark.shuffle.service.enabled</code>, default <code>false</code>) preserves the shuffle files written by executors so they can be safely removed, or so shuffle fetches continue even after an executor failure; enabling it requires standing up the service separately, since the flag alone isn't enough<sup class="footnote-ref"><a href="#fn8" title="Configuration (Spark) ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref8">[8]</a></sup>. Concretely, it's a long-running process on each cluster node, independent of any particular Spark application or its executors: once enabled, executors fetch shuffle files from this service instead of from each other, so shuffle state written by an executor keeps being served after that executor's own lifetime ends<sup class="footnote-ref"><a href="#fn9" title="Job Scheduling ↩︎" id="fnref9">[9]</a></sup>. Push-based shuffle, designed under SPARK-30602 and based on LinkedIn's &quot;Magnet&quot; shuffle service, goes further: it changes the reduce side from a pull model (reducers requesting many small, randomly-ordered blocks from wherever each mapper wrote them) into a push-and-merge model, where mapper-generated blocks are pushed to remote Magnet shuffle services that opportunistically merge them into large per-partition chunks before the reduce stage starts<sup class="footnote-ref"><a href="#fn7" id="fnref7:1">[7:1]</a></sup>.</p>
+<h2>How to detect it</h2>
+<p>Because shuffles show up in the physical plan as <code>Exchange</code> nodes, the most direct way to tell whether an operation shuffles is to read the plan. <code>groupBy()</code> on a DataFrame is a wide transformation and normally requires an <code>Exchange</code> so all rows for a key land on the same partition<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>; that node disappears only when Spark already knows the data is co-partitioned by the grouping key. The clearest documented case is a table bucketed and sorted on the join/group key, where the physical plan drops the <code>Exchange</code> because the data was already shuffled at write time<sup class="footnote-ref"><a href="#fn10" title="Bucket the Shuffle Out of Here (Taboola Engineering) ↩︎" id="fnref10">[10]</a></sup>. SPJ produces the same absence of an <code>Exchange</code> for join queries against compatible V2 sources<sup class="footnote-ref"><a href="#fn3" id="fnref3:1">[3:1]</a></sup>.</p>
+<p><code>DataFrame.repartition(key)</code> is worth watching for separately: it's a one-time, explicit shuffle, but if you cache the result, subsequent joins on that same key skip their own shuffle because the data is already partitioned that way<sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>. Don't mistake <code>partitionBy</code> on write for the same thing: it changes the on-disk directory layout but is &quot;not the equivalent&quot; of an in-memory repartition, so <code>df.groupBy('key').sum()</code> over data written with <code>partitionBy</code> still requires an <code>Exchange</code><sup class="footnote-ref"><a href="#fn5" id="fnref5:2">[5:2]</a></sup>.</p>
+<p>Deduplication is a case where there's no avoiding the shuffle regardless of how you write it: Spark SQL's <code>dropDuplicates</code> selects unique rows the same way RDD-level <code>distinct</code> does, and both &quot;can require a shuffle&quot;<sup class="footnote-ref"><a href="#fn11" title="High Performance Spark, 2nd Edition, Karau, Polak &amp; Warren, ch. 5: DataFrames, Datasets, and Spark SQL ↩︎ ↩︎" id="fnref11">[11]</a></sup>. The only documented difference between them is key flexibility, not shuffle volume: unlike RDD <code>distinct</code>, DataFrame <code>dropDuplicates</code> can optionally drop rows based on only a subset of columns (e.g., <code>dropDuplicates(List(&quot;id&quot;))</code>) rather than requiring uniqueness across the whole row<sup class="footnote-ref"><a href="#fn11" id="fnref11:1">[11:1]</a></sup>.</p>
+<h2>Why it matters</h2>
+<p>Shuffle cost shows up in several places at once, and Spark's shuffle-tuning knobs largely exist to manage it. Inside <code>SortShuffleManager</code>, when there are fewer than <code>spark.shuffle.sort.bypassMergeThreshold</code> reduce partitions (default 200)<sup class="footnote-ref"><a href="#fn8" id="fnref8:1">[8:1]</a></sup> and no map-side aggregation is needed, Spark takes a bypass path: it writes <code>numPartitions</code> files directly per map task and concatenates them at the end, rather than merge-sorting spilled files. This avoids serializing and deserializing the data twice, which the normal merge-sort path would otherwise pay; the trade-off is having multiple files open at once, and more memory allocated to buffers<sup class="footnote-ref"><a href="#fn6" id="fnref6:2">[6:2]</a></sup>. That trade stays cheap only while the reduce-side partition count is small.</p>
+<p>Reducers also pay a fixed memory cost for every map output they fetch at once, since each fetched output needs a buffer to receive it; that's what <code>spark.reducer.maxSizeInFlight</code> (default 48m) caps<sup class="footnote-ref"><a href="#fn8" id="fnref8:2">[8:2]</a></sup>. And map tasks pay an I/O cost writing shuffle files: a larger <code>spark.shuffle.file.buffer</code> (default 32k) reduces the number of disk seeks and system calls needed to create those intermediate files<sup class="footnote-ref"><a href="#fn8" id="fnref8:3">[8:3]</a></sup>.</p>
+<p>External shuffle infrastructure matters most once dynamic allocation is in play: without the external shuffle service, an executor decommissioned mid-shuffle (say, because of stragglers) would force its shuffle files to be recomputed from scratch once it's removed<sup class="footnote-ref"><a href="#fn9" id="fnref9:1">[9:1]</a></sup>. Push-based shuffle exists because, as shuffle data volume grows, the number of blocks a classic shuffle produces grows quadratically (mappers × reducers) while individual block sizes shrink to only tens of KB, which is inefficient for HDD-backed random reads<sup class="footnote-ref"><a href="#fn7" id="fnref7:2">[7:2]</a></sup>. Magnet's push-and-merge model improves disk I/O efficiency by converting many small random reads into large sequential reads of pre-merged chunks, and improves reducer data locality since merged output can be co-located with the reduce tasks that consume it; the push itself is decoupled from the mappers, so it doesn't add to map task runtime or fail map tasks if a push fails, and it's best-effort, so reducers can fetch a mix of merged and unmerged blocks<sup class="footnote-ref"><a href="#fn7" id="fnref7:3">[7:3]</a></sup>. LinkedIn's own production rollout, on a cluster running 30K+ Spark applications shuffling roughly 5 PB/day, reported a large reduction in shuffle read wait time and a corresponding drop in total executor runtime after enabling it on complex production flows<sup class="footnote-ref"><a href="#fn7" id="fnref7:4">[7:4]</a></sup>.</p>
+<h2>How to fix it</h2>
+<p>Where possible, avoid the shuffle rather than tune it: bucket and sort tables on the join/group key so the physical plan drops the <code>Exchange</code> entirely<sup class="footnote-ref"><a href="#fn10" id="fnref10:1">[10:1]</a></sup><sup class="footnote-ref"><a href="#fn4" id="fnref4:1">[4:1]</a></sup>, or lean on Storage Partition Join for compatible V2 sources<sup class="footnote-ref"><a href="#fn3" id="fnref3:2">[3:2]</a></sup>. If you need to reuse a partitioning scheme across several joins, <code>repartition(key)</code> once and cache the result rather than relying on <code>partitionBy</code>, which only affects the on-disk layout and doesn't exempt later aggregations from their own <code>Exchange</code><sup class="footnote-ref"><a href="#fn5" id="fnref5:3">[5:3]</a></sup>.</p>
+<blockquote>
+<p><strong>PySpark:</strong> <code>dropDuplicates(subset)</code> still shuffles like <code>distinct()</code>, but lets you dedupe on a subset of columns instead of the whole row; use <code>df.dropDuplicates([&quot;id&quot;])</code> when uniqueness only needs to hold on a few key columns<sup class="footnote-ref"><a href="#fn11" id="fnref11:2">[11:2]</a></sup>.</p>
+</blockquote>
+<p>For shuffles you can't avoid, the main tuning levers are:</p>
+<ul>
+<li><code>spark.shuffle.sort.bypassMergeThreshold</code> (default 200): raise or lower the reduce-partition-count cutoff for the bypass (hash-style) write path described above<sup class="footnote-ref"><a href="#fn8" id="fnref8:4">[8:4]</a></sup>.</li>
+<li><code>spark.shuffle.compress</code> (default <code>true</code>): compresses map output files using whatever codec <code>spark.io.compression.codec</code> names (default <code>lz4</code>; <code>lzf</code>, <code>snappy</code>, and <code>zstd</code> are also available)<sup class="footnote-ref"><a href="#fn8" id="fnref8:5">[8:5]</a></sup>. <code>spark.shuffle.spill.compress</code> (also default <code>true</code>) separately governs compression of spilled shuffle data, using the same codec setting<sup class="footnote-ref"><a href="#fn8" id="fnref8:6">[8:6]</a></sup>.</li>
+<li><code>spark.reducer.maxSizeInFlight</code> (default 48m): raising it lets more data move in flight at the cost of per-task memory; lowering it saves memory at the cost of more fetch rounds<sup class="footnote-ref"><a href="#fn8" id="fnref8:7">[8:7]</a></sup>.</li>
+<li><code>spark.shuffle.file.buffer</code> (default 32k): Learning Spark's tuning guidance recommends bumping it to 1 MB for large jobs, trading some per-task memory for fewer disk seeks and syscalls during the shuffle-write phase<sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>.</li>
+<li><code>spark.shuffle.service.enabled</code> (default <code>false</code>): turn on the external shuffle service so executors can be safely removed under dynamic allocation without losing shuffle state. Dynamic allocation's documentation lists shuffle tracking (<code>spark.dynamicAllocation.shuffleTracking.enabled</code>), shuffle-block decommissioning, and a custom <code>ShuffleDataIO</code> plugin backed by reliable storage as alternatives to enabling the service outright<sup class="footnote-ref"><a href="#fn8" id="fnref8:8">[8:8]</a></sup>.</li>
+<li>Push-based shuffle: enable it with the paired server/client flags added in Spark 3.2.0: <code>spark.shuffle.push.server.mergedShuffleFileManagerImpl</code> on the server side, and <code>spark.shuffle.push.enabled=true</code> on the client side (both disabled by default; the client flag only takes effect together with the server-side one). It's currently only supported for Spark on YARN with the external shuffle service enabled<sup class="footnote-ref"><a href="#fn8" id="fnref8:9">[8:9]</a></sup>.</li>
+</ul>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><em>Learning Spark, 2nd Edition</em>, Damji, Wenig, Das, Lee, ch. 7: Optimizing and Tuning Spark Applications <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/rdd-programming-guide.html">RDD Programming Guide</a> <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/sql-performance-tuning.html">Performance Tuning: Spark SQL, DataFrames and Datasets Guide</a> <a href="#fnref3" class="footnote-backref">↩︎</a> <a href="#fnref3:1" class="footnote-backref">↩︎</a> <a href="#fnref3:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://books.japila.pl/spark-sql-internals/bucketing/">Bucketing (The Internals of Spark SQL)</a> <a href="#fnref4" class="footnote-backref">↩︎</a> <a href="#fnref4:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/spark-tips-partition-tuning">Spark Tips: Partition Tuning</a> <a href="#fnref5" class="footnote-backref">↩︎</a> <a href="#fnref5:1" class="footnote-backref">↩︎</a> <a href="#fnref5:2" class="footnote-backref">↩︎</a> <a href="#fnref5:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/core/src/main/scala/org/apache/spark/shuffle/sort/SortShuffleManager.scala">SortShuffleManager.scala</a> <a href="#fnref6" class="footnote-backref">↩︎</a> <a href="#fnref6:1" class="footnote-backref">↩︎</a> <a href="#fnref6:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://issues.apache.org/jira/browse/SPARK-30602">SPARK-30602: Support push-based shuffle to improve shuffle efficiency (Magnet)</a> <a href="#fnref7" class="footnote-backref">↩︎</a> <a href="#fnref7:1" class="footnote-backref">↩︎</a> <a href="#fnref7:2" class="footnote-backref">↩︎</a> <a href="#fnref7:3" class="footnote-backref">↩︎</a> <a href="#fnref7:4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/configuration.html">Configuration (Spark)</a> <a href="#fnref8" class="footnote-backref">↩︎</a> <a href="#fnref8:1" class="footnote-backref">↩︎</a> <a href="#fnref8:2" class="footnote-backref">↩︎</a> <a href="#fnref8:3" class="footnote-backref">↩︎</a> <a href="#fnref8:4" class="footnote-backref">↩︎</a> <a href="#fnref8:5" class="footnote-backref">↩︎</a> <a href="#fnref8:6" class="footnote-backref">↩︎</a> <a href="#fnref8:7" class="footnote-backref">↩︎</a> <a href="#fnref8:8" class="footnote-backref">↩︎</a> <a href="#fnref8:9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/job-scheduling.html">Job Scheduling</a> <a href="#fnref9" class="footnote-backref">↩︎</a> <a href="#fnref9:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://www.taboola.com/engineering/bucket-the-shuffle-out-of-here/">Bucket the Shuffle Out of Here (Taboola Engineering)</a> <a href="#fnref10" class="footnote-backref">↩︎</a> <a href="#fnref10:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn11" class="footnote-item"><p><em>High Performance Spark, 2nd Edition</em>, Karau, Polak &amp; Warren, ch. 5: DataFrames, Datasets, and Spark SQL <a href="#fnref11" class="footnote-backref">↩︎</a> <a href="#fnref11:1" class="footnote-backref">↩︎</a> <a href="#fnref11:2" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="joins.html">&larr; Join Optimization</a>
+      <a class="chapter-pager-link chapter-pager-next" href="data-formats.html">Data Formats &rarr;</a>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

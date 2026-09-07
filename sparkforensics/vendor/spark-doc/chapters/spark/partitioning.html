@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partitioning — Spark Tuning Reference</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Partitioning — Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Partitioning — Spark Tuning Reference">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="intro.html" aria-label="Spark Tuning Reference introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <ul class="nav-list">
+        <li><a href="intro.html" class="nav-link">Introduction</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Optimization Guide</div>
+      <ul class="nav-list">
+        <li><a href="spark-architecture.html" class="nav-link">Spark Execution Model</a></li>
+        <li><a href="memory-model.html" class="nav-link">Memory Management</a></li>
+        <li><a href="partitioning.html" class="nav-link" aria-current="page">Partitioning</a></li>
+        <li><a href="joins.html" class="nav-link">Join Optimization</a></li>
+        <li><a href="shuffle.html" class="nav-link">Shuffle</a></li>
+        <li><a href="data-formats.html" class="nav-link">Data Formats</a></li>
+        <li><a href="table-formats.html" class="nav-link">Table Formats</a></li>
+        <li><a href="caching.html" class="nav-link">Caching &amp; Persistence</a></li>
+        <li><a href="pyspark.html" class="nav-link">PySpark Specifics</a></li>
+        <li><a href="aqe.html" class="nav-link">Adaptive Query Execution</a></li>
+        <li><a href="cluster-config.html" class="nav-link">Cluster Tuning</a></li>
+        <li><a href="anti-patterns.html" class="nav-link">Anti-Patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Detector Catalog</div>
+      <ul class="nav-list">
+        <li><a href="bottleneck-skew.html" class="nav-link">Task Skew</a></li>
+        <li><a href="bottleneck-shuffle.html" class="nav-link">Shuffle I/O</a></li>
+        <li><a href="bottleneck-spill.html" class="nav-link">Memory / Disk Spill</a></li>
+        <li><a href="bottleneck-gc.html" class="nav-link">GC Pressure</a></li>
+        <li><a href="bottleneck-cold-start.html" class="nav-link">Cold Start</a></li>
+        <li><a href="bottleneck-utilization.html" class="nav-link">Executor Utilization</a></li>
+        <li><a href="bottleneck-slow-host.html" class="nav-link">Slow Host</a></li>
+        <li><a href="bottleneck-failures.html" class="nav-link">Task Failures</a></li>
+        <li><a href="bottleneck-straggler.html" class="nav-link">Stragglers</a></li>
+        <li><a href="bottleneck-retry-waste.html" class="nav-link">Retry Waste</a></li>
+        <li><a href="bottleneck-tiny-tasks.html" class="nav-link">Tiny Tasks</a></li>
+        <li><a href="bottleneck-job-failure-rate.html" class="nav-link">Job Failure Rate</a></li>
+        <li><a href="bottleneck-memory-utilization.html" class="nav-link">Memory Utilization</a></li>
+        <li><a href="bottleneck-duplicate-plan-subtree.html" class="nav-link">Duplicate Plan Subtree</a></li>
+        <li><a href="bottleneck-small-files.html" class="nav-link">Small Files</a></li>
+        <li><a href="bottleneck-broadcast-sizing.html" class="nav-link">Broadcast Sizing</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Reference</div>
+      <ul class="nav-list">
+        <li><a href="metrics.html" class="nav-link">Metrics Glossary</a></li>
+        <li><a href="config.html" class="nav-link">Spark Config Quick-Reference</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../meta/index.html" class="nav-link">How this site works</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="partitioning" class="doc-section">
+      <h1>Partitioning</h1>
+<h2>What partitioning is</h2>
+<p>Every partition Spark creates maps to exactly one task and one thread, which is why partition count and size drive so much of a job's performance<sup class="footnote-ref"><a href="#fn1" title="Spark Partitions ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref1">[1]</a></sup>. The shuffle side of that is governed by a single default: <code>spark.sql.shuffle.partitions</code>, which defaults to 200 and applies to every <code>join()</code>, <code>groupBy()</code>, and aggregation regardless of how much data is actually moving<sup class="footnote-ref"><a href="#fn2" title="Configuration — Spark ↩︎ ↩︎" id="fnref2">[2]</a></sup><sup class="footnote-ref"><a href="#fn3" title="Learning Spark, 2nd Edition, Damji, Wenig, Das &amp; Lee, ch. 7 ↩︎ ↩︎ ↩︎" id="fnref3">[3]</a></sup>.</p>
+<p>Two operations reshape that layout, and they are not interchangeable. <code>repartition(numPartitions)</code> &quot;return[s] a new RDD that has exactly numPartitions partitions&quot;<sup class="footnote-ref"><a href="#fn4" title="RDD.scala ↩︎" id="fnref4">[4]</a></sup>, and it earns that guarantee by always running a full hash shuffle: records are first spread across a temporary key space starting from a randomized position, seeded per-partition via <code>XORShiftRandom</code>, so upstream data ends up distributed evenly rather than clustered by its original layout. That feeds into a <code>ShuffledRDD</code> keyed by a <code>HashPartitioner(numPartitions)</code>, then a <code>CoalescedRDD</code> lands it on exactly the requested count<sup class="footnote-ref"><a href="#fn4" id="fnref4:1">[4:1]</a></sup>. High Performance Spark puts the same mechanics more plainly: &quot;repartition shuffles the RDD with a hash partitioner and the given number of partitions&quot;<sup class="footnote-ref"><a href="#fn5" title="High Performance Spark, 2nd Edition, Karau, Polak &amp; Warren, ch. 8 ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref5">[5]</a></sup>. That holds whether the new count is bigger or smaller than the current one. Repartition always performs the full shuffle just described, unlike coalesce<sup class="footnote-ref"><a href="#fn6" title="Spark: The Definitive Guide, Chambers &amp; Zaharia, ch. 19 ↩︎ ↩︎" id="fnref6">[6]</a></sup>.</p>
+<p><code>coalesce</code>, left at its default, does not shuffle at all: it's a narrow transformation where each output partition is simply the union of a fixed set of parent partitions decided at plan time, not routed by data values, so the stage's task count just drops to the coalesced number<sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>.</p>
+<p>Neither <code>repartition</code> nor <code>coalesce</code> leaves behind a &quot;known partitioner&quot; the way <code>partitionBy</code> does<sup class="footnote-ref"><a href="#fn5" id="fnref5:2">[5:2]</a></sup>. That distinction is what Spark's join planner checks before it will skip a shuffle: it only does so when both sides already carry partitioner objects it can prove equal: matching partition counts for a <code>HashPartitioner</code>, matching range bounds for a <code>RangePartitioner</code><sup class="footnote-ref"><a href="#fn5" id="fnref5:3">[5:3]</a></sup>. Its default shuffle hash join path makes the same point from the other side: it partitions the second dataset using the same partitioner as the first specifically so matching keys land together, which only lets a later shuffle be skipped when a shared, recognized partitioner is already in place beforehand<sup class="footnote-ref"><a href="#fn5" id="fnref5:4">[5:4]</a></sup>.</p>
+<p>There's also a hard ceiling on shuffle output, though it isn't something to design around: Spark's sort-based shuffle manager caps output partitions in serialized mode at <code>PackedRecordPointer.MAXIMUM_PARTITION_ID + 1</code>, roughly 16.8 million. The source code itself calls this &quot;an extreme defensive programming measure,&quot; since no real shuffle comes remotely close to it<sup class="footnote-ref"><a href="#fn7" title="SortShuffleManager.scala" id="fnref7">[7]</a></sup>.</p>
+<h2>How to detect a partitioning problem</h2>
+<p>Sizing problems show up as overhead in both directions: partitions that are too small flood the cluster with per-task scheduling overhead, while partitions that are too large create memory pressure and straggler tasks<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>. Learning Spark 2nd Edition frames the healthy target from the parallelism side rather than an absolute number: at least as many partitions as there are cores across the executors, so no core sits idle; more partitions than cores is fine as long as it doesn't drift into the small-partition overhead regime above<sup class="footnote-ref"><a href="#fn3" id="fnref3:1">[3:1]</a></sup>.</p>
+<p>A heavy filter is an easy-to-miss cause of imbalance: Spark doesn't shrink partition count when rows are filtered out, so 2,000 partitions holding 5% of the original rows just become 2,000 mostly-empty partitions<sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>.</p>
+<p>To size shuffle partitions from a job's actual behavior rather than a guess, Cloudera's tuning guide takes a stage that already ran, computes the ratio between its Shuffle Spill (Memory) and Shuffle Spill (Disk) metrics, and multiplies total shuffle write by that ratio to estimate in-memory shuffle size, then rounds the resulting partition count up rather than down<sup class="footnote-ref"><a href="#fn8" title="How to Tune Your Apache Spark Jobs (Part 2) ↩︎" id="fnref8">[8]</a></sup>.</p>
+<p>Skew specifically has documented, numeric detection thresholds under Adaptive Query Execution: a partition counts as skewed if it's larger than <code>spark.sql.adaptive.skewJoin.skewedPartitionFactor</code> (default 5.0) times the median partition size, and also larger than <code>spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes</code> (default 256 MB)<sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup><sup class="footnote-ref"><a href="#fn9" title="Performance Tuning — Spark SQL, DataFrames and Datasets Guide ↩︎ ↩︎ ↩︎" id="fnref9">[9]</a></sup>.</p>
+<p>On the input side, <code>spark.sql.files.maxPartitionBytes</code> (defaulting to 128 MB) governs the target chunk size when Spark splits splittable file-based sources (CSV, JSON, line-delimited text) into input partitions, based on file size<sup class="footnote-ref"><a href="#fn1" id="fnref1:3">[1:3]</a></sup>.</p>
+<h2>Why it matters</h2>
+<p>Cloudera's tuning guide argues it's safer to over-provision partitions than to under-provision them, because Spark, unlike MapReduce, has low per-task startup overhead: &quot;when in doubt, it's almost always better to err on the side of a larger number of tasks&quot;<sup class="footnote-ref"><a href="#fn8" id="fnref8:1">[8:1]</a></sup>.</p>
+<p>Getting <code>coalesce</code> wrong costs more than the coalesce step itself: because it's narrow, it forces the <em>entire</em> upstream stage to run at the reduced parallelism, not just the final step<sup class="footnote-ref"><a href="#fn5" id="fnref5:5">[5:5]</a></sup>. Pushed too far (<code>coalesce(1)</code>), it kills parallelism outright, because coalesce doesn't rebalance data, it just stacks existing partitions together, so partitions that were uneven going in are still uneven coming out<sup class="footnote-ref"><a href="#fn1" id="fnref1:4">[1:4]</a></sup>.</p>
+<p>Once a shuffle stage has run, its output file count is locked in: you can't change it after the fact without inserting a stage barrier, such as writing to temporary storage or calling <code>localCheckpoint()</code>, between the shuffle and the write<sup class="footnote-ref"><a href="#fn10" title="Spark Tips: Partition Tuning" id="fnref10">[10]</a></sup>.</p>
+<p>Join alignment has its own gotcha: calling <code>repartition(n, col)</code> with the same column and count on two separate DataFrames produces data that's plausibly laid out the same way, but it doesn't leave a trackable partitioner object behind. The planner has no recorded partitioner to compare, so it has no basis for treating the two sides as co-partitioned and skipping the shuffle at join time, even though the call sites look identical<sup class="footnote-ref"><a href="#fn5" id="fnref5:6">[5:6]</a></sup>.</p>
+<h2>How to fix it</h2>
+<p>There's no single formula for the right <code>spark.sql.shuffle.partitions</code> value: it depends on data set size, core count, and executor memory, and comes down to trial and error<sup class="footnote-ref"><a href="#fn3" id="fnref3:2">[3:2]</a></sup>. As a starting point, Learning Spark notes the default of 200 is usually too high for small or streaming workloads, where it should be pulled down toward the executor core count<sup class="footnote-ref"><a href="#fn3" id="fnref3:3">[3:3]</a></sup>.</p>
+<p>For the repartition-vs-coalesce decision itself: reach for <code>coalesce</code> first whenever you're only reducing partition count, since it merges partitions already on the same node without a shuffle<sup class="footnote-ref"><a href="#fn6" id="fnref6:1">[6:1]</a></sup>. Reach for <code>repartition</code> when you actually need the shuffle: increasing partition count, fixing a lopsided distribution, or preparing a DataFrame ahead of a join or a <code>cache()</code> call, where even parallelism is worth more than the shuffle cost<sup class="footnote-ref"><a href="#fn6" id="fnref6:2">[6:2]</a></sup>. High Performance Spark reduces this to a readability rule: use <code>repartition</code> when you want a shuffle, <code>coalesce</code> when you don't, rather than leaning on coalesce's shuffle toggle to blur the line<sup class="footnote-ref"><a href="#fn5" id="fnref5:7">[5:7]</a></sup>. There is a middle option, <code>coalesce(n, shuffle=True)</code>, which behaves more like repartition, paying for a shuffle but getting real rebalancing on the way down<sup class="footnote-ref"><a href="#fn1" id="fnref1:5">[1:5]</a></sup>. <code>coalesce()</code> itself belongs at the tail of a pipeline, right before a write, purely to cut down output file count<sup class="footnote-ref"><a href="#fn1" id="fnref1:6">[1:6]</a></sup>; after a heavy filter has left partitions mostly empty, following up with <code>repartition(100)</code> (or similar) buys back real parallelism<sup class="footnote-ref"><a href="#fn1" id="fnref1:7">[1:7]</a></sup>. At the SQL layer, both directions have dedicated hints for controlling output partitioning directly: <code>/*+ REPARTITION(n) */</code>, <code>/*+ REPARTITION(cols) */</code>, <code>/*+ REPARTITION_BY_RANGE(cols) */</code>, and <code>/*+ COALESCE(n) */</code><sup class="footnote-ref"><a href="#fn9" id="fnref9:1">[9:1]</a></sup>.</p>
+<p>Separate from the DataFrame <code>.coalesce()</code> call, Adaptive Query Execution has its own runtime coalescing behavior: <code>spark.sql.adaptive.coalescePartitions.enabled</code> (default true) merges small, contiguous post-shuffle partitions toward a target size at runtime, correcting over-partitioning without a manual <code>.coalesce()</code> call<sup class="footnote-ref"><a href="#fn9" id="fnref9:2">[9:2]</a></sup><sup class="footnote-ref"><a href="#fn1" id="fnref1:8">[1:8]</a></sup>.</p>
+<p>For skewed joins specifically, salting (adding a prefix to skewed keys so the same key is treated as several different keys, then adjusting the data distribution accordingly) was one of three manual approaches used before adaptive execution existed, alongside raising <code>spark.sql.shuffle.partitions</code> and raising the broadcast hash join threshold to push a sort-merge join toward a broadcast hash join instead. All three carry &quot;lots of limitations&quot; and require manual processing, which is exactly the gap AQE's skew-join optimization was built to close<sup class="footnote-ref"><a href="#fn11" title="SPARK-29544 — Optimize skewed join at runtime" id="fnref11">[11]</a></sup>. Where automatic detection isn't precise enough, Databricks' <code>/*+ SKEW(...) */</code> hint names the skewed relation and column(s), and optionally the specific skewed key values, letting the planner target just those keys directly instead of relying on automatic detection<sup class="footnote-ref"><a href="#fn12" title="Skew Join (legacy)" id="fnref12">[12]</a></sup>.</p>
+<p>For the join-alignment gotcha above, the mechanism that does reliably guarantee a shuffle can be skipped is storage-partitioned joins: both tables are physically bucketed identically at the catalog level, for example Iceberg tables created with matching <code>PARTITIONED BY (bucket(...))</code> clauses. When Spark recognizes both sides report the same partitioning through <code>SupportsReportPartitioning</code>, it can drop the Exchange (shuffle) node entirely, or shuffle only one side. A plain DataFrame-level <code>repartition(col)</code> doesn't offer that guarantee, because it isn't backed by catalog-level partitioning metadata<sup class="footnote-ref"><a href="#fn9" id="fnref9:3">[9:3]</a></sup><sup class="footnote-ref"><a href="#fn2" id="fnref2:2">[2:2]</a></sup>.</p>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/spark-partitions">Spark Partitions</a> <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a> <a href="#fnref1:3" class="footnote-backref">↩︎</a> <a href="#fnref1:4" class="footnote-backref">↩︎</a> <a href="#fnref1:5" class="footnote-backref">↩︎</a> <a href="#fnref1:6" class="footnote-backref">↩︎</a> <a href="#fnref1:7" class="footnote-backref">↩︎</a> <a href="#fnref1:8" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/configuration.html">Configuration — Spark</a> <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a> <a href="#fnref2:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><em>Learning Spark, 2nd Edition</em>, Damji, Wenig, Das &amp; Lee, ch. 7 <a href="#fnref3" class="footnote-backref">↩︎</a> <a href="#fnref3:1" class="footnote-backref">↩︎</a> <a href="#fnref3:2" class="footnote-backref">↩︎</a> <a href="#fnref3:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/core/src/main/scala/org/apache/spark/rdd/RDD.scala">RDD.scala</a> <a href="#fnref4" class="footnote-backref">↩︎</a> <a href="#fnref4:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><em>High Performance Spark, 2nd Edition</em>, Karau, Polak &amp; Warren, ch. 8 <a href="#fnref5" class="footnote-backref">↩︎</a> <a href="#fnref5:1" class="footnote-backref">↩︎</a> <a href="#fnref5:2" class="footnote-backref">↩︎</a> <a href="#fnref5:3" class="footnote-backref">↩︎</a> <a href="#fnref5:4" class="footnote-backref">↩︎</a> <a href="#fnref5:5" class="footnote-backref">↩︎</a> <a href="#fnref5:6" class="footnote-backref">↩︎</a> <a href="#fnref5:7" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><em>Spark: The Definitive Guide</em>, Chambers &amp; Zaharia, ch. 19 <a href="#fnref6" class="footnote-backref">↩︎</a> <a href="#fnref6:1" class="footnote-backref">↩︎</a> <a href="#fnref6:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/core/src/main/scala/org/apache/spark/shuffle/sort/SortShuffleManager.scala">SortShuffleManager.scala</a> <a href="#fnref7" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://blog.cloudera.com/how-to-tune-your-apache-spark-jobs-part-2/">How to Tune Your Apache Spark Jobs (Part 2)</a> <a href="#fnref8" class="footnote-backref">↩︎</a> <a href="#fnref8:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/sql-performance-tuning.html">Performance Tuning — Spark SQL, DataFrames and Datasets Guide</a> <a href="#fnref9" class="footnote-backref">↩︎</a> <a href="#fnref9:1" class="footnote-backref">↩︎</a> <a href="#fnref9:2" class="footnote-backref">↩︎</a> <a href="#fnref9:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/spark-tips-partition-tuning">Spark Tips: Partition Tuning</a> <a href="#fnref10" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn11" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://issues.apache.org/jira/browse/SPARK-29544">SPARK-29544 — Optimize skewed join at runtime</a> <a href="#fnref11" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn12" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://docs.databricks.com/aws/en/archive/legacy/skew-join">Skew Join (legacy)</a> <a href="#fnref12" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="memory-model.html">&larr; Memory Management</a>
+      <a class="chapter-pager-link chapter-pager-next" href="joins.html">Join Optimization &rarr;</a>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

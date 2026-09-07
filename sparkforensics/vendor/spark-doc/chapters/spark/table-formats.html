@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table Formats — Spark Tuning Reference</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Table Formats — Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Table Formats — Spark Tuning Reference">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="intro.html" aria-label="Spark Tuning Reference introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <ul class="nav-list">
+        <li><a href="intro.html" class="nav-link">Introduction</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Optimization Guide</div>
+      <ul class="nav-list">
+        <li><a href="spark-architecture.html" class="nav-link">Spark Execution Model</a></li>
+        <li><a href="memory-model.html" class="nav-link">Memory Management</a></li>
+        <li><a href="partitioning.html" class="nav-link">Partitioning</a></li>
+        <li><a href="joins.html" class="nav-link">Join Optimization</a></li>
+        <li><a href="shuffle.html" class="nav-link">Shuffle</a></li>
+        <li><a href="data-formats.html" class="nav-link">Data Formats</a></li>
+        <li><a href="table-formats.html" class="nav-link" aria-current="page">Table Formats</a></li>
+        <li><a href="caching.html" class="nav-link">Caching &amp; Persistence</a></li>
+        <li><a href="pyspark.html" class="nav-link">PySpark Specifics</a></li>
+        <li><a href="aqe.html" class="nav-link">Adaptive Query Execution</a></li>
+        <li><a href="cluster-config.html" class="nav-link">Cluster Tuning</a></li>
+        <li><a href="anti-patterns.html" class="nav-link">Anti-Patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Detector Catalog</div>
+      <ul class="nav-list">
+        <li><a href="bottleneck-skew.html" class="nav-link">Task Skew</a></li>
+        <li><a href="bottleneck-shuffle.html" class="nav-link">Shuffle I/O</a></li>
+        <li><a href="bottleneck-spill.html" class="nav-link">Memory / Disk Spill</a></li>
+        <li><a href="bottleneck-gc.html" class="nav-link">GC Pressure</a></li>
+        <li><a href="bottleneck-cold-start.html" class="nav-link">Cold Start</a></li>
+        <li><a href="bottleneck-utilization.html" class="nav-link">Executor Utilization</a></li>
+        <li><a href="bottleneck-slow-host.html" class="nav-link">Slow Host</a></li>
+        <li><a href="bottleneck-failures.html" class="nav-link">Task Failures</a></li>
+        <li><a href="bottleneck-straggler.html" class="nav-link">Stragglers</a></li>
+        <li><a href="bottleneck-retry-waste.html" class="nav-link">Retry Waste</a></li>
+        <li><a href="bottleneck-tiny-tasks.html" class="nav-link">Tiny Tasks</a></li>
+        <li><a href="bottleneck-job-failure-rate.html" class="nav-link">Job Failure Rate</a></li>
+        <li><a href="bottleneck-memory-utilization.html" class="nav-link">Memory Utilization</a></li>
+        <li><a href="bottleneck-duplicate-plan-subtree.html" class="nav-link">Duplicate Plan Subtree</a></li>
+        <li><a href="bottleneck-small-files.html" class="nav-link">Small Files</a></li>
+        <li><a href="bottleneck-broadcast-sizing.html" class="nav-link">Broadcast Sizing</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Reference</div>
+      <ul class="nav-list">
+        <li><a href="metrics.html" class="nav-link">Metrics Glossary</a></li>
+        <li><a href="config.html" class="nav-link">Spark Config Quick-Reference</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../meta/index.html" class="nav-link">How this site works</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="table-formats" class="doc-section">
+      <h1>Table Formats</h1>
+<h2>What it is</h2>
+<p>Parquet and ORC (the previous page) stop at the file. A lakehouse <em>table format</em> wraps a directory of Parquet files with a transactional metadata layer that tracks which files belong to the table right now, so engines get ACID commits, time travel, schema evolution, and row-level updates over plain columnar files. The three in wide use are Delta Lake, Apache Iceberg, and Apache Hudi. They solve the same problems and differ mostly in mechanism, and the tuning knobs that matter fall into a handful of dimensions.</p>
+<p><strong>File sizing.</strong> All three fight the small-files problem, but at different points in the write. Delta Lake does not size files during the write by default; its <code>OPTIMIZE</code> command bin-packs already-written small files into larger ones, available since Delta Lake 1.2.0<sup class="footnote-ref"><a href="#fn1" title="Delta Lake: Optimizations (OSS) ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref1">[1]</a></sup>. Iceberg rewrites files after the fact through its <code>rewrite_data_files</code> procedure, whose default <code>binpack</code> strategy coalesces small files<sup class="footnote-ref"><a href="#fn2" title="Apache Iceberg: Spark Procedures ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref2">[2]</a></sup>. Hudi treats correct sizing at write time as &quot;a critical design decision&quot;: auto-sizing targets a 120 MB Parquet base file (<code>hoodie.parquet.max.file.size</code>) and pads any existing file at or below the 100 MB small-file limit (<code>hoodie.parquet.small.file.limit</code>) with new records rather than opening a fresh file<sup class="footnote-ref"><a href="#fn3" title="Apache Hudi: File Sizing ↩︎ ↩︎ ↩︎" id="fnref3">[3]</a></sup>.</p>
+<p><strong>Compaction.</strong> Delta's <code>OPTIMIZE</code> bin-packing is the compaction path, run manually or, since Delta Lake 3.1.0, as auto compaction that runs synchronously right after a write succeeds<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>. Iceberg uses <code>rewrite_data_files</code> as a stored procedure invoked from Spark SQL<sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup>. Hudi splits the job in two: <em>compaction</em> applies only to Merge-on-Read tables and merges the row-based delta logs back into base files (async by default, or inline via <code>hoodie.compact.inline = true</code>), while <em>clustering</em> is a separate data-layout service that stitches small files together<sup class="footnote-ref"><a href="#fn4" title="Apache Hudi: Compaction ↩︎ ↩︎ ↩︎" id="fnref4">[4]</a></sup><sup class="footnote-ref"><a href="#fn5" title="Apache Hudi: Clustering ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref5">[5]</a></sup>.</p>
+<p><strong>Clustering.</strong> To co-locate rows that are queried together, Delta Lake offers Z-Ordering via <code>OPTIMIZE table ZORDER BY (cols)</code>; its effectiveness drops with each added column and it is not idempotent, since each run reclusters all files in the partition<sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>. Delta also documents liquid clustering as a separate feature<sup class="footnote-ref"><a href="#fn1" id="fnref1:3">[1:3]</a></sup>. Iceberg clusters through <code>rewrite_data_files</code> with <code>strategy =&gt; 'sort'</code> and a <code>sort_order</code> argument, including a <code>zorder(c1,c2)</code> form<sup class="footnote-ref"><a href="#fn2" id="fnref2:2">[2:2]</a></sup>. Hudi clustering rewrites file groups sorting by <code>hoodie.clustering.plan.strategy.sort.columns</code><sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>.</p>
+<p><strong>Metadata and manifest overhead.</strong> Delta records each change as a JSON commit in the transaction log and periodically compacts those commits into a Parquet checkpoint so readers reconstruct state without replaying every commit; checkpoints can be split multi-part (default 50,000 actions per part), and since Delta 3.0 log-compaction files aggregate a commit range to cut checkpoint frequency<sup class="footnote-ref"><a href="#fn1" id="fnref1:4">[1:4]</a></sup>. Iceberg writes a new metadata JSON file per change, tracks the manifests for each snapshot in a manifest list written fresh on every commit, and splits large tables across multiple manifests so query planning parallelizes<sup class="footnote-ref"><a href="#fn6" title="Apache Iceberg: Maintenance and Table Spec ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref6">[6]</a></sup>. Hudi records every write and table-service action as an instant on a timeline, with clustering and compaction writing their plans there before executing<sup class="footnote-ref"><a href="#fn5" id="fnref5:2">[5:2]</a></sup><sup class="footnote-ref"><a href="#fn4" id="fnref4:1">[4:1]</a></sup>.</p>
+<p><strong>Snapshot and version expiry.</strong> Delta reclaims storage with <code>VACUUM</code>, which deletes data files past a retention threshold (default 7 days) but never log files; log files are pruned automatically after checkpoints, with a 30-day default set by <code>delta.logRetentionDuration</code><sup class="footnote-ref"><a href="#fn7" title="Delta Lake: Table Utility Commands ↩︎ ↩︎" id="fnref7">[7]</a></sup>. Iceberg's <code>expire_snapshots</code> removes old snapshots and the files only they referenced (<code>older_than</code> default 5 days, <code>retain_last</code> default 1), and <code>remove_orphan_files</code> sweeps unreferenced files (<code>older_than</code> default 3 days)<sup class="footnote-ref"><a href="#fn2" id="fnref2:3">[2:3]</a></sup>. Hudi's cleaner runs automatically after each commit; the default <code>KEEP_LATEST_COMMITS</code> policy retains <code>hoodie.clean.commits.retained</code> commits (default 10)<sup class="footnote-ref"><a href="#fn8" title="Apache Hudi: Cleaning ↩︎" id="fnref8">[8]</a></sup>.</p>
+<p><strong>Row-level deletes: merge-on-read vs copy-on-write.</strong> By default, deleting one row in a Delta table rewrites the whole Parquet file that holds it. Deletion vectors avoid that by marking rows removed in a side file and applying the marks at read time; support landed incrementally (DELETE in 2.4.0, UPDATE in 3.0.0, on by default since 3.1.0)<sup class="footnote-ref"><a href="#fn9" title="Delta Lake: Deletion Vectors ↩︎" id="fnref9">[9]</a></sup>. Iceberg took a spec-versioned route: v2 adds position and equality delete files, and v3 replaces position deletes with per-file deletion-vector bitmaps stored in the Puffin format<sup class="footnote-ref"><a href="#fn6" id="fnref6:1">[6:1]</a></sup>. Hudi frames the same trade-off as two table types: Copy-on-Write rewrites a base file on every change (fast reads, slower writes), while Merge-on-Read appends changes to log files merged at query time and compacted later (fast writes, some read cost)<sup class="footnote-ref"><a href="#fn10" title="Apache Hudi: Table Types ↩︎" id="fnref10">[10]</a></sup>.</p>
+<h2>How to detect it</h2>
+<p>The symptoms are the same ones the <a href="data-formats.html">Data Formats</a> and <a href="bottleneck-small-files.html">Small Files</a> pages describe, read through the table's own metadata. A table accumulating many sub-target files is a sizing problem: Hudi's own guidance ties small files to more tasks, more per-file open/close cost, and cloud object-store request-rate limits that trip because at least one request is issued per file regardless of size<sup class="footnote-ref"><a href="#fn3" id="fnref3:1">[3:1]</a></sup>.</p>
+<p>Growing metadata is the second signal. Iceberg snapshots and metadata JSON files accumulate until expiry runs, and Iceberg recommends <code>expire_snapshots</code> specifically to keep metadata size small on top of freeing data files<sup class="footnote-ref"><a href="#fn6" id="fnref6:2">[6:2]</a></sup>. Delta's commit log grows until checkpoints and log compaction absorb it<sup class="footnote-ref"><a href="#fn1" id="fnref1:5">[1:5]</a></sup>. Hudi's timeline lengthens with every commit, clean, cluster, and compaction<sup class="footnote-ref"><a href="#fn5" id="fnref5:3">[5:3]</a></sup>. Delta's <code>deltaTable.history()</code> surfaces the per-commit version, timestamp, and operation for inspecting that growth<sup class="footnote-ref"><a href="#fn1" id="fnref1:6">[1:6]</a></sup>.</p>
+<p>Read amplification is the third. On a Merge-on-Read Hudi table, uncompacted delta logs are merged at query time, so a table that has not compacted recently reads more slowly<sup class="footnote-ref"><a href="#fn4" id="fnref4:2">[4:2]</a></sup>. The Iceberg equivalent is a data file with many stacked position/equality delete files that a scan must apply<sup class="footnote-ref"><a href="#fn6" id="fnref6:3">[6:3]</a></sup>.</p>
+<h2>Why it matters</h2>
+<p>Small files cost more in metadata and scheduling than their bytes suggest: a query scans many files for the same data, each file adds fixed overhead, and on object storage the per-file request pattern raises the odds of hitting per-prefix rate limits<sup class="footnote-ref"><a href="#fn3" id="fnref3:2">[3:2]</a></sup>. That is exactly the tension the compaction and clustering services exist to resolve, since ingestion favors many small files for low latency while queries favor fewer large ones<sup class="footnote-ref"><a href="#fn3" id="fnref3:3">[3:3]</a></sup>.</p>
+<p>Metadata overhead is a planning tax. More data files mean more manifest entries, and small files inflate that metadata disproportionately and slow query planning, which is why Iceberg exposes <code>rewriteManifests</code> and compaction to cut it<sup class="footnote-ref"><a href="#fn6" id="fnref6:4">[6:4]</a></sup>. Unbounded snapshot and metadata retention keeps that footprint growing until expiry is run<sup class="footnote-ref"><a href="#fn6" id="fnref6:5">[6:5]</a></sup>.</p>
+<p>Clustering decides how much data a query skips. Delta's Z-Ordering co-locates related values so data-skipping can prune more files, dramatically reducing bytes read<sup class="footnote-ref"><a href="#fn1" id="fnref1:7">[1:7]</a></sup>. The retention settings carry a correctness edge too: once Delta <code>VACUUM</code> runs, time travel to a version older than the retention window is gone<sup class="footnote-ref"><a href="#fn7" id="fnref7:1">[7:1]</a></sup>, and Iceberg warns that running <code>remove_orphan_files</code> with too short an interval can delete in-flight files and corrupt the table<sup class="footnote-ref"><a href="#fn6" id="fnref6:6">[6:6]</a></sup>.</p>
+<h2>How to fix it</h2>
+<p>Compact on a schedule. For Delta, run <code>OPTIMIZE</code> (optionally scoped with a <code>WHERE</code> partition predicate) or enable auto compaction on 3.1.0+<sup class="footnote-ref"><a href="#fn1" id="fnref1:8">[1:8]</a></sup>. For Iceberg, call <code>rewrite_data_files</code><sup class="footnote-ref"><a href="#fn2" id="fnref2:4">[2:4]</a></sup>. For Merge-on-Read Hudi, let async compaction run or force it inline with <code>hoodie.compact.inline = true</code>, and use clustering to consolidate small files independently of it<sup class="footnote-ref"><a href="#fn4" id="fnref4:3">[4:3]</a></sup><sup class="footnote-ref"><a href="#fn5" id="fnref5:4">[5:4]</a></sup>.</p>
+<p>Cluster the columns you filter on. Use Delta <code>OPTIMIZE ... ZORDER BY (cols)</code> on a few high-cardinality predicate columns<sup class="footnote-ref"><a href="#fn1" id="fnref1:9">[1:9]</a></sup>, Iceberg <code>rewrite_data_files(strategy =&gt; 'sort', sort_order =&gt; '...')</code> or its <code>zorder(...)</code> form<sup class="footnote-ref"><a href="#fn2" id="fnref2:5">[2:5]</a></sup>, or Hudi clustering with <code>hoodie.clustering.plan.strategy.sort.columns</code><sup class="footnote-ref"><a href="#fn5" id="fnref5:5">[5:5]</a></sup>.</p>
+<p>Expire aggressively but safely. Run Delta <code>VACUUM</code> (keeping the 7-day floor unless you have a reason to override it, since the safety check exists to protect concurrent readers)<sup class="footnote-ref"><a href="#fn7" id="fnref7:2">[7:2]</a></sup>, Iceberg <code>expire_snapshots</code> plus periodic <code>remove_orphan_files</code> with an interval longer than your longest in-flight write<sup class="footnote-ref"><a href="#fn6" id="fnref6:7">[6:7]</a></sup>, and tune Hudi's cleaner via <code>hoodie.clean.commits.retained</code><sup class="footnote-ref"><a href="#fn8" id="fnref8:1">[8:1]</a></sup>.</p>
+<p>Match the delete strategy to the workload. Enable Delta deletion vectors (<code>ALTER TABLE ... SET TBLPROPERTIES('delta.enableDeletionVectors' = true)</code>) so DML marks rows instead of rewriting files, remembering the marks are applied physically only on <code>OPTIMIZE</code> or <code>REORG TABLE ... APPLY (PURGE)</code><sup class="footnote-ref"><a href="#fn9" id="fnref9:1">[9:1]</a></sup>. On Iceberg, prefer merge-on-read deletes for update-heavy tables and compact the delete files<sup class="footnote-ref"><a href="#fn6" id="fnref6:8">[6:8]</a></sup>. On Hudi, pick Copy-on-Write for read-heavy tables and Merge-on-Read for write-heavy or near-real-time ingestion<sup class="footnote-ref"><a href="#fn10" id="fnref10:1">[10:1]</a></sup>.</p>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://docs.delta.io/latest/optimizations-oss.html">Delta Lake: Optimizations (OSS)</a> <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a> <a href="#fnref1:3" class="footnote-backref">↩︎</a> <a href="#fnref1:4" class="footnote-backref">↩︎</a> <a href="#fnref1:5" class="footnote-backref">↩︎</a> <a href="#fnref1:6" class="footnote-backref">↩︎</a> <a href="#fnref1:7" class="footnote-backref">↩︎</a> <a href="#fnref1:8" class="footnote-backref">↩︎</a> <a href="#fnref1:9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://iceberg.apache.org/docs/latest/spark-procedures/">Apache Iceberg: Spark Procedures</a> <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a> <a href="#fnref2:2" class="footnote-backref">↩︎</a> <a href="#fnref2:3" class="footnote-backref">↩︎</a> <a href="#fnref2:4" class="footnote-backref">↩︎</a> <a href="#fnref2:5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://hudi.apache.org/docs/file_sizing/">Apache Hudi: File Sizing</a> <a href="#fnref3" class="footnote-backref">↩︎</a> <a href="#fnref3:1" class="footnote-backref">↩︎</a> <a href="#fnref3:2" class="footnote-backref">↩︎</a> <a href="#fnref3:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://hudi.apache.org/docs/compaction/">Apache Hudi: Compaction</a> <a href="#fnref4" class="footnote-backref">↩︎</a> <a href="#fnref4:1" class="footnote-backref">↩︎</a> <a href="#fnref4:2" class="footnote-backref">↩︎</a> <a href="#fnref4:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://hudi.apache.org/docs/clustering/">Apache Hudi: Clustering</a> <a href="#fnref5" class="footnote-backref">↩︎</a> <a href="#fnref5:1" class="footnote-backref">↩︎</a> <a href="#fnref5:2" class="footnote-backref">↩︎</a> <a href="#fnref5:3" class="footnote-backref">↩︎</a> <a href="#fnref5:4" class="footnote-backref">↩︎</a> <a href="#fnref5:5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://iceberg.apache.org/docs/latest/maintenance/">Apache Iceberg: Maintenance</a> and <a target="_blank" rel="noopener noreferrer" href="https://iceberg.apache.org/spec/">Table Spec</a> <a href="#fnref6" class="footnote-backref">↩︎</a> <a href="#fnref6:1" class="footnote-backref">↩︎</a> <a href="#fnref6:2" class="footnote-backref">↩︎</a> <a href="#fnref6:3" class="footnote-backref">↩︎</a> <a href="#fnref6:4" class="footnote-backref">↩︎</a> <a href="#fnref6:5" class="footnote-backref">↩︎</a> <a href="#fnref6:6" class="footnote-backref">↩︎</a> <a href="#fnref6:7" class="footnote-backref">↩︎</a> <a href="#fnref6:8" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://docs.delta.io/latest/delta-utility.html">Delta Lake: Table Utility Commands</a> <a href="#fnref7" class="footnote-backref">↩︎</a> <a href="#fnref7:1" class="footnote-backref">↩︎</a> <a href="#fnref7:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://hudi.apache.org/docs/cleaning/">Apache Hudi: Cleaning</a> <a href="#fnref8" class="footnote-backref">↩︎</a> <a href="#fnref8:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://docs.delta.io/latest/delta-deletion-vectors.html">Delta Lake: Deletion Vectors</a> <a href="#fnref9" class="footnote-backref">↩︎</a> <a href="#fnref9:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://hudi.apache.org/docs/table_types/">Apache Hudi: Table Types</a> <a href="#fnref10" class="footnote-backref">↩︎</a> <a href="#fnref10:1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="data-formats.html">&larr; Data Formats</a>
+      <a class="chapter-pager-link chapter-pager-next" href="caching.html">Caching &amp; Persistence &rarr;</a>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

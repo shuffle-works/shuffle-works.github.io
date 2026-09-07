@@ -40,18 +40,29 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
   target_dir="${4:-}"
   case "${3:-}" in
     shuffle-works/sparkforensics)
-      mkdir -p "$target_dir/dist/vendor/spark-doc"
+      doc_dir="$target_dir/dist/vendor/spark-doc"
+      mkdir -p "$doc_dir/chapters/spark" "$doc_dir/chapters/meta" "$doc_dir/chapters/assets"
       printf '%s\n' 'spark forensics index' >"$target_dir/dist/index.html"
       printf '%s\n' 'worker' >"$target_dir/dist/vendor/worker.js"
-      printf '%s\n' '<!doctype html><html><head><title>Spark Tuning Reference</title></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header></body></html>' >"$target_dir/dist/vendor/spark-doc/index.html"
-      printf '%s\n' '<!doctype html><html><head><title>How This Site Works</title><meta name="description" content="How the Spark Tuning Reference site is built and organized."></head><body><div class="layout"><span class="site-name">Spark Tuning Reference</span></div></body></html>' >"$target_dir/dist/vendor/spark-doc/meta.html"
-      printf '%s\n' '{}' >"$target_dir/dist/vendor/spark-doc/anchors.json"
-      printf '%s\n' '<!doctype html><html><head><style>footer{padding:2rem 0}</style></head><body><header class="site-header"><nav class="header-nav" aria-label="Primary navigation"><a class="header-link" href="index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub</a><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">toggle</button></nav></header><h1>Spark Tuning Reference</h1><footer><div class="footer-inner"><span>Evidence-first Spark operations.</span></div></footer></body></html>' >"$target_dir/dist/vendor/spark-doc/landing.html"
+
+      # Per-chapter reference pages (upstream's chapters/ layout, replacing
+      # the old monolithic vendor/spark-doc/index.html + meta.html). Each
+      # page carries its own sidebar/nav-toggle and inline theme-boot
+      # snippet, shares one stylesheet/client-script asset pair, and only
+      # the spark TOC page (index.html) carries the "Severity dots" heading
+      # the symptom router keys off.
+      printf '%s\n' '<!doctype html><html><head><title>Spark Tuning Reference</title></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header><h2>Severity dots</h2><button type="button" id="nav-toggle">menu</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/spark/index.html"
+      printf '%s\n' '<!doctype html><html><head><title>How This Site Works</title><meta name="description" content="How the Spark Tuning Reference site is built and organized."></head><body><div class="layout"><span class="site-name">Spark Tuning Reference</span></div><button type="button" id="nav-toggle">menu</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/meta/index.html"
+      printf '%s\n' 'a[href^="http"]::after { content: "arrow"; }' >"$doc_dir/chapters/assets/docs.css"
+      printf '%s\n' 'localStorage.setItem("spark-tuning-reference-theme", theme);' >"$doc_dir/chapters/assets/chapters-client.mjs"
+
+      printf '%s\n' '{}' >"$doc_dir/anchors.json"
+      printf '%s\n' '<!doctype html><html><head><style>footer{padding:2rem 0}</style></head><body><header class="site-header"><nav class="header-nav" aria-label="Primary navigation"><a class="header-link" href="index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub</a><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">toggle</button></nav></header><h1>Spark Tuning Reference</h1><footer><div class="footer-inner"><span>Evidence-first Spark operations.</span></div></footer></body></html>' >"$doc_dir/landing.html"
       if [ "${MOCK_MISSING_EMBEDDED_REFERENCE:-0}" = 1 ]; then
-        rm -f "$target_dir/dist/vendor/spark-doc/index.html"
+        rm -f "$doc_dir/chapters/spark/index.html"
       fi
       if [ "${MOCK_MISSING_EMBEDDED_LANDING:-0}" = 1 ]; then
-        rm -f "$target_dir/dist/vendor/spark-doc/landing.html"
+        rm -f "$doc_dir/landing.html"
       fi
       exit 0
       ;;
@@ -88,34 +99,45 @@ run_sync "$PUBLISHED_ROOT"
 assert_last_invocations \
   "gh auth status" \
   "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch main"
+
+DOC_DIR="$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc"
+SPARK_INDEX="$DOC_DIR/chapters/spark/index.html"
+META_INDEX="$DOC_DIR/chapters/meta/index.html"
+DOCS_CSS="$DOC_DIR/chapters/assets/docs.css"
+CLIENT_SCRIPT="$DOC_DIR/chapters/assets/chapters-client.mjs"
+LANDING="$DOC_DIR/landing.html"
+
 test -f "$PUBLISHED_ROOT/sparkforensics/index.html"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/worker.js"
-test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html"
-test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html"
-test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/anchors.json"
-test -f "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html"
+test -f "$SPARK_INDEX"
+test -f "$META_INDEX"
+test -f "$DOCS_CSS"
+test -f "$CLIENT_SCRIPT"
+test -f "$DOC_DIR/anchors.json"
+test -f "$LANDING"
 test -f "$PUBLISHED_ROOT/spark-tuning-reference/index.html"
 grep -F 'url=/sparkforensics/vendor/spark-doc/landing.html' "$PUBLISHED_ROOT/spark-tuning-reference/index.html" >/dev/null
-grep -F 'href="/sparkforensics/vendor/spark-doc/landing.html"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
-if grep -F 'href="/spark-tuning-reference/"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
+grep -F 'href="/sparkforensics/vendor/spark-doc/landing.html"' "$SPARK_INDEX" >/dev/null
+if grep -F 'href="/spark-tuning-reference/"' "$SPARK_INDEX" >/dev/null; then
   echo "expected embedded reference navigation to use its bundled path" >&2
   exit 1
 fi
 
 test -f "$PUBLISHED_ROOT/shuffle-works-footer.css"
-grep -F 'href="/shuffle-works-footer.css"' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
+grep -F 'href="/shuffle-works-footer.css"' "$LANDING" >/dev/null
 
-# index.html is not a product's landing page (only sparkforensics/index.html
-# and vendor/spark-doc/landing.html are), so sync must not add the shared
-# footer to it, even though its mock already carries its own bar-like header.
-if grep -F 'data-shuffle-footer' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
-  echo "expected index.html (not a landing page) to not get the shared footer" >&2
+# chapters/spark/index.html is not a product's landing page (only
+# sparkforensics/index.html and vendor/spark-doc/landing.html are), so sync
+# must not add the shared footer to it, even though its mock already carries
+# its own bar-like header.
+if grep -F 'data-shuffle-footer' "$SPARK_INDEX" >/dev/null; then
+  echo "expected chapters/spark/index.html (not a landing page) to not get the shared footer" >&2
   exit 1
 fi
 
 # landing.html ships with its own bespoke footer; sync must replace it.
-grep -F 'data-shuffle-footer' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-if grep -F 'Evidence-first Spark operations.' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null; then
+grep -F 'data-shuffle-footer' "$LANDING" >/dev/null
+if grep -F 'Evidence-first Spark operations.' "$LANDING" >/dev/null; then
   echo "expected the bespoke footer to be replaced by the canonical one" >&2
   exit 1
 fi
@@ -125,24 +147,24 @@ fi
 # bar's row instead of rendering as a second stacked bar. The Reference/GitHub
 # links are no longer hoisted: the hub's own product bar now supplies those,
 # so only the toggle still needs to move.
-grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F '<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
+grep -F 'data-shuffle-page-controls-hoist' "$LANDING" >/dev/null
+grep -F '<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls' "$LANDING" >/dev/null
 
 # The hub's own product bar carries the Reference/GitHub links directly, on
 # landing.html's freshly-injected bar -- the only page in this tree that gets
-# one. meta.html is a reference sub-page, not a landing page, so it gets no
-# bar at all.
-grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a>' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F '<a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-if grep -F 'data-shuffle-product-bar' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null; then
-  echo "expected meta.html (not a landing page) to not get the product bar" >&2
+# one. chapters/meta/index.html is a reference sub-page, not a landing page,
+# so it gets no bar at all.
+grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a>' "$LANDING" >/dev/null
+grep -F '<a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub' "$LANDING" >/dev/null
+if grep -F 'data-shuffle-product-bar' "$META_INDEX" >/dev/null; then
+  echo "expected chapters/meta/index.html (not a landing page) to not get the product bar" >&2
   exit 1
 fi
 
 # The hoist script only ships alongside the product-bar shell, so a
-# non-landing page like index.html never gets it.
-if grep -F 'data-shuffle-page-controls-hoist' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
-  echo "expected index.html (not a landing page) to not get the page-controls hoist script" >&2
+# non-landing page like chapters/spark/index.html never gets it.
+if grep -F 'data-shuffle-page-controls-hoist' "$SPARK_INDEX" >/dev/null; then
+  echo "expected chapters/spark/index.html (not a landing page) to not get the page-controls hoist script" >&2
   exit 1
 fi
 
@@ -152,40 +174,84 @@ fi
 # .footer-inner's own padding, doubling the footer's height. Sync must append
 # an override that always wins, without requiring the source page to scope
 # its own rule.
-grep -F 'data-shuffle-footer-override' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
-grep -F 'footer[data-shuffle-footer]{padding:0!important}' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/landing.html" >/dev/null
+grep -F 'data-shuffle-footer-override' "$LANDING" >/dev/null
+grep -F 'footer[data-shuffle-footer]{padding:0!important}' "$LANDING" >/dev/null
 
-# The doc reference pages (index.html/meta.html) get the sidebar-dedup style
-# appended too. It's DOM-presence-scoped, so it's harmless on index.html's mock
-# (no .layout .site-name there) and effective on meta.html's.
-grep -F 'data-shuffle-sidebar-dedup' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
-grep -F 'header.shuffle-product-bar ~ .layout .site-name{display:none}' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
+# Every chapter page gets the sidebar-dedup style appended. It's
+# DOM-presence-scoped, so it's harmless on chapters/spark/index.html's mock
+# (no .layout .site-name there) and effective on chapters/meta/index.html's.
+grep -F 'data-shuffle-sidebar-dedup' "$SPARK_INDEX" >/dev/null
+grep -F 'header.shuffle-product-bar ~ .layout .site-name{display:none}' "$META_INDEX" >/dev/null
+
+# Every chapter page carrying id="nav-toggle" gets the sidebar a11y drawer
+# script, regardless of which reference sub-tree (spark/ or meta/) it's in.
+grep -F 'data-shuffle-reference-a11y' "$SPARK_INDEX" >/dev/null
+grep -F 'data-shuffle-reference-a11y' "$META_INDEX" >/dev/null
+
+# The symptom router is keyed off the "Severity dots" heading, present only
+# on chapters/spark/index.html's mock. Its links are page-relative filenames
+# (it's meant for pages living alongside the bottleneck-*.html chapter
+# files), not in-page fragments.
+grep -F 'data-shuffle-symptom-router' "$SPARK_INDEX" >/dev/null
+grep -F 'href="bottleneck-slow-host.html"' "$SPARK_INDEX" >/dev/null
+grep -F 'href="bottleneck-skew.html"' "$SPARK_INDEX" >/dev/null
+grep -F 'href="bottleneck-failures.html"' "$SPARK_INDEX" >/dev/null
+grep -F 'href="spark-architecture.html"' "$SPARK_INDEX" >/dev/null
+if grep -F 'data-shuffle-symptom-router' "$META_INDEX" >/dev/null; then
+  echo "expected chapters/meta/index.html (no Severity dots heading) to not get the symptom router" >&2
+  exit 1
+fi
+
+# The router's styles live in the chapter tree's one shared stylesheet
+# (docs.css), appended exactly once regardless of how many pages got the
+# router markup.
+test "$(grep -c '\.symptom-router {' "$DOCS_CSS")" = 1
+
+# The vendored pages' own generic external-link-arrow rule now lives in the
+# shared docs.css rather than inline per page; sync must still scope it to
+# .content so it doesn't also match the product bar's own GitHub link.
+grep -F '.content a[href^="http"]::after' "$DOCS_CSS" >/dev/null
+
+# Both chapter pages and the shared chapters-client.mjs read/write the same
+# theme localStorage key landing.html/the rest of the site use, realigned
+# from the vendored default.
+if grep -F 'spark-tuning-reference-theme' "$SPARK_INDEX" "$META_INDEX" "$CLIENT_SCRIPT" >/dev/null; then
+  echo "expected the vendored theme-storage key to be realigned everywhere" >&2
+  exit 1
+fi
+grep -F 'shuffle-works-theme' "$SPARK_INDEX" >/dev/null
+grep -F 'shuffle-works-theme' "$META_INDEX" >/dev/null
+grep -F 'shuffle-works-theme' "$CLIENT_SCRIPT" >/dev/null
 
 # Every processed page gets the shared favicon, regardless of which
-# inject_product_shell branch it took: index.html already ships its own
-# product bar (the early-return, link-rewrite-only branch); landing.html and
-# meta.html get a freshly-injected one.
-for reference_page in index.html landing.html meta.html; do
-  grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' \
-    "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/$reference_page" >/dev/null
+# inject_product_shell branch it took: chapters/spark/index.html and
+# chapters/meta/index.html already ship their own product bar-less content
+# (the early-return, link-rewrite-only branch); landing.html gets a
+# freshly-injected one.
+for reference_page in "$SPARK_INDEX" "$META_INDEX" "$LANDING"; do
+  grep -F '<link rel="icon" href="/icon.svg" type="image/svg+xml">' "$reference_page" >/dev/null
 done
 
 # Open Graph/Twitter tags are built from each page's own <title>/<meta
-# name="description">. index.html's mock has a title but no description, so
-# it gets og:title but no og:description; meta.html's mock has both.
-grep -F '<meta property="og:site_name" content="Shuffle Works">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
-grep -F '<meta property="og:title" content="Spark Tuning Reference">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null
-if grep -F 'og:description' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/index.html" >/dev/null; then
+# name="description">. chapters/spark/index.html's mock has a title but no
+# description, so it gets og:title but no og:description;
+# chapters/meta/index.html's mock has both.
+grep -F '<meta property="og:site_name" content="Shuffle Works">' "$SPARK_INDEX" >/dev/null
+grep -F '<meta property="og:title" content="Spark Tuning Reference">' "$SPARK_INDEX" >/dev/null
+if grep -F 'og:description' "$SPARK_INDEX" >/dev/null; then
   echo "expected no og:description without a source <meta name=\"description\">" >&2
   exit 1
 fi
-grep -F '<meta property="og:title" content="How This Site Works">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
-grep -F '<meta property="og:description" content="How the Spark Tuning Reference site is built and organized.">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
-grep -F '<meta name="twitter:description" content="How the Spark Tuning Reference site is built and organized.">' "$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc/meta.html" >/dev/null
+grep -F '<meta property="og:title" content="How This Site Works">' "$META_INDEX" >/dev/null
+grep -F '<meta property="og:description" content="How the Spark Tuning Reference site is built and organized.">' "$META_INDEX" >/dev/null
+grep -F '<meta name="twitter:description" content="How the Spark Tuning Reference site is built and organized.">' "$META_INDEX" >/dev/null
 
 # One sitemap for the whole published family.
 test -f "$PUBLISHED_ROOT/sitemap.xml"
 grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/spark/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/meta/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
 
 run_sync "$TEST_ROOT/one-ref" SparkForensics
 assert_last_invocations \

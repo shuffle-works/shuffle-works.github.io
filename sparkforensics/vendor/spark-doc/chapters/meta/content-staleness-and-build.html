@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content, Staleness &amp; Build — How This Site Works</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Content, Staleness &amp; Build — How This Site Works"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Content, Staleness &amp; Build — How This Site Works">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="pipeline-overview.html" aria-label="How This Site Works introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">How This Site Works</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Pipeline Overview</div>
+      <ul class="nav-list">
+        <li><a href="pipeline-overview.html" class="nav-link">Pipeline Overview</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Registry &amp; Retrieval</div>
+      <ul class="nav-list">
+        <li><a href="registry-and-retrieval.html" class="nav-link">Registry &amp; Retrieval</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Agents &amp; Orchestration</div>
+      <ul class="nav-list">
+        <li><a href="agents-and-orchestration.html" class="nav-link">Agents &amp; Orchestration</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Content, Staleness &amp; Build</div>
+      <ul class="nav-list">
+        <li><a href="content-staleness-and-build.html" class="nav-link" aria-current="page">Content, Staleness &amp; Build</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../spark/index.html" class="nav-link">Spark Tuning Reference</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="content-staleness-and-build" class="doc-section">
+      <h1>Content, Staleness &amp; Build</h1>
+<h2>Ungenerated vs. stale</h2>
+<p><code>content_state.py</code> distinguishes the two states by comparing a page's recorded hash in the committed sidecar <code>research/content-state.yaml</code> against the sha256 of the section projection it was assembled from<sup class="footnote-ref"><a href="#fn1" title="architecture — references-meta/docs/architecture.md ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref1">[1]</a></sup>. A page with no entry in that sidecar has never been generated from its section projection, and <code>content_state.py</code> reports it <strong>ungenerated</strong><sup class="footnote-ref"><a href="#fn2" title="runbook — references-meta/docs/runbook.md ↩︎ ↩︎ ↩︎ ↩︎" id="fnref2">[2]</a></sup>. A page has an entry whose recorded hash no longer matches the current projection hash when the section's underlying answers changed since the page was generated or last accepted; <code>content_state.py</code> reports it <strong>stale</strong><sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup><sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup>.</p>
+<p>The required human action differs accordingly. For an <strong>ungenerated</strong> page, the pipeline generates it: the answer-meta-question skill reads the page's <code>brief:</code> and <code>assembled_from:</code> entries from <code>content/meta/manifest.yaml</code>, writes the page from the projection, humanizes it, then runs <code>content_state --accept &lt;page&gt;</code> to stamp its hash<sup class="footnote-ref"><a href="#fn3" title="skill-answer-meta-question — references-meta/skills/answer-meta-question.md" id="fnref3">[3]</a></sup>. For a <strong>stale</strong> page, nothing is overwritten automatically. The pipeline does not edit the page; a human hand-edits it to reflect the changed answers, and only then does <code>content_state.py --accept &lt;page&gt;</code> re-stamp the hash so the page is no longer flagged<sup class="footnote-ref"><a href="#fn2" id="fnref2:2">[2:2]</a></sup><sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>. This follows from content pages being human-owned once generated: the pipeline never silently overwrites a generated page<sup class="footnote-ref"><a href="#fn4" title="rules-content — references-meta/docs/rules/content.md ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref4">[4]</a></sup>.</p>
+<h2>Anchors as a frozen cross-repo contract</h2>
+<p><code>content/manifest.yaml</code> is the single authority for section order, titles, and anchor IDs; content assembly reads anchors from it and never derives them from a Markdown heading or a filename<sup class="footnote-ref"><a href="#fn4" id="fnref4:1">[4:1]</a></sup><sup class="footnote-ref"><a href="#fn5" title="anchor-map — references-meta/docs/anchor-map.md ↩︎" id="fnref5">[5]</a></sup>. Because the anchors are looked up rather than generated from content, other repos can depend on them staying stable, so the project documents them as a frozen cross-repo Integration Contract with the sibling repo <code>sparkforensics</code><sup class="footnote-ref"><a href="#fn4" id="fnref4:2">[4:2]</a></sup><sup class="footnote-ref"><a href="#fn5" id="fnref5:1">[5:1]</a></sup>. Renaming or removing an anchor is a breaking change, and if the two repos' descriptions of an anchor diverge, the sibling repo's own contract doc wins<sup class="footnote-ref"><a href="#fn4" id="fnref4:3">[4:3]</a></sup>.</p>
+<p>The contract covers two sets of IDs: the 31 manifest-level anchors, one per <code>content/manifest.yaml</code> entry (enforced by <code>scripts/smoke_content.py</code>'s 31-section count check), and 6 sub-anchors nested inside a manifest entry's own page rather than being manifest entries themselves: 4 config-page sub-anchors inside the single <code>config</code> entry (<code>config-shuffle-service</code>, <code>config-autoscale-bounds</code>, <code>config-serializer</code>, <code>config-memory-overhead</code>) and 2 detector-facing sub-anchors, <code>bottleneck-stage-shape</code> and <code>bottleneck-stage-slowness</code>, inside the <code>bottleneck-skew</code> and <code>bottleneck-slow-host</code> entries. All 6 are also enforced by <code>scripts/smoke_content.py</code><sup class="footnote-ref"><a href="#fn4" id="fnref4:4">[4:4]</a></sup>. The contract applies only to <code>content/manifest.yaml</code>/<code>index.html</code>, i.e. the Spark corpus; <code>content/meta/manifest.yaml</code> and <code>meta.html</code> carry no such contract, so this meta corpus's own anchors may change freely<sup class="footnote-ref"><a href="#fn4" id="fnref4:5">[4:5]</a></sup>.</p>
+<h2>The build's non-fatal staleness warning</h2>
+<p><code>build.py</code>'s HTML-generation role has since been retired: the site build moved from that single Python script (Jinja2 + python-markdown) to a Node pipeline. <code>node site/build-chapters.mjs</code> renders <code>content/manifest.yaml</code> (and <code>content/meta/manifest.yaml</code>) into one committed HTML page per manifest entry, per corpus, under <code>chapters/&lt;spark|meta&gt;/&lt;anchor&gt;.html</code>, via <code>markdown-it</code> and a JS template module (<code>site/templates/chapter-shell.mjs</code>)<sup class="footnote-ref"><a href="#fn1" id="fnref1:3">[1:3]</a></sup><sup class="footnote-ref"><a href="#fn6" title="adr-vite — references-meta/docs/adr/0006-vite-site-build.md" id="fnref6">[6]</a></sup>. The RAG answering pipeline itself (the registry, per-question answers, section projections, and the staleness model) stayed Python; only HTML generation moved<sup class="footnote-ref"><a href="#fn1" id="fnref1:4">[1:4]</a></sup>.</p>
+<p>Before rendering, <code>site/build-chapters.mjs</code> shells out to <code>scripts/prebuild_checks.py</code> per corpus (a thin new script, split out of <code>build.py</code>'s former inline flow), which calls <code>content_state.report(...)</code>, compares each content page's recorded hash (from <code>research/content-state.yaml</code>) against the current section-projection hash, and classifies the page as ungenerated (no recorded entry), stale (hash differs), or up to date (hash matches)<sup class="footnote-ref"><a href="#fn1" id="fnref1:5">[1:5]</a></sup>. If any pages come back ungenerated or stale, it prints the same non-fatal warning banner listing them, but the Node build still produces the output HTML regardless<sup class="footnote-ref"><a href="#fn1" id="fnref1:6">[1:6]</a></sup><sup class="footnote-ref"><a href="#fn2" id="fnref2:3">[2:3]</a></sup>.</p>
+<p>The warning is non-fatal because content pages are human-owned once generated: the pipeline never overwrites a page's prose automatically, even when its upstream answers have changed<sup class="footnote-ref"><a href="#fn1" id="fnref1:7">[1:7]</a></sup>. A stale or ungenerated flag just means the built page's text may not reflect the latest answers yet. Fixing it requires a human to edit the page (or run first-gen for an ungenerated one) and then re-stamp its hash with <code>content_state.py --accept &lt;page&gt;</code> so it reports up to date again<sup class="footnote-ref"><a href="#fn2" id="fnref2:4">[2:4]</a></sup><sup class="footnote-ref"><a href="#fn1" id="fnref1:8">[1:8]</a></sup>. Recompute itself never triggers first-gen; it only ever flags a page stale, so content pages stay human-owned<sup class="footnote-ref"><a href="#fn1" id="fnref1:9">[1:9]</a></sup>.</p>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>architecture — references-meta/docs/architecture.md <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a> <a href="#fnref1:3" class="footnote-backref">↩︎</a> <a href="#fnref1:4" class="footnote-backref">↩︎</a> <a href="#fnref1:5" class="footnote-backref">↩︎</a> <a href="#fnref1:6" class="footnote-backref">↩︎</a> <a href="#fnref1:7" class="footnote-backref">↩︎</a> <a href="#fnref1:8" class="footnote-backref">↩︎</a> <a href="#fnref1:9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>runbook — references-meta/docs/runbook.md <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a> <a href="#fnref2:2" class="footnote-backref">↩︎</a> <a href="#fnref2:3" class="footnote-backref">↩︎</a> <a href="#fnref2:4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p>skill-answer-meta-question — references-meta/skills/answer-meta-question.md <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p>rules-content — references-meta/docs/rules/content.md <a href="#fnref4" class="footnote-backref">↩︎</a> <a href="#fnref4:1" class="footnote-backref">↩︎</a> <a href="#fnref4:2" class="footnote-backref">↩︎</a> <a href="#fnref4:3" class="footnote-backref">↩︎</a> <a href="#fnref4:4" class="footnote-backref">↩︎</a> <a href="#fnref4:5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p>anchor-map — references-meta/docs/anchor-map.md <a href="#fnref5" class="footnote-backref">↩︎</a> <a href="#fnref5:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p>adr-vite — references-meta/docs/adr/0006-vite-site-build.md <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="agents-and-orchestration.html">&larr; Agents &amp; Orchestration</a>
+      <span></span>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

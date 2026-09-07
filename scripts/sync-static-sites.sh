@@ -64,7 +64,7 @@ PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-doc/landing.
 # per-surface arrays above. Wrapped in its own flex group (CSS: margin-left:
 # auto) so it, and whatever page control gets hoisted after it, sit
 # right-aligned instead of trailing directly after the product tabs.
-PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
+PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
 
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""
@@ -444,7 +444,7 @@ inject_before() {
 }
 
 reference_router_markup() {
-  printf '%s' '<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title"><h3 id="symptom-router-title">Start with a symptom</h3><p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p><ul class="symptom-router-list"><li><a href="#bottleneck-slow-host">Slow stages</a></li><li><a href="#bottleneck-skew">Skew, spill, or memory</a></li><li><a href="#bottleneck-failures">Failures or retries</a></li><li><a href="#spark-architecture">Configuration or architecture</a></li></ul></nav>'
+  printf '%s' '<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title"><h3 id="symptom-router-title">Start with a symptom</h3><p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p><ul class="symptom-router-list"><li><a href="bottleneck-slow-host.html">Slow stages</a></li><li><a href="bottleneck-skew.html">Skew, spill, or memory</a></li><li><a href="bottleneck-failures.html">Failures or retries</a></li><li><a href="spark-architecture.html">Configuration or architecture</a></li></ul></nav>'
 }
 
 reference_router_styles() {
@@ -458,14 +458,33 @@ reference_drawer_script() {
 inject_reference_enhancements() {
   local page=$1
 
-  if grep -Fq '<h3>Severity dots</h3>' "$page" && ! grep -Fq 'data-shuffle-symptom-router' "$page"; then
-    inject_before "$page" '</style>' "$(reference_router_styles)"
-    inject_before "$page" '<h3>Severity dots</h3>' "$(reference_router_markup)"
+  # The router's links are relative filenames (bottleneck-skew.html, ...), so
+  # this only makes sense injected into a page that's itself a sibling of
+  # those chapter files (currently: chapters/spark/index.html and intro.html,
+  # the only pages carrying the "Severity dots" heading this keys off of).
+  if grep -Fq '<h2>Severity dots</h2>' "$page" && ! grep -Fq 'data-shuffle-symptom-router' "$page"; then
+    inject_before "$page" '<h2>Severity dots</h2>' "$(reference_router_markup)"
   fi
 
   if grep -Fq 'id="nav-toggle"' "$page" && ! grep -Fq 'data-shuffle-reference-a11y' "$page"; then
     inject_before "$page" '</body>' "$(reference_drawer_script)"
   fi
+}
+
+# The router's markup gets injected per-page (above), but its styles live in
+# the chapter tree's one shared stylesheet now instead of a per-page inline
+# <style> block, so this only needs to run once against that shared file.
+# Guarded on the rule's own selector rather than the page-level
+# data-shuffle-symptom-router marker, since this operates on the stylesheet,
+# not a page.
+inject_symptom_router_styles() {
+  local stylesheet=$1
+
+  if grep -Fq '.symptom-router {' "$stylesheet"; then
+    return
+  fi
+
+  printf '\n%s\n' "$(reference_router_styles)" >>"$stylesheet"
 }
 
 # The shared product-bar (injected above the doc reference pages at publish
@@ -525,8 +544,8 @@ if [ ! -f "$FORENSICS_CHECKOUT/dist/index.html" ]; then
   exit 1
 fi
 
-if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/index.html" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/meta.html" ] || \
+if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/chapters/spark/index.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/chapters/meta/index.html" ] || \
   [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/anchors.json" ] || \
   [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/landing.html" ]; then
   echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference" >&2
@@ -562,17 +581,25 @@ fi
 
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
 
-for reference_page in \
-  "$STAGED_DIR/sparkforensics/vendor/spark-doc/index.html" \
-  "$STAGED_DIR/sparkforensics/vendor/spark-doc/meta.html"
-do
-  if [ -f "$reference_page" ]; then
-    inject_reference_enhancements "$reference_page"
-    inject_sidebar_dedup_style "$reference_page"
-    align_reference_theme_key "$reference_page"
-    scope_reference_external_link_arrow "$reference_page"
-  fi
-done
+while IFS= read -r -d '' reference_page; do
+  inject_reference_enhancements "$reference_page"
+  inject_sidebar_dedup_style "$reference_page"
+  align_reference_theme_key "$reference_page"
+done < <(find "$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters" -type f -name '*.html' -print0)
+
+# The per-chapter pages share these assets instead of each inlining its own
+# copy (unlike the old monolithic index.html/meta.html), so the same
+# theme-key/link-arrow rewrites apply once here rather than per page.
+reference_client_script="$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters/assets/chapters-client.mjs"
+if [ -f "$reference_client_script" ]; then
+  align_reference_theme_key "$reference_client_script"
+fi
+
+reference_docs_stylesheet="$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters/assets/docs.css"
+if [ -f "$reference_docs_stylesheet" ]; then
+  scope_reference_external_link_arrow "$reference_docs_stylesheet"
+  inject_symptom_router_styles "$reference_docs_stylesheet"
+fi
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
@@ -620,8 +647,9 @@ REFERENCE_DOC_DIR="$(dirname "$REFERENCE_LANDING_PATH")"
 SITEMAP_PATHS=(
   "/"
   "${PRODUCT_BAR_HREFS[@]}"
-  "$REFERENCE_DOC_DIR/index.html"
-  "$REFERENCE_DOC_DIR/meta.html"
+  "$REFERENCE_DOC_DIR/chapters/index.html"
+  "$REFERENCE_DOC_DIR/chapters/spark/index.html"
+  "$REFERENCE_DOC_DIR/chapters/meta/index.html"
 )
 
 SITEMAP_LASTMOD="$(date -u +%Y-%m-%d)"

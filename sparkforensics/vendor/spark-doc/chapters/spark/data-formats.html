@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Formats — Spark Tuning Reference</title>
+<link rel="stylesheet" href="../assets/docs.css">
+<script type="module" src="../assets/chapters-client.mjs"></script>
+<script>
+(() => {
+  try {
+    const theme = localStorage.getItem('shuffle-works-theme');
+    if (theme === 'light' || theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  } catch (_) {
+    // Storage can be unavailable when previewed from a sandboxed context.
+  }
+})();
+</script>
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Data Formats — Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Data Formats — Spark Tuning Reference">
+<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Toggle navigation">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"></line>
+    <line x1="3" y1="12" x2="21" y2="12"></line>
+    <line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</button>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Sections">
+    <div class="sidebar-header">
+      <a class="site-identity" href="intro.html" aria-label="Spark Tuning Reference introduction">
+        <span class="brand-mark" aria-hidden="true">S/</span>
+        <span class="site-name">Spark Tuning Reference</span>
+      </a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">
+        <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
+      </button>
+    </div>
+    <input type="search" id="nav-search" class="nav-search" placeholder="Filter sections…" aria-label="Filter sections">
+    
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <ul class="nav-list">
+        <li><a href="intro.html" class="nav-link">Introduction</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Optimization Guide</div>
+      <ul class="nav-list">
+        <li><a href="spark-architecture.html" class="nav-link">Spark Execution Model</a></li>
+        <li><a href="memory-model.html" class="nav-link">Memory Management</a></li>
+        <li><a href="partitioning.html" class="nav-link">Partitioning</a></li>
+        <li><a href="joins.html" class="nav-link">Join Optimization</a></li>
+        <li><a href="shuffle.html" class="nav-link">Shuffle</a></li>
+        <li><a href="data-formats.html" class="nav-link" aria-current="page">Data Formats</a></li>
+        <li><a href="table-formats.html" class="nav-link">Table Formats</a></li>
+        <li><a href="caching.html" class="nav-link">Caching &amp; Persistence</a></li>
+        <li><a href="pyspark.html" class="nav-link">PySpark Specifics</a></li>
+        <li><a href="aqe.html" class="nav-link">Adaptive Query Execution</a></li>
+        <li><a href="cluster-config.html" class="nav-link">Cluster Tuning</a></li>
+        <li><a href="anti-patterns.html" class="nav-link">Anti-Patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Detector Catalog</div>
+      <ul class="nav-list">
+        <li><a href="bottleneck-skew.html" class="nav-link">Task Skew</a></li>
+        <li><a href="bottleneck-shuffle.html" class="nav-link">Shuffle I/O</a></li>
+        <li><a href="bottleneck-spill.html" class="nav-link">Memory / Disk Spill</a></li>
+        <li><a href="bottleneck-gc.html" class="nav-link">GC Pressure</a></li>
+        <li><a href="bottleneck-cold-start.html" class="nav-link">Cold Start</a></li>
+        <li><a href="bottleneck-utilization.html" class="nav-link">Executor Utilization</a></li>
+        <li><a href="bottleneck-slow-host.html" class="nav-link">Slow Host</a></li>
+        <li><a href="bottleneck-failures.html" class="nav-link">Task Failures</a></li>
+        <li><a href="bottleneck-straggler.html" class="nav-link">Stragglers</a></li>
+        <li><a href="bottleneck-retry-waste.html" class="nav-link">Retry Waste</a></li>
+        <li><a href="bottleneck-tiny-tasks.html" class="nav-link">Tiny Tasks</a></li>
+        <li><a href="bottleneck-job-failure-rate.html" class="nav-link">Job Failure Rate</a></li>
+        <li><a href="bottleneck-memory-utilization.html" class="nav-link">Memory Utilization</a></li>
+        <li><a href="bottleneck-duplicate-plan-subtree.html" class="nav-link">Duplicate Plan Subtree</a></li>
+        <li><a href="bottleneck-small-files.html" class="nav-link">Small Files</a></li>
+        <li><a href="bottleneck-broadcast-sizing.html" class="nav-link">Broadcast Sizing</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-title">Reference</div>
+      <ul class="nav-list">
+        <li><a href="metrics.html" class="nav-link">Metrics Glossary</a></li>
+        <li><a href="config.html" class="nav-link">Spark Config Quick-Reference</a></li>
+      </ul>
+    </div>
+    
+    <div class="nav-group">
+      <ul class="nav-list">
+        <li><a href="../meta/index.html" class="nav-link">How this site works</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="content" id="main-content" tabindex="-1">
+    <section id="data-formats" class="doc-section">
+      <h1>Data Formats</h1>
+<h2>What it is</h2>
+<p>Parquet and ORC are both self-describing, columnar file formats for storing Spark's structured data<sup class="footnote-ref"><a href="#fn1" title="Spark: The Definitive Guide, Chambers &amp; Zaharia, ch. 9 ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎ ↩︎" id="fnref1">[1]</a></sup>. They're closer than they are different: <em>Spark: The Definitive Guide</em> frames the choice as &quot;for the most part, they're quite similar; the fundamental difference is that Parquet is further optimized for use with Spark, whereas ORC is further optimized for Hive&quot;<sup class="footnote-ref"><a href="#fn1" id="fnref1:1">[1:1]</a></sup>, and notes that ORC &quot;has no options for reading in data because Spark understands the file format quite well&quot;<sup class="footnote-ref"><a href="#fn1" id="fnref1:2">[1:2]</a></sup>: Spark treats it as a format it understands natively rather than one with extra read-side knobs.</p>
+<p>Both formats group rows into chunks (row groups in Parquet, stripes in ORC), each holding every column's data for that slice, with a footer or file-level metadata section recording where each chunk lives on disk. Parquet's <code>FileMetaData</code> footer records the offset and size of every row group and column chunk, and &quot;readers are expected to first read the file metadata to find all the column chunks they are interested in. The column chunks should then be read sequentially&quot;<sup class="footnote-ref"><a href="#fn2" title="Parquet File Format: File Metadata and Row Groups ↩︎" id="fnref2">[2]</a></sup>. Because compression is applied per column chunk rather than as one continuous stream over the whole file, a reader can seek straight to a row group's footer-recorded offset and decode just that chunk, which is exactly why Parquet files compressed with Snappy stay splittable even though the Snappy stream format itself provides no split points: it has &quot;no entropy encoder backend nor framing layer -- the latter is assumed to be handled by other parts of the system&quot;<sup class="footnote-ref"><a href="#fn3" title="Snappy Compressed Format Description ↩︎" id="fnref3">[3]</a></sup>.</p>
+<p>Both formats also carry the statistics that later drive predicate pushdown. Parquet records min/max values per column chunk, plus an optional page-level <code>ColumnIndex</code> that lets a reader binary-search ordered columns for matching pages<sup class="footnote-ref"><a href="#fn4" title="Parquet File Format: Column Index" id="fnref4">[4]</a></sup>, and optional Bloom filters for columns whose cardinality is too high for a dictionary to be practical<sup class="footnote-ref"><a href="#fn5" title="Parquet File Format: Bloom Filter" id="fnref5">[5]</a></sup>. ORC's <code>ColumnStatistics</code> protobuf records row count and, for most primitive types, min/max (plus sum for numeric types); from Hive 1.1.0 it also records a <code>hasNull</code> flag used specifically by ORC's predicate pushdown to answer <code>IS NULL</code> queries<sup class="footnote-ref"><a href="#fn6" title="ORC Specification v1: Column Statistics" id="fnref6">[6]</a></sup>. ORC layers this at two granularities: a <code>RowIndexEntry</code> per row group (10,000 rows by default), kept at the front of each stripe so it's read only when pushdown or seeking is actually needed<sup class="footnote-ref"><a href="#fn7" title="ORC Specification v1: Row Index and Bloom Filters ↩︎" id="fnref7">[7]</a></sup>, and file-level <code>StripeStatistics</code> that let whole stripes be skipped by predicate pushdown<sup class="footnote-ref"><a href="#fn8" title="ORC Specification v1: Stripe Statistics" id="fnref8">[8]</a></sup>. ORC also supports Bloom filters (Hive 1.2.0+), but only evaluates them against row groups that already passed the min/max row-index check first: a second-stage filter, not an independent one<sup class="footnote-ref"><a href="#fn7" id="fnref7:1">[7:1]</a></sup>.</p>
+<p>On compression: Parquet defaults to Snappy, while ORC's default has been Zstd since Spark 2.3.0<sup class="footnote-ref"><a href="#fn9" title="Configuration: Spark ↩︎ ↩︎ ↩︎ ↩︎" id="fnref9">[9]</a></sup>. Zstandard's own manual describes it as &quot;a fast lossless compression algorithm, targeting real-time compression scenarios at zlib-level and better compression ratios,&quot; offering regular levels 1–22 plus negative levels that trade ratio for speed<sup class="footnote-ref"><a href="#fn10" title="Zstandard Manual" id="fnref10">[10]</a></sup>. Spark exposes the level directly through <code>spark.io.compression.zstd.level</code> (default <code>1</code>)<sup class="footnote-ref"><a href="#fn9" id="fnref9:1">[9:1]</a></sup>, along with <code>spark.io.compression.zstd.workers</code> for parallel compression threads (default <code>0</code>, since 4.0.0) and <code>spark.io.compression.zstd.bufferSize</code> (default 32k)<sup class="footnote-ref"><a href="#fn9" id="fnref9:2">[9:2]</a></sup>.</p>
+<p>Parquet has one more structural knob worth knowing: <code>parquet.writer.version</code>. Version 2 changes the on-disk page-header encoding, and the spec is explicit that this is a forward-<em>incompatible</em> change: &quot;a reader that only understands <code>DataPageHeader</code> cannot parse <code>DataPageHeaderV2</code> pages&quot;<sup class="footnote-ref"><a href="#fn11" title="Parquet File Format: Data Pages (V1/V2) ↩︎ ↩︎ ↩︎ ↩︎" id="fnref11">[11]</a></sup>. The spec also flags that the file's own version marker &quot;has historically been used inconsistently: writers populate 1 or 2 without a consistent relationship to the features actually used&quot;<sup class="footnote-ref"><a href="#fn11" id="fnref11:1">[11:1]</a></sup>, so the marker itself isn't a reliable way to tell which page format a file actually contains.</p>
+<h2>How to detect it</h2>
+<p>Spark's file readers derive partition counts from file metadata rather than from a fixed rule: &quot;for structured formats like Parquet, ORC, or Avro, Spark actually reads the metadata (footers, row groups, that kind of thing) and tries to slice the file in a way that makes sense. Often you'll see one partition per row group, though Spark may merge or split depending on file sizes and configs&quot;<sup class="footnote-ref"><a href="#fn12" title="How Spark Determines Partitions for a File ↩︎ ↩︎" id="fnref12">[12]</a></sup>. A concrete case: a single 30 GB Parquet file with 300 row groups gets split into exactly 300 partitions<sup class="footnote-ref"><a href="#fn12" id="fnref12:1">[12:1]</a></sup>. So a surprising partition count for a given file is usually explained by its row-group layout, separately from <code>spark.sql.files.maxPartitionBytes</code> (128 MB by default) and its <code>maxPartitionNum</code>/<code>minPartitionNum</code> companions, which govern splitting for file-based sources generally<sup class="footnote-ref"><a href="#fn13" title="Performance Tuning: Spark SQL, DataFrames and Datasets Guide ↩︎" id="fnref13">[13]</a></sup>.</p>
+<p>The small-files problem shows up as metadata overhead rather than raw I/O cost: &quot;when you're writing lots of small files, there's a significant metadata overhead that you incur managing all of those files. Spark especially does not do well with small files&quot;<sup class="footnote-ref"><a href="#fn1" id="fnref1:3">[1:3]</a></sup>. At the other extreme, oversized or misaligned row groups show up as lost locality: the Parquet spec's rationale for matching block size to row-group size is that &quot;since an entire row group might need to be read, we want it to completely fit on one HDFS block&quot;<sup class="footnote-ref"><a href="#fn14" title="Parquet File Format: Row Group Size ↩︎ ↩︎" id="fnref14">[14]</a></sup>. A row group straddling a block boundary can't get that benefit.</p>
+<p>Raw (non-Parquet) gzip or zip source files reveal themselves as a single-executor bottleneck at read time, visible as one task doing dramatically more work than the rest of its stage: Spark &quot;needs to download the whole file on one executor, unpack it on just one core, and then redistribute the partitions to the cluster nodes&quot;<sup class="footnote-ref"><a href="#fn15" title="Spark Tips: Don't Collect Data on Driver ↩︎ ↩︎ ↩︎" id="fnref15">[15]</a></sup>.</p>
+<p>Version and schema mismatches surface as read failures rather than silent corruption. A file written with <code>parquet.writer.version=2</code> can't be parsed by an older Spark version, or a non-Spark engine such as Hive or Impala, if that reader only implements the original <code>DataPageHeader</code><sup class="footnote-ref"><a href="#fn11" id="fnref11:2">[11:2]</a></sup>. <em>Spark: The Definitive Guide</em> frames this as a general risk: &quot;you can still encounter problems if you're working with incompatible Parquet files. Be careful when you write out Parquet files with different versions of Spark (especially older ones) because this can cause significant headache&quot;<sup class="footnote-ref"><a href="#fn1" id="fnref1:4">[1:4]</a></sup>.</p>
+<h2>Why it matters</h2>
+<p>Splittability is what decides whether a file can be processed in parallel at all. A non-splittable raw compressed source file forces Spark onto a single core for the whole download-and-unpack step before it can redistribute anything: &quot;as you can imagine, this becomes a huge bottleneck in your distributed processing&quot;<sup class="footnote-ref"><a href="#fn15" id="fnref15:1">[15:1]</a></sup>. Parquet sidesteps this at the container level: because its footer records row-group and column-chunk offsets independently of whichever codec compressed the bytes inside them, a task can seek and decode a row group on its own, so even a non-splittable codec like Snappy doesn't cost the file its parallelism<sup class="footnote-ref"><a href="#fn2" id="fnref2:1">[2:1]</a></sup><sup class="footnote-ref"><a href="#fn3" id="fnref3:1">[3:1]</a></sup>.</p>
+<p>Row-group and block-size alignment governs the same kind of locality at a coarser grain. The spec recommends large row groups, 512 MB–1 GB, &quot;because larger row groups allow for larger column chunks which makes it possible to do larger sequential IO,&quot; at the cost of more write-side buffering, paired with a block size sized the same way; its own worked example is &quot;1GB row groups, 1GB HDFS block size, 1 HDFS block per HDFS file&quot;<sup class="footnote-ref"><a href="#fn14" id="fnref14:1">[14:1]</a></sup>.</p>
+<p>The statistics both formats carry are what predicate pushdown runs against. Spark plans queries directly off &quot;statistics that Spark reads directly from the underlying data source, like the counts and min/max values in the metadata of Parquet files&quot;<sup class="footnote-ref"><a href="#fn16" title="Performance Tuning: Spark SQL, DataFrames and Datasets Guide" id="fnref16">[16]</a></sup>, gated by <code>spark.sql.parquet.filterPushdown</code> (default <code>true</code> since Spark 1.2.0) and, for ORC, <code>spark.sql.orc.filterPushdown</code> (default <code>true</code> since 1.4.0)<sup class="footnote-ref"><a href="#fn17" title="Configuration: Spark ↩︎ ↩︎ ↩︎" id="fnref17">[17]</a></sup><sup class="footnote-ref"><a href="#fn18" title="Configuration: Spark ↩︎" id="fnref18">[18]</a></sup>. A more aggressive option, <code>spark.sql.parquet.aggregatePushdown</code> (default <code>false</code>, since 3.3.0), pushes <code>MIN</code>, <code>MAX</code>, and <code>COUNT</code> down to Parquet's footer statistics directly, and throws if the needed statistic is missing from a file's footer<sup class="footnote-ref"><a href="#fn17" id="fnref17:1">[17:1]</a></sup>. Skipping a row group or stripe this way means its bytes are never read off disk, which beats any amount of post-read filtering.</p>
+<p>Small files cost more in metadata management than their data volume would suggest, and Spark &quot;especially does not do well&quot; with them<sup class="footnote-ref"><a href="#fn1" id="fnref1:5">[1:5]</a></sup>. On the scheduling side, Spark's tuning guide notes it &quot;can efficiently support tasks as short as 200 ms&quot; because it reuses one executor JVM across many tasks and has low task-launch cost, while separately recommending &quot;2-3 tasks per CPU core in your cluster&quot;<sup class="footnote-ref"><a href="#fn19" title="Spark Tuning Guide: Level of Parallelism" id="fnref19">[19]</a></sup>, which implies scheduling overhead only becomes proportionally significant once tasks (and the files behind them) shrink below roughly that 200 ms floor.</p>
+<p>Compression choice trades CPU against I/O and storage. Once I/O stops being the bottleneck, paying a codec's decompression cost is a net loss: &quot;uncompressed files are clearly outperforming compressed files. This is because uncompressed files are I/O bound, and compressed files are CPU bound, but I/O is good enough here&quot;<sup class="footnote-ref"><a href="#fn15" id="fnref15:2">[15:2]</a></sup>. Bzip2 illustrates the opposite failure mode: it's splittable, but compresses so aggressively that &quot;you get very few partitions and therefore they can be poorly distributed&quot;<sup class="footnote-ref"><a href="#fn15" id="fnref15:3">[15:3]</a></sup>.</p>
+<p>Writer-version and schema changes matter because they fail at read time, for whoever reads the data next (not at write time, for whoever wrote it). A <code>parquet.writer.version=2</code> file is simply unreadable by any engine that only understands the original page header<sup class="footnote-ref"><a href="#fn11" id="fnref11:3">[11:3]</a></sup>. Schema drift has its own correctness angle: for Delta Lake tables, adding a column via <code>mergeSchema</code> causes existing rows, when read back, to have that new column's value read as <code>NULL</code><sup class="footnote-ref"><a href="#fn20" title="Learning Spark, 2nd Edition, Damji, Wenig, Das &amp; Lee, ch. 9 ↩︎" id="fnref20">[20]</a></sup>, a defined outcome, but one that changes what a downstream query sees for rows written before the schema changed.</p>
+<h2>How to fix it</h2>
+<p>Default to Parquet. Reach for ORC specifically when the same data also has to serve Hive consumers or existing Hive ORC tables, where ORC is the better-optimized target<sup class="footnote-ref"><a href="#fn1" id="fnref1:6">[1:6]</a></sup>.</p>
+<p>Size row groups and the underlying filesystem block together, not independently. The Parquet spec's own recommended setup is 1 GB row groups paired with a 1 GB HDFS block size, one block per file<sup class="footnote-ref"><a href="#fn14" id="fnref14:2">[14:2]</a></sup>. Leave <code>spark.sql.files.maxPartitionBytes</code> (128 MB default) and its <code>maxPartitionNum</code>/<code>minPartitionNum</code> companions for the general file-splitting case, but expect row-group boundaries (not these settings) to be what actually decides partition count for row-group-oriented formats<sup class="footnote-ref"><a href="#fn13" id="fnref13:1">[13:1]</a></sup><sup class="footnote-ref"><a href="#fn12" id="fnref12:2">[12:2]</a></sup>.</p>
+<p>Leave predicate pushdown on: <code>spark.sql.parquet.filterPushdown</code> and <code>spark.sql.orc.filterPushdown</code> both default to <code>true</code> already<sup class="footnote-ref"><a href="#fn17" id="fnref17:2">[17:2]</a></sup><sup class="footnote-ref"><a href="#fn18" id="fnref18:1">[18:1]</a></sup>, so the main action is not disabling them, plus considering <code>spark.sql.parquet.aggregatePushdown</code> when a workload is dominated by <code>MIN</code>/<code>MAX</code>/<code>COUNT</code> over Parquet sources with complete footer statistics<sup class="footnote-ref"><a href="#fn17" id="fnref17:3">[17:3]</a></sup>.</p>
+<p>Cap output file size directly instead of letting the small-files problem accumulate: <code>maxRecordsPerFile</code>, introduced in Spark 2.2, targets an optimum file size by capping the number of records written per file, e.g. <code>df.write.option(&quot;maxRecordsPerFile&quot;, 5000)</code><sup class="footnote-ref"><a href="#fn1" id="fnref1:7">[1:7]</a></sup>.</p>
+<p>Pick a compression codec based on the actual bottleneck. Parquet's default, Snappy, favors speed; ORC has already defaulted to Zstd since Spark 2.3.0<sup class="footnote-ref"><a href="#fn9" id="fnref9:3">[9:3]</a></sup>, and at least one optimization checklist recommends overriding Parquet's default to Zstd as well<sup class="footnote-ref"><a href="#fn21" title="The Apache Spark Optimization Checklist" id="fnref21">[21]</a></sup>. Zstd's level is tunable through <code>spark.io.compression.zstd.level</code>: higher levels buy better compression &quot;at the expense of more CPU and memory&quot;<sup class="footnote-ref"><a href="#fn9" id="fnref9:4">[9:4]</a></sup>. Avoid feeding Spark large raw <code>.gz</code>/<code>.zip</code> source files directly (unpack them before loading), since the non-splittability lives in the raw container format rather than in gzip itself; the same <em>Definitive Guide</em> that warns about raw gzip files elsewhere still recommends Parquet with gzip compression once gzip is wrapped inside Parquet's row-group container<sup class="footnote-ref"><a href="#fn1" id="fnref1:8">[1:8]</a></sup>.</p>
+<p>Treat <code>spark.sql.parquet.mergeSchema</code> (default <code>false</code>) as opt-in rather than default-on: enabling it &quot;merges schemas collected from all data files,&quot; instead of trusting a single summary file or a random file's schema<sup class="footnote-ref"><a href="#fn22" title="SQLConf.scala" id="fnref22">[22]</a></sup>, useful for evolving schemas, but it means every file in the dataset gets scanned for its schema. For Delta tables specifically, remember that <code>mergeSchema</code>-added columns read back as <code>NULL</code> on pre-existing rows<sup class="footnote-ref"><a href="#fn20" id="fnref20:1">[20:1]</a></sup> before relying on it for a backfill.</p>
+<p>Don't flip <code>parquet.writer.version</code> to <code>2</code> without confirming every downstream reader of that data (an older Spark version, Hive, Impala, or anything else touching the files) actually supports <code>DataPageHeaderV2</code> first; it's a forward-incompatible page-format change, not an additive one<sup class="footnote-ref"><a href="#fn11" id="fnref11:4">[11:4]</a></sup><sup class="footnote-ref"><a href="#fn1" id="fnref1:9">[1:9]</a></sup>.</p>
+<h2>Sources</h2>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p><em>Spark: The Definitive Guide</em>, Chambers &amp; Zaharia, ch. 9 <a href="#fnref1" class="footnote-backref">↩︎</a> <a href="#fnref1:1" class="footnote-backref">↩︎</a> <a href="#fnref1:2" class="footnote-backref">↩︎</a> <a href="#fnref1:3" class="footnote-backref">↩︎</a> <a href="#fnref1:4" class="footnote-backref">↩︎</a> <a href="#fnref1:5" class="footnote-backref">↩︎</a> <a href="#fnref1:6" class="footnote-backref">↩︎</a> <a href="#fnref1:7" class="footnote-backref">↩︎</a> <a href="#fnref1:8" class="footnote-backref">↩︎</a> <a href="#fnref1:9" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://parquet.apache.org/_print/docs/file-format/">Parquet File Format: File Metadata and Row Groups</a> <a href="#fnref2" class="footnote-backref">↩︎</a> <a href="#fnref2:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://github.com/google/snappy/blob/main/format_description.txt">Snappy Compressed Format Description</a> <a href="#fnref3" class="footnote-backref">↩︎</a> <a href="#fnref3:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://parquet.apache.org/_print/docs/file-format/">Parquet File Format: Column Index</a> <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://parquet.apache.org/docs/file-format/bloomfilter/">Parquet File Format: Bloom Filter</a> <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://orc.apache.org/specification/ORCv1/">ORC Specification v1: Column Statistics</a> <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn7" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://orc.apache.org/specification/ORCv1/">ORC Specification v1: Row Index and Bloom Filters</a> <a href="#fnref7" class="footnote-backref">↩︎</a> <a href="#fnref7:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn8" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://orc.apache.org/specification/ORCv1/">ORC Specification v1: Stripe Statistics</a> <a href="#fnref8" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn9" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/configuration.html">Configuration: Spark</a> <a href="#fnref9" class="footnote-backref">↩︎</a> <a href="#fnref9:1" class="footnote-backref">↩︎</a> <a href="#fnref9:2" class="footnote-backref">↩︎</a> <a href="#fnref9:3" class="footnote-backref">↩︎</a> <a href="#fnref9:4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn10" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://facebook.github.io/zstd/zstd_manual.html">Zstandard Manual</a> <a href="#fnref10" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn11" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://parquet.apache.org/_print/docs/file-format/">Parquet File Format: Data Pages (V1/V2)</a> <a href="#fnref11" class="footnote-backref">↩︎</a> <a href="#fnref11:1" class="footnote-backref">↩︎</a> <a href="#fnref11:2" class="footnote-backref">↩︎</a> <a href="#fnref11:3" class="footnote-backref">↩︎</a> <a href="#fnref11:4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn12" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/spark-partitions">How Spark Determines Partitions for a File</a> <a href="#fnref12" class="footnote-backref">↩︎</a> <a href="#fnref12:1" class="footnote-backref">↩︎</a> <a href="#fnref12:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn13" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/sql-performance-tuning.html">Performance Tuning: Spark SQL, DataFrames and Datasets Guide</a> <a href="#fnref13" class="footnote-backref">↩︎</a> <a href="#fnref13:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn14" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://parquet.apache.org/_print/docs/file-format/">Parquet File Format: Row Group Size</a> <a href="#fnref14" class="footnote-backref">↩︎</a> <a href="#fnref14:1" class="footnote-backref">↩︎</a> <a href="#fnref14:2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn15" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/spark-tips-dont-collect-data-on-driver">Spark Tips: Don't Collect Data on Driver</a> <a href="#fnref15" class="footnote-backref">↩︎</a> <a href="#fnref15:1" class="footnote-backref">↩︎</a> <a href="#fnref15:2" class="footnote-backref">↩︎</a> <a href="#fnref15:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn16" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/sql-performance-tuning.html">Performance Tuning: Spark SQL, DataFrames and Datasets Guide</a> <a href="#fnref16" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn17" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/configuration.html">Configuration: Spark</a> <a href="#fnref17" class="footnote-backref">↩︎</a> <a href="#fnref17:1" class="footnote-backref">↩︎</a> <a href="#fnref17:2" class="footnote-backref">↩︎</a> <a href="#fnref17:3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn18" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/configuration.html">Configuration: Spark</a> <a href="#fnref18" class="footnote-backref">↩︎</a> <a href="#fnref18:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn19" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://spark.apache.org/docs/latest/tuning.html">Spark Tuning Guide: Level of Parallelism</a> <a href="#fnref19" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn20" class="footnote-item"><p><em>Learning Spark, 2nd Edition</em>, Damji, Wenig, Das &amp; Lee, ch. 9 <a href="#fnref20" class="footnote-backref">↩︎</a> <a href="#fnref20:1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn21" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://luminousmen.com/post/the-apache-spark-optimization-checklist">The Apache Spark Optimization Checklist</a> <a href="#fnref21" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn22" class="footnote-item"><p><a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/apache/spark/v3.5.0/sql/catalyst/src/main/scala/org/apache/spark/sql/internal/SQLConf.scala">SQLConf.scala</a> <a href="#fnref22" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+
+    </section>
+    
+    <nav class="chapter-pager" aria-label="Chapter">
+      <a class="chapter-pager-link chapter-pager-prev" href="shuffle.html">&larr; Shuffle</a>
+      <a class="chapter-pager-link chapter-pager-next" href="table-formats.html">Table Formats &rarr;</a>
+    </nav>
+  </main>
+</div>
+<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>
+</body>
+</html>

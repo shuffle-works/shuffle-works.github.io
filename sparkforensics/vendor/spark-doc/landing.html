@@ -273,7 +273,7 @@
 <meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Spark Tuning Reference"><meta property="og:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes."><meta name="twitter:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes.">
 </head>
 <body>
-<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a><span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span></nav></header>
+<header class="shuffle-product-bar" data-shuffle-product-bar><nav class="shuffle-product-bar__nav" aria-label="Shuffle Works products"><a class="shuffle-product-bar__brand" href="/">Shuffle Works</a><a class="shuffle-product-bar__product" href="/sparkforensics/">SparkForensics</a><a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a><span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span></nav></header>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
     <div class="container header-inner">
@@ -282,7 +282,7 @@
         <span class="brand-name">Spark Tuning Reference</span>
       </a>
       <nav class="header-nav" aria-label="Primary navigation">
-        <a class="header-link" href="index.html">Reference</a>
+        <a class="header-link" href="chapters/spark/index.html">Reference</a>
         <a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
         <button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
@@ -300,9 +300,9 @@
           <h1 id="page-title">Spark Tuning Reference</h1>
           <p class="hero-summary">Move from a job symptom to the Spark mechanics and settings that can change its outcome without treating a tuning guess as evidence.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="index.html">Browse the full reference <span class="arrow" aria-hidden="true">→</span></a>
+            <a class="button button-primary" href="chapters/spark/index.html">Browse the full reference <span class="arrow" aria-hidden="true">→</span></a>
             <a class="button button-secondary" href="#symptoms">Choose a symptom</a>
-            <form class="known-term" id="known-term-form" action="index.html#config" method="get">
+            <form class="known-term" id="known-term-form" action="chapters/spark/config.html" method="get">
               <label for="known-term-input">Know the term or config key?</label>
               <div class="known-term-row">
                 <input id="known-term-input" name="term" type="search" list="known-term-options" placeholder="e.g. spark.sql.shuffle.partitions" autocomplete="off">
@@ -319,9 +319,9 @@
         <aside class="signal-board" aria-label="Example symptom paths">
           <div class="board-label">evidence → mechanic → lever</div>
           <ul class="signal-list">
-            <li><a class="signal-link" href="index.html#memory-model"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Executor memory pressure</span><span class="signal-destination">#memory-model</span></a></li>
-            <li><a class="signal-link" href="index.html#shuffle"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Slow, wide stages</span><span class="signal-destination">#shuffle</span></a></li>
-            <li><a class="signal-link" href="index.html#joins"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Join strategy drift</span><span class="signal-destination">#joins</span></a></li>
+            <li><a class="signal-link" href="chapters/spark/memory-model.html"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Executor memory pressure</span><span class="signal-destination">#memory-model</span></a></li>
+            <li><a class="signal-link" href="chapters/spark/shuffle.html"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Slow, wide stages</span><span class="signal-destination">#shuffle</span></a></li>
+            <li><a class="signal-link" href="chapters/spark/joins.html"><span class="signal-marker" aria-hidden="true"></span><span class="signal-title">Join strategy drift</span><span class="signal-destination">#joins</span></a></li>
           </ul>
         </aside>
       </div>
@@ -337,23 +337,23 @@
         <div class="symptom-grid">
           <article class="symptom">
             <div><h3>Spill or GC pressure</h3><p>Trace executor memory, object lifetime, and the trade-offs behind changing memory settings.</p></div>
-            <a href="index.html#memory-model">Open memory model <span aria-hidden="true">→</span></a>
+            <a href="chapters/spark/memory-model.html">Open memory model <span aria-hidden="true">→</span></a>
           </article>
           <article class="symptom">
             <div><h3>Shuffle-heavy stages</h3><p>Understand write/read costs, partition size, and why moving data becomes the bottleneck.</p></div>
-            <a href="index.html#shuffle">Open shuffle guide <span aria-hidden="true">→</span></a>
+            <a href="chapters/spark/shuffle.html">Open shuffle guide <span aria-hidden="true">→</span></a>
           </article>
           <article class="symptom">
             <div><h3>Slow or skewed joins</h3><p>Compare join mechanics before changing broadcast thresholds or reshaping a plan.</p></div>
-            <a href="index.html#joins">Open join optimization <span aria-hidden="true">→</span></a>
+            <a href="chapters/spark/joins.html">Open join optimization <span aria-hidden="true">→</span></a>
           </article>
           <article class="symptom">
             <div><h3>Plan adapts poorly</h3><p>Use AQE’s runtime choices as an inspectable mechanism, not a checkbox to enable blindly.</p></div>
-            <a href="index.html#aqe">Open AQE guide <span aria-hidden="true">→</span></a>
+            <a href="chapters/spark/aqe.html">Open AQE guide <span aria-hidden="true">→</span></a>
           </article>
           <article class="symptom">
             <div><h3>Need the exact setting</h3><p>Check a setting’s scope, default, and interaction before applying it to a cluster.</p></div>
-            <a href="index.html#config">Open config reference <span aria-hidden="true">→</span></a>
+            <a href="chapters/spark/config.html">Open config reference <span aria-hidden="true">→</span></a>
           </article>
         </div>
       </div>
@@ -414,13 +414,14 @@
         event.preventDefault();
         var term = knownTermInput.value.trim().toLowerCase();
         var route = knownTermRoutes[term] || 'config';
-        window.location.href = 'index.html#' + route;
+        window.location.href = 'chapters/spark/' + route + '.html';
       });
     }());
   </script>
 <footer class="shuffle-footer" data-shuffle-footer><div class="footer-inner"><a class="shuffle-footer__link" href="https://github.com/shuffle-works" target="_blank" rel="noopener">Shuffle Works on GitHub<span class="sr-only"> (opens in new tab)</span></a><p class="shuffle-footer__credit">Created by <a href="https://github.com/agustin-recoba" target="_blank" rel="noopener">Agustin Recoba<span class="sr-only"> (opens in new tab)</span></a><span aria-hidden="true"> &middot; </span><a href="https://www.linkedin.com/in/agustin-recoba" target="_blank" rel="noopener">LinkedIn<span class="sr-only"> (opens in new tab)</span></a></p><p class="shuffle-footer__copyright">&copy; 2026 Shuffle Works.</p></div></footer>
 <style data-shuffle-footer-override>footer[data-shuffle-footer]{padding:0!important}</style>
-<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const productBar = document.querySelector("[data-shuffle-product-bar]"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!productBar || !controls) return false; if (productBar.contains(controls)) return true; const bar = productBar.querySelector(".shuffle-product-bar__nav"); if (!bar) return false; const oldHeader = controls.closest("header"); const end = productBar.querySelector(".shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== productBar) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script><script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>
+<script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const productBar = document.querySelector("[data-shuffle-product-bar]"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!productBar || !controls) return false; if (productBar.contains(controls)) return true; const bar = productBar.querySelector(".shuffle-product-bar__nav"); if (!bar) return false; const oldHeader = controls.closest("header"); const end = productBar.querySelector(".shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== productBar) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>
+<script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>
 <script data-shuffle-dashboard-chrome-toggle>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); const footer = document.querySelector("[data-shuffle-footer]"); if (!bar && !footer) return; const sync = () => { const inDashboard = !!document.querySelector("[data-testid=dashboard]"); if (bar) bar.style.display = inDashboard ? "none" : ""; if (footer) footer.style.display = inDashboard ? "none" : ""; }; sync(); new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); })();</script>
 </body>
 </html>

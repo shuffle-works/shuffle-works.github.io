@@ -3,19 +3,33 @@
     "anchor": "intro",
     "section": "Getting Started",
     "title": "Introduction",
-    "keywords": []
+    "keywords": [
+      "severity-dot",
+      "tag-system"
+    ]
   },
   {
     "anchor": "spark-architecture",
     "section": "Optimization Guide",
     "title": "Spark Execution Model",
-    "keywords": []
+    "keywords": [
+      "driver-executor",
+      "dagscheduler",
+      "taskscheduler",
+      "stage-boundary"
+    ]
   },
   {
     "anchor": "memory-model",
     "section": "Optimization Guide",
     "title": "Memory Management",
-    "keywords": []
+    "keywords": [
+      "unified-memory",
+      "execution-memory",
+      "storage-memory",
+      "spill",
+      "memory-overhead"
+    ]
   },
   {
     "anchor": "partitioning",
@@ -42,13 +56,22 @@
     "anchor": "shuffle",
     "section": "Optimization Guide",
     "title": "Shuffle",
-    "keywords": []
+    "keywords": [
+      "sortshufflemanager",
+      "bucketing",
+      "storage-partition-join"
+    ]
   },
   {
     "anchor": "data-formats",
     "section": "Optimization Guide",
     "title": "Data Formats",
-    "keywords": []
+    "keywords": [
+      "parquet",
+      "orc",
+      "predicate-pushdown",
+      "compression"
+    ]
   },
   {
     "anchor": "table-formats",
@@ -68,138 +91,218 @@
     "anchor": "caching",
     "section": "Optimization Guide",
     "title": "Caching & Persistence",
-    "keywords": []
+    "keywords": [
+      "cache",
+      "persist",
+      "storage-level",
+      "checkpoint"
+    ]
   },
   {
     "anchor": "pyspark",
     "section": "Optimization Guide",
     "title": "PySpark Specifics",
-    "keywords": []
+    "keywords": [
+      "udf",
+      "arrow",
+      "pandas-udf",
+      "python-worker-memory"
+    ]
   },
   {
     "anchor": "aqe",
     "section": "Optimization Guide",
     "title": "Adaptive Query Execution",
-    "keywords": []
+    "keywords": [
+      "partition-coalescing",
+      "join-strategy-promotion",
+      "skew-splitting"
+    ]
   },
   {
     "anchor": "cluster-config",
     "section": "Optimization Guide",
     "title": "Cluster Tuning",
-    "keywords": []
+    "keywords": [
+      "executor-sizing",
+      "container-memory",
+      "dynamic-allocation",
+      "locality-wait"
+    ]
   },
   {
     "anchor": "anti-patterns",
     "section": "Optimization Guide",
     "title": "Anti-Patterns",
-    "keywords": []
+    "keywords": [
+      "checklist",
+      "anti-pattern"
+    ]
   },
   {
     "anchor": "bottleneck-skew",
     "section": "Detector Catalog",
     "title": "Task Skew",
-    "keywords": []
+    "keywords": [
+      "skew",
+      "aqe-skew-join",
+      "salting"
+    ]
   },
   {
     "anchor": "bottleneck-shuffle",
     "section": "Detector Catalog",
     "title": "Shuffle I/O",
-    "keywords": []
+    "keywords": [
+      "shuffle-bytes",
+      "fetch-wait"
+    ]
   },
   {
     "anchor": "bottleneck-spill",
     "section": "Detector Catalog",
     "title": "Memory / Disk Spill",
-    "keywords": []
+    "keywords": [
+      "spill",
+      "taskmemorymanager"
+    ]
   },
   {
     "anchor": "bottleneck-gc",
     "section": "Detector Catalog",
     "title": "GC Pressure",
-    "keywords": []
+    "keywords": [
+      "gc-pressure",
+      "memory-fraction",
+      "off-heap"
+    ]
   },
   {
     "anchor": "bottleneck-cold-start",
     "section": "Detector Catalog",
     "title": "Cold Start",
-    "keywords": []
+    "keywords": [
+      "cold-start",
+      "dynamic-allocation"
+    ]
   },
   {
     "anchor": "bottleneck-utilization",
     "section": "Detector Catalog",
     "title": "Executor Utilization",
-    "keywords": []
+    "keywords": [
+      "executor-utilization",
+      "under-partitioning",
+      "over-provisioning"
+    ]
   },
   {
     "anchor": "bottleneck-slow-host",
     "section": "Detector Catalog",
     "title": "Slow Host",
-    "keywords": []
+    "keywords": [
+      "slow-host",
+      "speculative-execution"
+    ]
   },
   {
     "anchor": "bottleneck-failures",
     "section": "Detector Catalog",
     "title": "Task Failures",
-    "keywords": []
+    "keywords": [
+      "taskendreason",
+      "executorlostfailure",
+      "exceptionfailure"
+    ]
   },
   {
     "anchor": "bottleneck-straggler",
     "section": "Detector Catalog",
     "title": "Stragglers",
-    "keywords": []
+    "keywords": [
+      "straggler",
+      "speculative-execution"
+    ]
   },
   {
     "anchor": "bottleneck-retry-waste",
     "section": "Detector Catalog",
     "title": "Retry Waste",
-    "keywords": []
+    "keywords": [
+      "retry-waste",
+      "fetch-failure"
+    ]
   },
   {
     "anchor": "bottleneck-tiny-tasks",
     "section": "Detector Catalog",
     "title": "Tiny Tasks",
-    "keywords": []
+    "keywords": [
+      "tiny-tasks",
+      "scheduling-overhead"
+    ]
   },
   {
     "anchor": "bottleneck-job-failure-rate",
     "section": "Detector Catalog",
     "title": "Job Failure Rate",
-    "keywords": []
+    "keywords": [
+      "job-failure-rate",
+      "retry-budget"
+    ]
   },
   {
     "anchor": "bottleneck-memory-utilization",
     "section": "Detector Catalog",
     "title": "Memory Utilization",
-    "keywords": []
+    "keywords": [
+      "memory-utilization",
+      "idle-timeout"
+    ]
   },
   {
     "anchor": "bottleneck-duplicate-plan-subtree",
     "section": "Detector Catalog",
     "title": "Duplicate Plan Subtree",
-    "keywords": []
+    "keywords": [
+      "duplicate-plan-subtree",
+      "exchange-reuse"
+    ]
   },
   {
     "anchor": "bottleneck-small-files",
     "section": "Detector Catalog",
     "title": "Small Files",
-    "keywords": []
+    "keywords": [
+      "small-files",
+      "advisorypartitionsizeinbytes"
+    ]
   },
   {
     "anchor": "bottleneck-broadcast-sizing",
     "section": "Detector Catalog",
     "title": "Broadcast Sizing",
-    "keywords": []
+    "keywords": [
+      "broadcast-threshold",
+      "driver-collection"
+    ]
   },
   {
     "anchor": "metrics",
     "section": "Reference",
     "title": "Metrics Glossary",
-    "keywords": []
+    "keywords": [
+      "metrics-glossary",
+      "event-log"
+    ]
   },
   {
     "anchor": "config",
     "section": "Reference",
     "title": "Spark Config Quick-Reference",
-    "keywords": []
+    "keywords": [
+      "spark-config",
+      "gc-flags"
+    ]
   }
 ]

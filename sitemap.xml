@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://shuffle-works.github.io/</loc><lastmod>2026-08-30</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/</loc><lastmod>2026-08-30</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc><lastmod>2026-08-30</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/index.html</loc><lastmod>2026-08-30</lastmod></url>
-<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/meta.html</loc><lastmod>2026-08-30</lastmod></url>
+<url><loc>https://shuffle-works.github.io/</loc><lastmod>2026-09-07</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/</loc><lastmod>2026-09-07</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc><lastmod>2026-09-07</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/index.html</loc><lastmod>2026-09-07</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/spark/index.html</loc><lastmod>2026-09-07</lastmod></url>
+<url><loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/meta/index.html</loc><lastmod>2026-09-07</lastmod></url>
 </urlset>
