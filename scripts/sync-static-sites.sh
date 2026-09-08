@@ -348,10 +348,17 @@ mark_page_controls() {
 # unlike landing.html (which must always have one, so a missing match there
 # is a real regression), a page like chapters/index.html (a plain TOC with
 # no chrome) legitimately has nothing to mark.
+#
+# The "already marked" check matches the exact marked button
+# (id="theme-toggle" data-shuffle-page-controls), not the bare
+# data-shuffle-page-controls substring: that substring also appears inside
+# data-shuffle-page-controls-hoist (the hoist script's own querySelector
+# call), so a broad substring check would false-positive and silently skip
+# marking the button on any page where the hoist script was injected first.
 mark_page_controls_if_present() {
   local page=$1
 
-  if grep -Fq 'id="theme-toggle"' "$page" && ! grep -Fq 'data-shuffle-page-controls' "$page"; then
+  if grep -Fq 'id="theme-toggle"' "$page" && ! grep -Fq 'id="theme-toggle" data-shuffle-page-controls' "$page"; then
     sed -i 's|id="theme-toggle"|id="theme-toggle" data-shuffle-page-controls|' "$page"
   fi
 }
@@ -365,22 +372,13 @@ mark_page_controls_if_present() {
 # it hides any sibling <header> that isn't the bar itself, regardless of
 # whether the JS relocation/removal ran, raced, or failed. Harmless on a page
 # with no other <header> (the selector simply never matches).
-header_dedup_style() {
-  printf '%s' '<style data-shuffle-header-dedup>header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}</style>'
-}
-
+#
+# Shares its guard/head-check/inject shape with inject_sidebar_dedup_style
+# below via inject_dedup_style -- only the marker attribute and CSS rule
+# differ between the two.
 inject_header_dedup_style() {
-  local page=$1
-
-  if grep -Fq 'data-shuffle-header-dedup' "$page"; then
-    return
-  fi
-
-  if ! grep -Fq '</head>' "$page"; then
-    return
-  fi
-
-  inject_before "$page" '</head>' "$(header_dedup_style)"
+  inject_dedup_style "$1" 'data-shuffle-header-dedup' \
+    'header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}'
 }
 
 inject_product_shell() {
@@ -388,37 +386,27 @@ inject_product_shell() {
   # Tokens first so the shared palette/type are defined before any consumer.
   local stylesheet='<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">'
 
-  if grep -Fq 'data-shuffle-product-bar' "$page"; then
-    mark_page_controls_if_present "$page"
-    inject_product_footer "$page"
-    inject_page_controls_hoist "$page"
-    inject_product_bar_height_sync "$page"
-    inject_dashboard_chrome_toggle "$page"
-    inject_header_dedup_style "$page"
-    inject_favicon "$page"
-    inject_social_meta "$page"
-    return
+  if ! grep -Fq 'data-shuffle-product-bar' "$page"; then
+    # Leave non-HTML source placeholders untouched rather than making
+    # publication depend on a particular HTML formatter.
+    if ! grep -Fq '</head>' "$page" || ! grep -Eq '<body([[:space:]>])' "$page"; then
+      return
+    fi
+
+    bar="$(product_bar_markup "$surface")"
+    temp_page="$(mktemp)"
+
+    awk -v stylesheet="$stylesheet" '
+      index($0, "</head>") { print stylesheet }
+      { print }
+    ' "$page" >"$temp_page"
+
+    awk -v bar="$bar" '
+      /<body([[:space:]>])/ { print; print bar; next }
+      { print }
+    ' "$temp_page" >"$page"
+    rm -f "$temp_page"
   fi
-
-  # Leave non-HTML source placeholders untouched rather than making publication
-  # depend on a particular HTML formatter.
-  if ! grep -Fq '</head>' "$page" || ! grep -Eq '<body([[:space:]>])' "$page"; then
-    return
-  fi
-
-  bar="$(product_bar_markup "$surface")"
-  temp_page="$(mktemp)"
-
-  awk -v stylesheet="$stylesheet" '
-    index($0, "</head>") { print stylesheet }
-    { print }
-  ' "$page" >"$temp_page"
-
-  awk -v bar="$bar" '
-    /<body([[:space:]>])/ { print; print bar; next }
-    { print }
-  ' "$temp_page" >"$page"
-  rm -f "$temp_page"
 
   mark_page_controls_if_present "$page"
   inject_product_footer "$page"
@@ -460,8 +448,14 @@ inject_product_shells() {
       index.html | docs/*)
         inject_product_shell "$page" "$default_surface"
         ;;
-      vendor/spark-tuning-reference/landing.html | vendor/spark-tuning-reference/chapters/*)
+      vendor/spark-tuning-reference/landing.html)
         inject_product_shell "$page" spark-tuning-reference
+        ;;
+      vendor/spark-tuning-reference/chapters/*)
+        inject_product_shell "$page" spark-tuning-reference
+        inject_reference_enhancements "$page"
+        inject_sidebar_dedup_style "$page"
+        align_reference_theme_key "$page"
         ;;
       *)
         inject_favicon "$page"
@@ -543,14 +537,18 @@ inject_symptom_router_styles() {
 # sidebar's own repeated product-name text so there's no duplicate nav. It's
 # scoped by DOM presence, so it's inert on a standalone open of the page
 # (no .shuffle-product-bar exists there to match against).
-sidebar_dedup_style() {
-  printf '%s' '<style data-shuffle-sidebar-dedup>header.shuffle-product-bar ~ .layout .site-name{display:none}</style>'
+inject_sidebar_dedup_style() {
+  inject_dedup_style "$1" 'data-shuffle-sidebar-dedup' \
+    'header.shuffle-product-bar ~ .layout .site-name{display:none}'
 }
 
-inject_sidebar_dedup_style() {
-  local page=$1
+# Shared by inject_header_dedup_style and inject_sidebar_dedup_style: both
+# guard on a marker attribute, require a </head> to inject before, and inject
+# a single <style> rule -- only the marker and CSS differ.
+inject_dedup_style() {
+  local page=$1 marker=$2 css=$3
 
-  if grep -Fq 'data-shuffle-sidebar-dedup' "$page"; then
+  if grep -Fq "$marker" "$page"; then
     return
   fi
 
@@ -558,7 +556,7 @@ inject_sidebar_dedup_style() {
     return
   fi
 
-  inject_before "$page" '</head>' "$(sidebar_dedup_style)"
+  inject_before "$page" '</head>' "<style $marker>$css</style>"
 }
 
 # The vendored Spark Tuning Reference pages ship with their own theme-storage
@@ -603,6 +601,12 @@ if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/spark
   exit 1
 fi
 
+if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/assets/docs.css" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/assets/chapters-client.mjs" ]; then
+  echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference's shared chapter assets" >&2
+  exit 1
+fi
+
 if [ ! -f "$PRODUCT_BAR_STYLESHEET" ]; then
   echo "error: missing shared product-bar stylesheet: $PRODUCT_BAR_STYLESHEET" >&2
   exit 1
@@ -632,25 +636,16 @@ fi
 
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
 
-while IFS= read -r -d '' reference_page; do
-  inject_reference_enhancements "$reference_page"
-  inject_sidebar_dedup_style "$reference_page"
-  align_reference_theme_key "$reference_page"
-done < <(find "$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters" -type f -name '*.html' -print0)
-
 # The per-chapter pages share these assets instead of each inlining its own
 # copy (unlike the old monolithic index.html/meta.html), so the same
-# theme-key/link-arrow rewrites apply once here rather than per page.
+# theme-key/link-arrow rewrites apply once here rather than per page. Presence
+# is guaranteed by the pre-flight check above, so no [ -f ] guard is needed.
 reference_client_script="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/chapters-client.mjs"
-if [ -f "$reference_client_script" ]; then
-  align_reference_theme_key "$reference_client_script"
-fi
+align_reference_theme_key "$reference_client_script"
 
 reference_docs_stylesheet="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/docs.css"
-if [ -f "$reference_docs_stylesheet" ]; then
-  scope_reference_external_link_arrow "$reference_docs_stylesheet"
-  inject_symptom_router_styles "$reference_docs_stylesheet"
-fi
+scope_reference_external_link_arrow "$reference_docs_stylesheet"
+inject_symptom_router_styles "$reference_docs_stylesheet"
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
