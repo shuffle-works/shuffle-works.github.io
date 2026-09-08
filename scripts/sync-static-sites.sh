@@ -391,13 +391,16 @@ rewrite_legacy_reference_links() {
   sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
 }
 
-# Only each product's own landing page carries the shared product bar and
-# footer: sparkforensics/index.html (SparkForensics itself) and
-# vendor/spark-doc/landing.html (Spark Tuning Reference's entry point). Every
-# other page under the tree -- notably the embedded reference's own
-# index.html/meta.html content pages -- is a sub-page of a product, not a
-# product surface in its own right, so it only gets the family-wide,
-# bar/footer-independent touches (favicon, Open Graph/Twitter tags).
+# Every page under the tree carries the shared product bar and footer,
+# scoped to its owning product's surface: sparkforensics/index.html and
+# everything under docs/ (SparkForensics' own docs site) use the
+# "sparkforensics" surface; vendor/spark-doc/landing.html and everything
+# under vendor/spark-doc/chapters/ (Spark Tuning Reference's landing page and
+# its per-chapter reading pages) use the "spark-tuning-reference" surface.
+# A page that already carries its own data-shuffle-product-bar marker (a
+# docs-site build that embeds the marker itself, e.g. via its own theme)
+# is left as-is by inject_product_shell's early-return branch instead of
+# getting a second bar spliced in.
 inject_product_shells() {
   local root=$1 default_surface=$2 page relative
 
@@ -406,10 +409,10 @@ inject_product_shells() {
     rewrite_legacy_reference_links "$page"
 
     case "$relative" in
-      index.html)
+      index.html | docs/*)
         inject_product_shell "$page" "$default_surface"
         ;;
-      vendor/spark-doc/landing.html)
+      vendor/spark-doc/landing.html | vendor/spark-doc/chapters/*)
         inject_product_shell "$page" spark-tuning-reference
         ;;
       *)

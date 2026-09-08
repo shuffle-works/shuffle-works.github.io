@@ -126,14 +126,20 @@ fi
 test -f "$PUBLISHED_ROOT/shuffle-works-footer.css"
 grep -F 'href="/shuffle-works-footer.css"' "$LANDING" >/dev/null
 
-# chapters/spark/index.html is not a product's landing page (only
-# sparkforensics/index.html and vendor/spark-doc/landing.html are), so sync
-# must not add the shared footer to it, even though its mock already carries
-# its own bar-like header.
-if grep -F 'data-shuffle-footer' "$SPARK_INDEX" >/dev/null; then
-  echo "expected chapters/spark/index.html (not a landing page) to not get the shared footer" >&2
-  exit 1
-fi
+# Every page under a product's tree now gets the shared bar and footer, not
+# just its landing page: chapters/spark/index.html and
+# chapters/meta/index.html (Spark Tuning Reference's per-chapter reading
+# pages) get them exactly like landing.html does, on the same
+# "spark-tuning-reference" surface.
+
+# chapters/spark/index.html's mock already embeds its own
+# data-shuffle-product-bar marker (simulating a docs build that renders the
+# marker itself), so inject_product_shell's early-return branch applies: it
+# gets the footer and the per-shell scripts layered on, but not a second bar
+# spliced in and not the shared stylesheet links (a page that already
+# renders the marker is assumed to already carry equivalent styling for it).
+grep -F 'data-shuffle-footer' "$SPARK_INDEX" >/dev/null
+grep -F 'data-shuffle-page-controls-hoist' "$SPARK_INDEX" >/dev/null
 
 # landing.html ships with its own bespoke footer; sync must replace it.
 grep -F 'data-shuffle-footer' "$LANDING" >/dev/null
@@ -150,23 +156,17 @@ fi
 grep -F 'data-shuffle-page-controls-hoist' "$LANDING" >/dev/null
 grep -F '<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls' "$LANDING" >/dev/null
 
-# The hub's own product bar carries the Reference/GitHub links directly, on
-# landing.html's freshly-injected bar -- the only page in this tree that gets
-# one. chapters/meta/index.html is a reference sub-page, not a landing page,
-# so it gets no bar at all.
+# The hub's own product bar carries the Reference/GitHub links directly.
+# chapters/meta/index.html's mock has no pre-existing bar marker, so it gets
+# a freshly-injected bar too, on the same "spark-tuning-reference" surface
+# as landing.html, complete with the shared stylesheets and footer.
 grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a>' "$LANDING" >/dev/null
 grep -F '<a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub' "$LANDING" >/dev/null
-if grep -F 'data-shuffle-product-bar' "$META_INDEX" >/dev/null; then
-  echo "expected chapters/meta/index.html (not a landing page) to not get the product bar" >&2
-  exit 1
-fi
-
-# The hoist script only ships alongside the product-bar shell, so a
-# non-landing page like chapters/spark/index.html never gets it.
-if grep -F 'data-shuffle-page-controls-hoist' "$SPARK_INDEX" >/dev/null; then
-  echo "expected chapters/spark/index.html (not a landing page) to not get the page-controls hoist script" >&2
-  exit 1
-fi
+grep -F 'data-shuffle-product-bar' "$META_INDEX" >/dev/null
+grep -F '<a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a>' "$META_INDEX" >/dev/null
+grep -F 'href="/shuffle-works-tokens.css"' "$META_INDEX" >/dev/null
+grep -F 'data-shuffle-footer' "$META_INDEX" >/dev/null
+grep -F 'data-shuffle-page-controls-hoist' "$META_INDEX" >/dev/null
 
 # landing.html's own <style> block still carries a bare `footer { padding }`
 # tag-selector rule. Since the canonical footer element still matches that

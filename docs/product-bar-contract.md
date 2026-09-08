@@ -9,13 +9,20 @@ source.
 
 ## Which pages get the shell
 
-The product bar and footer are injected only into each product's own
-landing page: `sparkforensics/index.html` for SparkForensics, and
-`vendor/spark-doc/landing.html` for Spark Tuning Reference. A sub-page of a
-product -- the embedded reference's own `index.html` (its API/config doc)
-and `meta.html` ("how this site works") -- is not a product surface in its
-own right, so it does not carry the bar or footer, only the family-wide,
-bar/footer-independent touches (favicon, Open Graph/Twitter tags).
+The product bar and footer are injected into every page under each
+product's tree, not just its landing page: `sparkforensics/index.html` and
+everything under `sparkforensics/docs/` use the `sparkforensics` surface;
+`vendor/spark-doc/landing.html` and everything under
+`vendor/spark-doc/chapters/` use the `spark-tuning-reference` surface. A
+design audit found that leaving docs/chapter sub-pages out of the shell was
+the direct cause of the family's two docs sites showing completely
+different chrome from each other and from the rest of the family; every
+page now gets the same bar and footer so that no longer happens. A page
+whose own build already emits a `data-shuffle-product-bar` marker (for
+example a docs-site theme that renders the marker itself) is left alone by
+`inject_product_shell`'s early-return branch instead of getting a second
+bar spliced in; it still gets the footer, hoist script, and every other
+per-shell touch layered on afterward.
 
 ## What the hub guarantees
 
@@ -68,7 +75,7 @@ component's source before that output is built.
 sibling product, and its own hero and projects section already surfaces
 links to every product it publishes; a self-referential product-tab bar
 pointing back at pages it already lists would be redundant there. Their
-header stays bespoke for the same reason.
+header stays custom for the same reason.
 
 The footer is different: the hub's pages use the same `shuffle-footer`
 markup and CSS classes as every product page, via a `shuffle-footer--hub`
