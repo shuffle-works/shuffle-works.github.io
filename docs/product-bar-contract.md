@@ -12,8 +12,8 @@ source.
 The product bar and footer are injected into every page under each
 product's tree, not just its landing page: `sparkforensics/index.html` and
 everything under `sparkforensics/docs/` use the `sparkforensics` surface;
-`vendor/spark-doc/landing.html` and everything under
-`vendor/spark-doc/chapters/` use the `spark-tuning-reference` surface. A
+`vendor/spark-tuning-reference/landing.html` and everything under
+`vendor/spark-tuning-reference/chapters/` use the `spark-tuning-reference` surface. A
 design audit found that leaving docs/chapter sub-pages out of the shell was
 the direct cause of the family's two docs sites showing completely
 different chrome from each other and from the rest of the family; every

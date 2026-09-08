@@ -40,13 +40,13 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
   target_dir="${4:-}"
   case "${3:-}" in
     shuffle-works/sparkforensics)
-      doc_dir="$target_dir/dist/vendor/spark-doc"
+      doc_dir="$target_dir/dist/vendor/spark-tuning-reference"
       mkdir -p "$doc_dir/chapters/spark" "$doc_dir/chapters/meta" "$doc_dir/chapters/assets"
       printf '%s\n' 'spark forensics index' >"$target_dir/dist/index.html"
       printf '%s\n' 'worker' >"$target_dir/dist/vendor/worker.js"
 
       # Per-chapter reference pages (upstream's chapters/ layout, replacing
-      # the old monolithic vendor/spark-doc/index.html + meta.html). Each
+      # the old monolithic vendor/spark-tuning-reference/index.html + meta.html). Each
       # page carries its own sidebar/nav-toggle and inline theme-boot
       # snippet, shares one stylesheet/client-script asset pair, and only
       # the spark TOC page (index.html) carries the "Severity dots" heading
@@ -100,7 +100,7 @@ assert_last_invocations \
   "gh auth status" \
   "gh repo clone shuffle-works/sparkforensics .*/checkout/SparkForensics -- --depth 1 --branch main"
 
-DOC_DIR="$PUBLISHED_ROOT/sparkforensics/vendor/spark-doc"
+DOC_DIR="$PUBLISHED_ROOT/sparkforensics/vendor/spark-tuning-reference"
 SPARK_INDEX="$DOC_DIR/chapters/spark/index.html"
 META_INDEX="$DOC_DIR/chapters/meta/index.html"
 DOCS_CSS="$DOC_DIR/chapters/assets/docs.css"
@@ -116,8 +116,8 @@ test -f "$CLIENT_SCRIPT"
 test -f "$DOC_DIR/anchors.json"
 test -f "$LANDING"
 test -f "$PUBLISHED_ROOT/spark-tuning-reference/index.html"
-grep -F 'url=/sparkforensics/vendor/spark-doc/landing.html' "$PUBLISHED_ROOT/spark-tuning-reference/index.html" >/dev/null
-grep -F 'href="/sparkforensics/vendor/spark-doc/landing.html"' "$SPARK_INDEX" >/dev/null
+grep -F 'url=/sparkforensics/vendor/spark-tuning-reference/landing.html' "$PUBLISHED_ROOT/spark-tuning-reference/index.html" >/dev/null
+grep -F 'href="/sparkforensics/vendor/spark-tuning-reference/landing.html"' "$SPARK_INDEX" >/dev/null
 if grep -F 'href="/spark-tuning-reference/"' "$SPARK_INDEX" >/dev/null; then
   echo "expected embedded reference navigation to use its bundled path" >&2
   exit 1
@@ -173,10 +173,10 @@ grep -F 'header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){dis
 # chapters/meta/index.html's mock has no pre-existing bar marker, so it gets
 # a freshly-injected bar too, on the same "spark-tuning-reference" surface
 # as landing.html, complete with the shared stylesheets and footer.
-grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a>' "$LANDING" >/dev/null
+grep -F '<a class="header-link" href="/sparkforensics/vendor/spark-tuning-reference/chapters/spark/index.html">Reference</a>' "$LANDING" >/dev/null
 grep -F '<a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub' "$LANDING" >/dev/null
 grep -F 'data-shuffle-product-bar' "$META_INDEX" >/dev/null
-grep -F '<a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-doc/landing.html" aria-current="page">Spark Tuning Reference</a>' "$META_INDEX" >/dev/null
+grep -F '<a class="shuffle-product-bar__product" href="/sparkforensics/vendor/spark-tuning-reference/landing.html" aria-current="page">Spark Tuning Reference</a>' "$META_INDEX" >/dev/null
 grep -F 'href="/shuffle-works-tokens.css"' "$META_INDEX" >/dev/null
 grep -F 'data-shuffle-footer' "$META_INDEX" >/dev/null
 grep -F 'data-shuffle-page-controls-hoist' "$META_INDEX" >/dev/null
@@ -262,10 +262,10 @@ grep -F '<meta name="twitter:description" content="How the Spark Tuning Referenc
 
 # One sitemap for the whole published family.
 test -f "$PUBLISHED_ROOT/sitemap.xml"
-grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/landing.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
-grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
-grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/spark/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
-grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-doc/chapters/meta/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-tuning-reference/landing.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-tuning-reference/chapters/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-tuning-reference/chapters/spark/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
+grep -F '<loc>https://shuffle-works.github.io/sparkforensics/vendor/spark-tuning-reference/chapters/meta/index.html</loc>' "$PUBLISHED_ROOT/sitemap.xml" >/dev/null
 
 run_sync "$TEST_ROOT/one-ref" SparkForensics
 assert_last_invocations \

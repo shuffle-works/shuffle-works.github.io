@@ -10,7 +10,7 @@ FOOTER_PARTIAL="$REPO_ROOT/partials/shuffle-works-footer.html"
 
 # The Spark reference now ships embedded in the SparkForensics bundle; this is
 # where its entry page is published.
-REFERENCE_LANDING_PATH="/sparkforensics/vendor/spark-doc/landing.html"
+REFERENCE_LANDING_PATH="/sparkforensics/vendor/spark-tuning-reference/landing.html"
 
 if [ "$#" -gt 1 ]; then
   echo "error: expected at most one SparkForensics ref" >&2
@@ -58,13 +58,13 @@ stage_tree() {
 # place instead of a hand-copied literal per surface.
 PRODUCT_BAR_KEYS=(sparkforensics spark-tuning-reference)
 PRODUCT_BAR_LABELS=("SparkForensics" "Spark Tuning Reference")
-PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-doc/landing.html")
+PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-tuning-reference/landing.html")
 
 # Identical on every surface (docs/product-bar-contract.md), unlike the
 # per-surface arrays above. Wrapped in its own flex group (CSS: margin-left:
 # auto) so it, and whatever page control gets hoisted after it, sit
 # right-aligned instead of trailing directly after the product tabs.
-PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-doc/chapters/spark/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
+PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-tuning-reference/chapters/spark/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
 
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""
@@ -436,14 +436,14 @@ inject_product_shell() {
 # regardless of which branch below a page takes.
 rewrite_legacy_reference_links() {
   local page=$1
-  sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-doc/landing.html"|g' "$page"
+  sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-tuning-reference/landing.html"|g' "$page"
 }
 
 # Every page under the tree carries the shared product bar and footer,
 # scoped to its owning product's surface: sparkforensics/index.html and
 # everything under docs/ (SparkForensics' own docs site) use the
-# "sparkforensics" surface; vendor/spark-doc/landing.html and everything
-# under vendor/spark-doc/chapters/ (Spark Tuning Reference's landing page and
+# "sparkforensics" surface; vendor/spark-tuning-reference/landing.html and everything
+# under vendor/spark-tuning-reference/chapters/ (Spark Tuning Reference's landing page and
 # its per-chapter reading pages) use the "spark-tuning-reference" surface.
 # A page that already carries its own data-shuffle-product-bar marker (a
 # docs-site build that embeds the marker itself, e.g. via its own theme)
@@ -460,7 +460,7 @@ inject_product_shells() {
       index.html | docs/*)
         inject_product_shell "$page" "$default_surface"
         ;;
-      vendor/spark-doc/landing.html | vendor/spark-doc/chapters/*)
+      vendor/spark-tuning-reference/landing.html | vendor/spark-tuning-reference/chapters/*)
         inject_product_shell "$page" spark-tuning-reference
         ;;
       *)
@@ -595,10 +595,10 @@ if [ ! -f "$FORENSICS_CHECKOUT/dist/index.html" ]; then
   exit 1
 fi
 
-if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/chapters/spark/index.html" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/chapters/meta/index.html" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/anchors.json" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-doc/landing.html" ]; then
+if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/spark/index.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/meta/index.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/anchors.json" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/landing.html" ]; then
   echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference" >&2
   exit 1
 fi
@@ -625,7 +625,7 @@ fi
 
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
 
-landing_page="$STAGED_DIR/sparkforensics/vendor/spark-doc/landing.html"
+landing_page="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/landing.html"
 if [ -f "$landing_page" ]; then
   mark_page_controls "$landing_page"
 fi
@@ -636,17 +636,17 @@ while IFS= read -r -d '' reference_page; do
   inject_reference_enhancements "$reference_page"
   inject_sidebar_dedup_style "$reference_page"
   align_reference_theme_key "$reference_page"
-done < <(find "$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters" -type f -name '*.html' -print0)
+done < <(find "$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters" -type f -name '*.html' -print0)
 
 # The per-chapter pages share these assets instead of each inlining its own
 # copy (unlike the old monolithic index.html/meta.html), so the same
 # theme-key/link-arrow rewrites apply once here rather than per page.
-reference_client_script="$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters/assets/chapters-client.mjs"
+reference_client_script="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/chapters-client.mjs"
 if [ -f "$reference_client_script" ]; then
   align_reference_theme_key "$reference_client_script"
 fi
 
-reference_docs_stylesheet="$STAGED_DIR/sparkforensics/vendor/spark-doc/chapters/assets/docs.css"
+reference_docs_stylesheet="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/docs.css"
 if [ -f "$reference_docs_stylesheet" ]; then
   scope_reference_external_link_arrow "$reference_docs_stylesheet"
   inject_symptom_router_styles "$reference_docs_stylesheet"
