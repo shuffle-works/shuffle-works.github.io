@@ -331,12 +331,56 @@ inject_social_meta() {
 mark_page_controls() {
   local page=$1
 
-  sed -i 's|<button id="theme-toggle" class="theme-toggle"|<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls|' "$page"
+  # Matched on the id attribute alone (not a fixed attribute order) so this
+  # marks landing.html's <button id="theme-toggle" class="theme-toggle" ...>
+  # and the vendored chapter pages' <button type="button" class="theme-toggle"
+  # id="theme-toggle" ...> -- upstream's own chapter-shell template orders
+  # its button attributes differently from landing.html's.
+  sed -i 's|id="theme-toggle"|id="theme-toggle" data-shuffle-page-controls|' "$page"
 
   if ! grep -Fq 'data-shuffle-page-controls' "$page"; then
     echo "error: could not mark page controls in $page (theme-toggle selector drifted upstream?)" >&2
     exit 1
   fi
+}
+
+# Same marking, but silent no-op on a page with no theme-toggle at all --
+# unlike landing.html (which must always have one, so a missing match there
+# is a real regression), a page like chapters/index.html (a plain TOC with
+# no chrome) legitimately has nothing to mark.
+mark_page_controls_if_present() {
+  local page=$1
+
+  if grep -Fq 'id="theme-toggle"' "$page" && ! grep -Fq 'data-shuffle-page-controls' "$page"; then
+    sed -i 's|id="theme-toggle"|id="theme-toggle" data-shuffle-page-controls|' "$page"
+  fi
+}
+
+# A page whose own build ships a bespoke <header> (e.g. landing.html's own
+# brand/nav header) would otherwise render stacked underneath the hub's
+# freshly-inserted product bar. The hub's runtime hoist script relocates that
+# header's marked control (mark_page_controls, above) onto the shared bar and
+# then best-effort removes the now-empty old header -- but that removal is
+# client-side and timing-dependent. This CSS is the deterministic fallback:
+# it hides any sibling <header> that isn't the bar itself, regardless of
+# whether the JS relocation/removal ran, raced, or failed. Harmless on a page
+# with no other <header> (the selector simply never matches).
+header_dedup_style() {
+  printf '%s' '<style data-shuffle-header-dedup>header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}</style>'
+}
+
+inject_header_dedup_style() {
+  local page=$1
+
+  if grep -Fq 'data-shuffle-header-dedup' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq '</head>' "$page"; then
+    return
+  fi
+
+  inject_before "$page" '</head>' "$(header_dedup_style)"
 }
 
 inject_product_shell() {
@@ -345,10 +389,12 @@ inject_product_shell() {
   local stylesheet='<link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">'
 
   if grep -Fq 'data-shuffle-product-bar' "$page"; then
+    mark_page_controls_if_present "$page"
     inject_product_footer "$page"
     inject_page_controls_hoist "$page"
     inject_product_bar_height_sync "$page"
     inject_dashboard_chrome_toggle "$page"
+    inject_header_dedup_style "$page"
     inject_favicon "$page"
     inject_social_meta "$page"
     return
@@ -374,10 +420,12 @@ inject_product_shell() {
   ' "$temp_page" >"$page"
   rm -f "$temp_page"
 
+  mark_page_controls_if_present "$page"
   inject_product_footer "$page"
   inject_page_controls_hoist "$page"
   inject_product_bar_height_sync "$page"
   inject_dashboard_chrome_toggle "$page"
+  inject_header_dedup_style "$page"
   inject_favicon "$page"
   inject_social_meta "$page"
 }

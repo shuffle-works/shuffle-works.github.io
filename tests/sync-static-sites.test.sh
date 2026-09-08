@@ -51,8 +51,8 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
       # snippet, shares one stylesheet/client-script asset pair, and only
       # the spark TOC page (index.html) carries the "Severity dots" heading
       # the symptom router keys off.
-      printf '%s\n' '<!doctype html><html><head><title>Spark Tuning Reference</title></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header><h2>Severity dots</h2><button type="button" id="nav-toggle">menu</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/spark/index.html"
-      printf '%s\n' '<!doctype html><html><head><title>How This Site Works</title><meta name="description" content="How the Spark Tuning Reference site is built and organized."></head><body><div class="layout"><span class="site-name">Spark Tuning Reference</span></div><button type="button" id="nav-toggle">menu</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/meta/index.html"
+      printf '%s\n' '<!doctype html><html><head><title>Spark Tuning Reference</title></head><body><header data-shuffle-product-bar><a href="/spark-tuning-reference/">Spark Tuning Reference</a></header><h2>Severity dots</h2><button type="button" id="nav-toggle">menu</button><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">toggle</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/spark/index.html"
+      printf '%s\n' '<!doctype html><html><head><title>How This Site Works</title><meta name="description" content="How the Spark Tuning Reference site is built and organized."></head><body><div class="layout"><span class="site-name">Spark Tuning Reference</span></div><button type="button" id="nav-toggle">menu</button><button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to light theme" aria-pressed="false">toggle</button><nav id="sidebar"></nav><script>localStorage.getItem("spark-tuning-reference-theme");</script></body></html>' >"$doc_dir/chapters/meta/index.html"
       printf '%s\n' 'a[href^="http"]::after { content: "arrow"; }' >"$doc_dir/chapters/assets/docs.css"
       printf '%s\n' 'localStorage.setItem("spark-tuning-reference-theme", theme);' >"$doc_dir/chapters/assets/chapters-client.mjs"
 
@@ -141,6 +141,12 @@ grep -F 'href="/shuffle-works-footer.css"' "$LANDING" >/dev/null
 grep -F 'data-shuffle-footer' "$SPARK_INDEX" >/dev/null
 grep -F 'data-shuffle-page-controls-hoist' "$SPARK_INDEX" >/dev/null
 
+# Every vendored chapter page's own theme-toggle button gets marked for the
+# hub's hoist script to relocate, regardless of attribute order: upstream's
+# chapter-shell template orders its button attributes (type, class, id)
+# differently from landing.html's (id, class).
+grep -F '<button type="button" class="theme-toggle" id="theme-toggle" data-shuffle-page-controls' "$SPARK_INDEX" >/dev/null
+
 # landing.html ships with its own bespoke footer; sync must replace it.
 grep -F 'data-shuffle-footer' "$LANDING" >/dev/null
 if grep -F 'Evidence-first Spark operations.' "$LANDING" >/dev/null; then
@@ -154,7 +160,14 @@ fi
 # links are no longer hoisted: the hub's own product bar now supplies those,
 # so only the toggle still needs to move.
 grep -F 'data-shuffle-page-controls-hoist' "$LANDING" >/dev/null
-grep -F '<button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls' "$LANDING" >/dev/null
+grep -F '<button id="theme-toggle" data-shuffle-page-controls class="theme-toggle"' "$LANDING" >/dev/null
+
+# landing.html's own <header class="site-header"> would otherwise render
+# stacked underneath the hub's freshly-inserted product bar if the runtime
+# hoist script's best-effort removal ever races or fails; the CSS dedup rule
+# is the deterministic guarantee that doesn't depend on that script running.
+grep -F 'data-shuffle-header-dedup' "$LANDING" >/dev/null
+grep -F 'header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}' "$LANDING" >/dev/null
 
 # The hub's own product bar carries the Reference/GitHub links directly.
 # chapters/meta/index.html's mock has no pre-existing bar marker, so it gets
@@ -167,6 +180,7 @@ grep -F '<a class="shuffle-product-bar__product" href="/sparkforensics/vendor/sp
 grep -F 'href="/shuffle-works-tokens.css"' "$META_INDEX" >/dev/null
 grep -F 'data-shuffle-footer' "$META_INDEX" >/dev/null
 grep -F 'data-shuffle-page-controls-hoist' "$META_INDEX" >/dev/null
+grep -F '<button type="button" class="theme-toggle" id="theme-toggle" data-shuffle-page-controls' "$META_INDEX" >/dev/null
 
 # landing.html's own <style> block still carries a bare `footer { padding }`
 # tag-selector rule. Since the canonical footer element still matches that
