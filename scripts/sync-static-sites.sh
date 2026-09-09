@@ -364,21 +364,30 @@ mark_page_controls_if_present() {
 }
 
 # A page whose own build ships a bespoke <header> (e.g. landing.html's own
-# brand/nav header) would otherwise render stacked underneath the hub's
-# freshly-inserted product bar. The hub's runtime hoist script relocates that
-# header's marked control (mark_page_controls, above) onto the shared bar and
-# then best-effort removes the now-empty old header -- but that removal is
-# client-side and timing-dependent. This CSS is the deterministic fallback:
-# it hides any sibling <header> that isn't the bar itself, regardless of
-# whether the JS relocation/removal ran, raced, or failed. Harmless on a page
-# with no other <header> (the selector simply never matches).
+# brand/nav header, or a docs theme's nav) would otherwise render stacked
+# underneath the hub's freshly-inserted product bar. The hub's runtime hoist
+# script relocates that header's marked control (mark_page_controls, above)
+# onto the shared bar and then best-effort removes the now-empty old header
+# -- but that removal is client-side and timing-dependent. This CSS is the
+# deterministic fallback: it hides any other <header> in the document,
+# regardless of whether the JS relocation/removal ran, raced, or failed.
+# Harmless on a page with no other <header> (the selector simply never
+# matches).
+#
+# Uses :has() rather than a general sibling combinator (~) because the other
+# header isn't always a direct sibling of the bar: a docs theme like
+# VitePress nests its own <header class="VPNav"> several levels deep inside
+# its own root wrapper div, which sibling combinators can't reach regardless
+# of nesting depth. `body:has(> header.shuffle-product-bar)` still anchors
+# the rule to pages where the bar was actually injected as body's first
+# child, so it can't fire on a standalone open of an unrelated page.
 #
 # Shares its guard/head-check/inject shape with inject_sidebar_dedup_style
 # below via inject_dedup_style -- only the marker attribute and CSS rule
 # differ between the two.
 inject_header_dedup_style() {
   inject_dedup_style "$1" 'data-shuffle-header-dedup' \
-    'header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}'
+    'body:has(> header.shuffle-product-bar) header:not([data-shuffle-product-bar]){display:none}'
 }
 
 inject_product_shell() {
@@ -571,6 +580,78 @@ align_reference_theme_key() {
   sed -i 's/spark-tuning-reference-theme/shuffle-works-theme/g' "$page"
 }
 
+escape_ere() {
+  printf '%s' "$1" | sed 's/[.[\*^$+?(){}|\\]/\\&/g'
+}
+
+# A vendored static build (e.g. SparkForensics' own VitePress docs) emits its
+# internal absolute links -- CSS url()s, href/src attribute values -- rooted
+# at whatever "base" path its own build tool assumed at build time, which
+# doesn't generally match wherever this hub actually ends up publishing that
+# subtree. Neither side of that mapping is hardcoded here: the mount path is
+# derived from where `dir` sits under $STAGED_DIR (which mirrors
+# $PUBLISH_ROOT 1:1), and the build's own base is derived by finding how one
+# of the tree's own real asset files is actually referenced in its own HTML.
+# That keeps this working across an upstream build-tool upgrade (a new base
+# convention) or a reshuffle of this hub's own tree (a new mount path)
+# without either ever being spelled out as a literal in this script.
+#
+# The replacement is anchored to only fire where old_base starts a
+# reference (preceded by a quote, a "(", or start-of-line) rather than a
+# blind string replace, so an unrelated link that merely contains the same
+# substring further into its own path (e.g. a GitHub source link ending in
+# .../main/docs/adr/README.md) is left alone.
+rebase_absolute_paths() {
+  local dir=$1 mount_prefix mount_slash sample_file sample_rel
+  local old_base old_base_re html_file found f
+
+  if [ ! -d "$dir" ]; then
+    return
+  fi
+
+  mount_prefix="/${dir#"$STAGED_DIR"/}"
+  mount_slash="$mount_prefix/"
+
+  sample_file="$(find "$dir" -type f -path '*/assets/*' | head -n1)"
+  if [ -z "$sample_file" ]; then
+    return
+  fi
+  sample_rel="${sample_file#"$dir"/}"
+
+  old_base=""
+  while IFS= read -r -d '' html_file; do
+    found="$(awk -v needle="$sample_rel" '
+      {
+        p = index($0, needle)
+        if (p > 0) {
+          prefix = substr($0, 1, p - 1)
+          for (i = length(prefix); i >= 1; i--) {
+            c = substr(prefix, i, 1)
+            if (c == "\"") {
+              print substr(prefix, i + 1)
+              exit
+            }
+          }
+        }
+      }
+    ' "$html_file")"
+    if [ -n "$found" ]; then
+      old_base="$found"
+      break
+    fi
+  done < <(find "$dir" -type f -name '*.html' -print0)
+
+  if [ -z "$old_base" ] || [ "$old_base" = "$mount_slash" ]; then
+    return
+  fi
+
+  old_base_re="$(escape_ere "$old_base")"
+
+  while IFS= read -r -d '' f; do
+    sed -i -E "s#([^A-Za-z0-9]|^)${old_base_re}#\1${mount_slash}#g" "$f"
+  done < <(find "$dir" -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.mjs' \) -print0)
+}
+
 # The vendored pages' own generic external-link-arrow rule also matches the
 # GitHub link inside the injected product-bar header, which already carries
 # its own literal arrow glyph -- doubling it on that one link. Scoping the
@@ -628,6 +709,8 @@ if [ ! -f "$FOOTER_PARTIAL" ]; then
 fi
 
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
+
+rebase_absolute_paths "$STAGED_DIR/sparkforensics/docs"
 
 landing_page="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/landing.html"
 if [ -f "$landing_page" ]; then

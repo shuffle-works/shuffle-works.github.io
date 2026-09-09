@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Recursive:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Recursive:wght,CASL@400..700,0..1&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   color-scheme: dark;
@@ -65,6 +65,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
+  font-variation-settings: "CASL" 0.15;
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -326,6 +327,21 @@ a:hover {
   background: color-mix(in srgb, var(--color-signal-orange) 14%, transparent);
 }
 
+/* Full-text search results (site/chapters-client.mjs, over
+   assets/search-index.json) replace the nav groups while '#nav-search' has a
+   query; each hit reuses `.nav-link`/`.tag` and adds a corpus badge so a
+   match from the other corpus is distinguishable at a glance. */
+.nav-search-corpus {
+  float: right;
+  margin-left: var(--space-2);
+}
+
+.nav-search-empty {
+  padding: 0 var(--space-2);
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
 /* Anchor-not-found fallback */
 
 .anchor-fallback[hidden] {
@@ -421,6 +437,65 @@ pre code {
   background: none;
   padding: 0;
   font-size: 14px;
+}
+
+/* Shiki syntax highlighting (build-time, site/render.mjs). `defaultColor:
+   false` at build time leaves token colors as --shiki-light/--shiki-dark
+   custom properties instead of baking one theme in, so this site's own
+   `[data-theme]` attribute (not the Shiki theme) picks the active one here;
+   background/border/padding/spacing stay this file's own `pre` rule above,
+   not Shiki's, so highlighting doesn't import a new visual style. */
+pre.shiki {
+  background-color: var(--color-surface-code) !important;
+}
+
+pre.shiki,
+pre.shiki span {
+  color: var(--shiki-dark);
+}
+
+:root[data-theme="light"] pre.shiki,
+:root[data-theme="light"] pre.shiki span {
+  color: var(--shiki-light);
+}
+
+/* Copy-to-clipboard button (injected client-side by chapters-client.mjs) */
+
+.code-block {
+  position: relative;
+}
+
+.copy-button {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  padding: 0.3em 0.6em;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.code-block:hover .copy-button,
+.code-block:focus-within .copy-button {
+  opacity: 1;
+}
+
+.copy-button:hover,
+.copy-button:focus-visible {
+  color: var(--color-signal-teal);
+  border-color: var(--color-signal-teal);
+}
+
+.copy-button.copied {
+  color: var(--color-signal-teal);
+  border-color: var(--color-signal-teal);
+  opacity: 1;
 }
 
 /* Tables */

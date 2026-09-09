@@ -45,6 +45,16 @@ if [ "${1:-}" = repo ] && [ "${2:-}" = clone ]; then
       printf '%s\n' 'spark forensics index' >"$target_dir/dist/index.html"
       printf '%s\n' 'worker' >"$target_dir/dist/vendor/worker.js"
 
+      # SparkForensics' own docs site (a VitePress build), mocked with the
+      # same /docs/-rooted absolute paths upstream's build actually emits:
+      # an href/src pair in the page, a CSS url(), and a GitHub source link
+      # that merely contains the substring "docs/" further into its path
+      # (must NOT be rewritten, unlike the two above).
+      mkdir -p "$target_dir/dist/docs/assets"
+      printf '%s\n' '<!doctype html><html><head><link rel="stylesheet" href="/docs/assets/style.css"></head><body><script src="/docs/assets/app.js"></script><a href="https://github.com/shuffle-works/sparkforensics/blob/main/docs/adr/README.md">ADR</a></body></html>' >"$target_dir/dist/docs/index.html"
+      printf '%s\n' '@font-face{src:url(/docs/assets/inter.woff2)}' >"$target_dir/dist/docs/assets/style.css"
+      printf '%s\n' 'function withBase(e){return"/docs/"+e}' >"$target_dir/dist/docs/assets/app.js"
+
       # Per-chapter reference pages (upstream's chapters/ layout, replacing
       # the old monolithic vendor/spark-tuning-reference/index.html + meta.html). Each
       # page carries its own sidebar/nav-toggle and inline theme-boot
@@ -109,6 +119,24 @@ LANDING="$DOC_DIR/landing.html"
 
 test -f "$PUBLISHED_ROOT/sparkforensics/index.html"
 test -f "$PUBLISHED_ROOT/sparkforensics/vendor/worker.js"
+
+# SparkForensics' own docs site is built assuming it deploys at /docs/, but
+# the hub actually publishes it nested under /sparkforensics/docs/; sync
+# must rewrite the vendored build's own absolute references so its assets
+# and in-app links resolve where it's actually mounted.
+DOCS_INDEX="$PUBLISHED_ROOT/sparkforensics/docs/index.html"
+DOCS_STYLESHEET="$PUBLISHED_ROOT/sparkforensics/docs/assets/style.css"
+DOCS_APP_SCRIPT="$PUBLISHED_ROOT/sparkforensics/docs/assets/app.js"
+
+grep -F 'href="/sparkforensics/docs/assets/style.css"' "$DOCS_INDEX" >/dev/null
+grep -F 'src="/sparkforensics/docs/assets/app.js"' "$DOCS_INDEX" >/dev/null
+grep -F 'url(/sparkforensics/docs/assets/inter.woff2)' "$DOCS_STYLESHEET" >/dev/null
+grep -F 'return"/sparkforensics/docs/"+e' "$DOCS_APP_SCRIPT" >/dev/null
+
+# A GitHub source link that merely contains "docs/" further into its own
+# path (not anchored at the start, unlike the vendored build's own asset
+# references above) must be left untouched.
+grep -F 'href="https://github.com/shuffle-works/sparkforensics/blob/main/docs/adr/README.md"' "$DOCS_INDEX" >/dev/null
 test -f "$SPARK_INDEX"
 test -f "$META_INDEX"
 test -f "$DOCS_CSS"
@@ -167,7 +195,7 @@ grep -F '<button id="theme-toggle" data-shuffle-page-controls class="theme-toggl
 # hoist script's best-effort removal ever races or fails; the CSS dedup rule
 # is the deterministic guarantee that doesn't depend on that script running.
 grep -F 'data-shuffle-header-dedup' "$LANDING" >/dev/null
-grep -F 'header.shuffle-product-bar ~ header:not([data-shuffle-product-bar]){display:none}' "$LANDING" >/dev/null
+grep -F 'body:has(> header.shuffle-product-bar) header:not([data-shuffle-product-bar]){display:none}' "$LANDING" >/dev/null
 
 # The hub's own product bar carries the Reference/GitHub links directly.
 # chapters/meta/index.html's mock has no pre-existing bar marker, so it gets

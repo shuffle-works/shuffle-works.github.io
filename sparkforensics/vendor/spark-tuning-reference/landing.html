@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes.">
   <title>Spark Tuning Reference</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <script>
     (function () {
       var storageKey = 'shuffle-works-theme';
@@ -22,7 +23,7 @@
     }());
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Recursive:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Recursive:wght,CASL@400..700,0..1&family=JetBrains+Mono:wght@400;500;600&display=swap');
     :root {
       color-scheme: dark;
       --color-bg: #080b0d;
@@ -88,6 +89,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--sans);
+      font-variation-settings: "CASL" 0.15;
       font-size: 16px;
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
@@ -269,7 +271,7 @@
     }
   </style>
 <link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<style data-shuffle-header-dedup>body:has(> header.shuffle-product-bar) header:not([data-shuffle-product-bar]){display:none}</style>
 <meta property="og:site_name" content="Shuffle Works"><meta property="og:type" content="website"><meta property="og:title" content="Spark Tuning Reference"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="Spark Tuning Reference"><meta property="og:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes."><meta name="twitter:description" content="A practical Spark tuning reference: trace job symptoms to the mechanics and settings that change outcomes.">
 </head>
 <body>
@@ -284,7 +286,7 @@
       <nav class="header-nav" aria-label="Primary navigation">
         <a class="header-link" href="chapters/spark/index.html">Reference</a>
         <a class="header-link github" href="https://github.com/shuffle-works/spark-tuning-reference" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
-        <button id="theme-toggle" class="theme-toggle" data-shuffle-page-controls type="button" aria-label="Switch to light theme" aria-pressed="false">
+        <button id="theme-toggle" data-shuffle-page-controls class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
           <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
           <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.7 8.7 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z"></path></svg>
         </button>
