@@ -13,3 +13,7 @@ if rg -F '<a href="/sparkforensics/" target=' "$page" || \
   echo 'error: published-site links must remain normal internal anchors' >&2
   exit 1
 fi
+
+not_found_page=404.html
+
+rg -F '<a class="org-link" href="/sparkforensics/docs/tuning-reference/">Spark Tuning Reference</a>' "$not_found_page"

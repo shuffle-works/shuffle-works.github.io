@@ -11,18 +11,19 @@ source.
 
 The product bar and footer are injected into every page under each
 product's tree, not just its landing page: `sparkforensics/index.html` and
-everything under `sparkforensics/docs/` use the `sparkforensics` surface;
-`vendor/spark-tuning-reference/landing.html` and everything under
-`vendor/spark-tuning-reference/chapters/` use the `spark-tuning-reference` surface. A
-design audit found that leaving docs/chapter sub-pages out of the shell was
-the direct cause of the family's two docs sites showing completely
-different chrome from each other and from the rest of the family; every
-page now gets the same bar and footer so that no longer happens. A page
-whose own build already emits a `data-shuffle-product-bar` marker (for
-example a docs-site theme that renders the marker itself) is left alone by
-`inject_product_shell`'s early-return branch instead of getting a second
-bar spliced in; it still gets the footer, hoist script, and every other
-per-shell touch layered on afterward.
+everything under `sparkforensics/docs/` use the `sparkforensics` surface,
+except `sparkforensics/docs/tuning-reference/` (the Spark tuning
+reference, a VitePress nav item inside SparkForensics' own docs site, not
+a separately built product), which keeps its own `spark-tuning-reference`
+surface. A design audit found that leaving docs/chapter sub-pages out of
+the shell was the direct cause of the family's two docs sites showing
+completely different chrome from each other and from the rest of the
+family; every page now gets the same bar and footer so that no longer
+happens. A page whose own build already emits a `data-shuffle-product-bar`
+marker (for example a docs-site theme that renders the marker itself) is
+left alone by `inject_product_shell`'s early-return branch instead of
+getting a second bar spliced in; it still gets the footer, hoist script,
+and every other per-shell touch layered on afterward.
 
 ## What the hub guarantees
 
@@ -42,10 +43,10 @@ the containing element. The hub's injected hoist script finds that marker
 at runtime and relocates it onto the shared product bar's own row, so
 your page ends up with one merged bar instead of two stacked ones. You do
 not need to add that marker yourself if the hub's injection pipeline can
-key off a stable enough selector to add it for you at publish time (as it
-does for `spark-tuning-reference`'s `landing.html`, which only marks its
-theme-toggle button this way: its Reference/GitHub links come from the
-hub's bar instead).
+key off a stable enough selector to add it for you at publish time: the
+publish script marks any element with `id="theme-toggle"` this way,
+though no currently-published product surface ships one (its
+Reference/GitHub links come from the hub's bar instead).
 
 ## What a client-rendered page should do
 

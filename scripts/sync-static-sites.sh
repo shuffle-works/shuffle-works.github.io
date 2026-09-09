@@ -393,9 +393,9 @@ inject_product_shell() {
   inject_social_meta "$page"
 }
 
-# Vendored reference pages can ship pre-existing links to the reference's old
-# standalone URL in their own content, independent of whether that page gets
-# the product-bar/footer shell; keep this a plain per-page rewrite so it runs
+# Any page can ship pre-existing links to the reference's old standalone
+# URL in its own content, independent of whether that page gets the
+# product-bar/footer shell; keep this a plain per-page rewrite so it runs
 # regardless of which branch below a page takes.
 rewrite_legacy_reference_links() {
   local page=$1
