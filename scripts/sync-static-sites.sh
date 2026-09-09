@@ -8,9 +8,10 @@ DESIGN_TOKENS_STYLESHEET="$REPO_ROOT/shuffle-works-tokens.css"
 FOOTER_STYLESHEET="$REPO_ROOT/shuffle-works-footer.css"
 FOOTER_PARTIAL="$REPO_ROOT/partials/shuffle-works-footer.html"
 
-# The Spark reference now ships embedded in the SparkForensics bundle; this is
-# where its entry page is published.
-REFERENCE_LANDING_PATH="/sparkforensics/vendor/spark-tuning-reference/landing.html"
+# The Spark reference now ships inside SparkForensics' own docs site (a
+# VitePress nav item, not a standalone vendored build); this is where its
+# entry page is published.
+REFERENCE_LANDING_PATH="/sparkforensics/docs/tuning-reference/"
 
 if [ "$#" -gt 1 ]; then
   echo "error: expected at most one SparkForensics ref" >&2
@@ -58,13 +59,13 @@ stage_tree() {
 # place instead of a hand-copied literal per surface.
 PRODUCT_BAR_KEYS=(sparkforensics spark-tuning-reference)
 PRODUCT_BAR_LABELS=("SparkForensics" "Spark Tuning Reference")
-PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/vendor/spark-tuning-reference/landing.html")
+PRODUCT_BAR_HREFS=("/sparkforensics/" "/sparkforensics/docs/tuning-reference/")
 
 # Identical on every surface (docs/product-bar-contract.md), unlike the
 # per-surface arrays above. Wrapped in its own flex group (CSS: margin-left:
 # auto) so it, and whatever page control gets hoisted after it, sit
 # right-aligned instead of trailing directly after the product tabs.
-PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/vendor/spark-tuning-reference/chapters/spark/index.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
+PRODUCT_BAR_HEADER_LINKS='<span class="shuffle-product-bar__end"><a class="header-link" href="/sparkforensics/docs/tuning-reference/intro.html">Reference</a><a class="header-link github" href="https://github.com/shuffle-works" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></span>'
 
 product_bar_markup() {
   local current_surface=$1 i key label href current_attr links=""
@@ -314,40 +315,10 @@ inject_social_meta() {
   inject_before "$page" '</head>' "$(social_meta_markup "$title" "$description")"
 }
 
-# spark-tuning-reference's landing.html ships its own <nav class="header-nav">
-# with a Reference link, a GitHub link, and a theme toggle. The hub's
-# product_bar_markup() now supplies the Reference/GitHub links itself, so
-# marking the whole nav would duplicate those links once they're already
-# coming from the hub: only the theme toggle still needs to move. This
-# keys the marker's injection off the toggle button's own known, stable
-# selector and applies it to the copied build output only, so the vendored
-# source never needs the attribute pre-authored into it.
-# No grep guard here: the hoist script injected elsewhere on the page also
-# contains the literal substring "data-shuffle-page-controls" (in its
-# querySelector call), so a broad guard would false-positive on a page that
-# already carries the hoist script and silently skip marking the button. The
-# sed pattern below only matches the unmarked button (no trailing
-# attribute), so it's naturally idempotent on rerun without needing a guard.
-mark_page_controls() {
-  local page=$1
-
-  # Matched on the id attribute alone (not a fixed attribute order) so this
-  # marks landing.html's <button id="theme-toggle" class="theme-toggle" ...>
-  # and the vendored chapter pages' <button type="button" class="theme-toggle"
-  # id="theme-toggle" ...> -- upstream's own chapter-shell template orders
-  # its button attributes differently from landing.html's.
-  sed -i 's|id="theme-toggle"|id="theme-toggle" data-shuffle-page-controls|' "$page"
-
-  if ! grep -Fq 'data-shuffle-page-controls' "$page"; then
-    echo "error: could not mark page controls in $page (theme-toggle selector drifted upstream?)" >&2
-    exit 1
-  fi
-}
-
-# Same marking, but silent no-op on a page with no theme-toggle at all --
-# unlike landing.html (which must always have one, so a missing match there
-# is a real regression), a page like chapters/index.html (a plain TOC with
-# no chrome) legitimately has nothing to mark.
+# Marks a page's own theme-toggle button (if any) so the hub's runtime hoist
+# script can relocate it onto the shared product bar's row. Silent no-op on
+# a page with no theme-toggle at all (e.g. a stock VitePress build, which
+# ships its own toggle with no id="theme-toggle" to match).
 #
 # The "already marked" check matches the exact marked button
 # (id="theme-toggle" data-shuffle-page-controls), not the bare
@@ -363,16 +334,15 @@ mark_page_controls_if_present() {
   fi
 }
 
-# A page whose own build ships a bespoke <header> (e.g. landing.html's own
-# brand/nav header, or a docs theme's nav) would otherwise render stacked
-# underneath the hub's freshly-inserted product bar. The hub's runtime hoist
-# script relocates that header's marked control (mark_page_controls, above)
-# onto the shared bar and then best-effort removes the now-empty old header
-# -- but that removal is client-side and timing-dependent. This CSS is the
-# deterministic fallback: it hides any other <header> in the document,
-# regardless of whether the JS relocation/removal ran, raced, or failed.
-# Harmless on a page with no other <header> (the selector simply never
-# matches).
+# A page whose own build ships a bespoke <header> (e.g. a docs theme's nav)
+# would otherwise render stacked underneath the hub's freshly-inserted
+# product bar. The hub's runtime hoist script relocates that header's marked
+# control (mark_page_controls_if_present, above) onto the shared bar and then
+# best-effort removes the now-empty old header -- but that removal is
+# client-side and timing-dependent. This CSS is the deterministic fallback:
+# it hides any other <header> in the document, regardless of whether the JS
+# relocation/removal ran, raced, or failed. Harmless on a page with no other
+# <header> (the selector simply never matches).
 #
 # Uses :has() rather than a general sibling combinator (~) because the other
 # header isn't always a direct sibling of the bar: a docs theme like
@@ -381,10 +351,6 @@ mark_page_controls_if_present() {
 # of nesting depth. `body:has(> header.shuffle-product-bar)` still anchors
 # the rule to pages where the bar was actually injected as body's first
 # child, so it can't fire on a standalone open of an unrelated page.
-#
-# Shares its guard/head-check/inject shape with inject_sidebar_dedup_style
-# below via inject_dedup_style -- only the marker attribute and CSS rule
-# differ between the two.
 inject_header_dedup_style() {
   inject_dedup_style "$1" 'data-shuffle-header-dedup' \
     'body:has(> header.shuffle-product-bar) header:not([data-shuffle-product-bar]){display:none}'
@@ -433,15 +399,16 @@ inject_product_shell() {
 # regardless of which branch below a page takes.
 rewrite_legacy_reference_links() {
   local page=$1
-  sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/vendor/spark-tuning-reference/landing.html"|g' "$page"
+  sed -i 's|href="/spark-tuning-reference/"|href="/sparkforensics/docs/tuning-reference/"|g' "$page"
 }
 
 # Every page under the tree carries the shared product bar and footer,
 # scoped to its owning product's surface: sparkforensics/index.html and
-# everything under docs/ (SparkForensics' own docs site) use the
-# "sparkforensics" surface; vendor/spark-tuning-reference/landing.html and everything
-# under vendor/spark-tuning-reference/chapters/ (Spark Tuning Reference's landing page and
-# its per-chapter reading pages) use the "spark-tuning-reference" surface.
+# everything under docs/ use the "sparkforensics" surface, except
+# docs/tuning-reference/ (the Spark tuning reference, one VitePress nav item
+# among docs/'s others, not a separately built product) which keeps its own
+# "spark-tuning-reference" surface -- matched before the general docs/*
+# pattern since case takes the first match.
 # A page that already carries its own data-shuffle-product-bar marker (a
 # docs-site build that embeds the marker itself, e.g. via its own theme)
 # is left as-is by inject_product_shell's early-return branch instead of
@@ -454,17 +421,11 @@ inject_product_shells() {
     rewrite_legacy_reference_links "$page"
 
     case "$relative" in
+      docs/tuning-reference/*)
+        inject_product_shell "$page" spark-tuning-reference
+        ;;
       index.html | docs/*)
         inject_product_shell "$page" "$default_surface"
-        ;;
-      vendor/spark-tuning-reference/landing.html)
-        inject_product_shell "$page" spark-tuning-reference
-        ;;
-      vendor/spark-tuning-reference/chapters/*)
-        inject_product_shell "$page" spark-tuning-reference
-        inject_reference_enhancements "$page"
-        inject_sidebar_dedup_style "$page"
-        align_reference_theme_key "$page"
         ;;
       *)
         inject_favicon "$page"
@@ -497,63 +458,9 @@ inject_before() {
   mv "$temp_page" "$page"
 }
 
-reference_router_markup() {
-  printf '%s' '<nav class="symptom-router" data-shuffle-symptom-router aria-labelledby="symptom-router-title"><h3 id="symptom-router-title">Start with a symptom</h3><p>Choose the closest starting point, then follow the linked diagnosis and tuning guidance.</p><ul class="symptom-router-list"><li><a href="bottleneck-slow-host.html">Slow stages</a></li><li><a href="bottleneck-skew.html">Skew, spill, or memory</a></li><li><a href="bottleneck-failures.html">Failures or retries</a></li><li><a href="spark-architecture.html">Configuration or architecture</a></li></ul></nav>'
-}
-
-reference_router_styles() {
-  printf '%s' '.symptom-router { max-width: var(--content-max-width); margin: 0 auto var(--space-5); padding: var(--space-3); border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); } .symptom-router h3 { margin: 0 0 var(--space-2); font-size: 1rem; } .symptom-router p { margin: 0 0 var(--space-3); color: var(--color-text-muted); } .symptom-router-list { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; margin: 0; list-style: none; } .symptom-router-list a { display: inline-flex; align-items: center; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text); font-weight: 600; } .symptom-router-list a:hover { border-color: var(--color-accent); color: var(--color-accent-hover); }'
-}
-
-reference_drawer_script() {
-  printf '%s' '<script data-shuffle-reference-a11y>document.addEventListener("DOMContentLoaded", () => { const toggle = document.getElementById("nav-toggle"); const sidebar = document.getElementById("sidebar"); if (!toggle || !sidebar) return; const mobileNavigation = window.matchMedia("(max-width: 900px)"); const closeDrawer = (restoreFocus = false) => { sidebar.classList.remove("sidebar-open"); sidebar.toggleAttribute("inert", mobileNavigation.matches); sidebar.setAttribute("aria-hidden", String(mobileNavigation.matches)); toggle.setAttribute("aria-expanded", "false"); if (restoreFocus) toggle.focus({ preventScroll: true }); }; const openDrawer = () => { sidebar.classList.add("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => sidebar.querySelector("#nav-search, .nav-link")?.focus()); }; const syncDrawerForViewport = () => { if (mobileNavigation.matches) { closeDrawer(); } else { sidebar.classList.remove("sidebar-open"); sidebar.removeAttribute("inert"); sidebar.setAttribute("aria-hidden", "false"); toggle.setAttribute("aria-expanded", "false"); } }; syncDrawerForViewport(); mobileNavigation.addEventListener("change", syncDrawerForViewport); document.addEventListener("click", (event) => { if (!mobileNavigation.matches) return; if (event.target.closest("#nav-toggle")) { event.preventDefault(); event.stopPropagation(); if (sidebar.classList.contains("sidebar-open")) closeDrawer(); else openDrawer(); } else if (event.target.closest("#sidebar .nav-link")) { closeDrawer(true); event.stopPropagation(); } }, true); document.addEventListener("keydown", (event) => { if (event.key === "Escape" && mobileNavigation.matches && sidebar.classList.contains("sidebar-open")) closeDrawer(true); }); });</script>'
-}
-
-inject_reference_enhancements() {
-  local page=$1
-
-  # The router's links are relative filenames (bottleneck-skew.html, ...), so
-  # this only makes sense injected into a page that's itself a sibling of
-  # those chapter files (currently: chapters/spark/index.html and intro.html,
-  # the only pages carrying the "Severity dots" heading this keys off of).
-  if grep -Fq '<h2>Severity dots</h2>' "$page" && ! grep -Fq 'data-shuffle-symptom-router' "$page"; then
-    inject_before "$page" '<h2>Severity dots</h2>' "$(reference_router_markup)"
-  fi
-
-  if grep -Fq 'id="nav-toggle"' "$page" && ! grep -Fq 'data-shuffle-reference-a11y' "$page"; then
-    inject_before "$page" '</body>' "$(reference_drawer_script)"
-  fi
-}
-
-# The router's markup gets injected per-page (above), but its styles live in
-# the chapter tree's one shared stylesheet now instead of a per-page inline
-# <style> block, so this only needs to run once against that shared file.
-# Guarded on the rule's own selector rather than the page-level
-# data-shuffle-symptom-router marker, since this operates on the stylesheet,
-# not a page.
-inject_symptom_router_styles() {
-  local stylesheet=$1
-
-  if grep -Fq '.symptom-router {' "$stylesheet"; then
-    return
-  fi
-
-  printf '\n%s\n' "$(reference_router_styles)" >>"$stylesheet"
-}
-
-# The shared product-bar (injected above the doc reference pages at publish
-# time) already names the current product as the active tab. This hides the
-# sidebar's own repeated product-name text so there's no duplicate nav. It's
-# scoped by DOM presence, so it's inert on a standalone open of the page
-# (no .shuffle-product-bar exists there to match against).
-inject_sidebar_dedup_style() {
-  inject_dedup_style "$1" 'data-shuffle-sidebar-dedup' \
-    'header.shuffle-product-bar ~ .layout .site-name{display:none}'
-}
-
-# Shared by inject_header_dedup_style and inject_sidebar_dedup_style: both
-# guard on a marker attribute, require a </head> to inject before, and inject
-# a single <style> rule -- only the marker and CSS differ.
+# Shared by inject_header_dedup_style: guards on a marker attribute, requires
+# a </head> to inject before, and injects a single <style> rule -- only the
+# marker and CSS differ per caller.
 inject_dedup_style() {
   local page=$1 marker=$2 css=$3
 
@@ -566,18 +473,6 @@ inject_dedup_style() {
   fi
 
   inject_before "$page" '</head>' "<style $marker>$css</style>"
-}
-
-# The vendored Spark Tuning Reference pages ship with their own theme-storage
-# key, distinct from the one landing.html and the rest of the site use. That
-# split means a visitor's theme choice on landing.html silently reverts when
-# they land on index.html/meta.html. Realigning the key here keeps the choice
-# shared across the whole vendored doc set. sed's global flag makes this
-# naturally idempotent: once the literal is gone, rerunning is a no-op.
-align_reference_theme_key() {
-  local page=$1
-
-  sed -i 's/spark-tuning-reference-theme/shuffle-works-theme/g' "$page"
 }
 
 escape_ere() {
@@ -652,20 +547,6 @@ rebase_absolute_paths() {
   done < <(find "$dir" -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.mjs' \) -print0)
 }
 
-# The vendored pages' own generic external-link-arrow rule also matches the
-# GitHub link inside the injected product-bar header, which already carries
-# its own literal arrow glyph -- doubling it on that one link. Scoping the
-# rule to .content keeps it limited to the page's own prose, where the
-# product bar (outside .content) can't match. The ^-anchor keeps this
-# idempotent on rerun: once the selector already starts with ".content ",
-# it no longer matches the unanchored pattern, so a rerun is a no-op instead
-# of re-prefixing an already-scoped rule.
-scope_reference_external_link_arrow() {
-  local page=$1
-
-  sed -i 's/^a\[href\^="http"\]::after {/.content a[href^="http"]::after {/' "$page"
-}
-
 FORENSICS_CHECKOUT="$CHECKOUT_DIR/SparkForensics"
 clone_repo "shuffle-works/sparkforensics" "$FORENSICS_CHECKOUT" "$FORENSICS_REF"
 
@@ -674,17 +555,9 @@ if [ ! -f "$FORENSICS_CHECKOUT/dist/index.html" ]; then
   exit 1
 fi
 
-if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/spark/index.html" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/meta/index.html" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/anchors.json" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/landing.html" ]; then
-  echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference" >&2
-  exit 1
-fi
-
-if [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/assets/docs.css" ] || \
-  [ ! -f "$FORENSICS_CHECKOUT/dist/vendor/spark-tuning-reference/chapters/assets/chapters-client.mjs" ]; then
-  echo "error: SparkForensics at ref $FORENSICS_REF is missing its embedded Spark reference's shared chapter assets" >&2
+if [ ! -f "$FORENSICS_CHECKOUT/dist/docs/tuning-reference/index.html" ] || \
+  [ ! -f "$FORENSICS_CHECKOUT/dist/docs/tuning-reference/intro.html" ]; then
+  echo "error: SparkForensics at ref $FORENSICS_REF is missing its docs-hosted Spark tuning reference" >&2
   exit 1
 fi
 
@@ -712,23 +585,7 @@ stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
 
 rebase_absolute_paths "$STAGED_DIR/sparkforensics/docs"
 
-landing_page="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/landing.html"
-if [ -f "$landing_page" ]; then
-  mark_page_controls "$landing_page"
-fi
-
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
-
-# The per-chapter pages share these assets instead of each inlining its own
-# copy (unlike the old monolithic index.html/meta.html), so the same
-# theme-key/link-arrow rewrites apply once here rather than per page. Presence
-# is guaranteed by the pre-flight check above, so no [ -f ] guard is needed.
-reference_client_script="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/chapters-client.mjs"
-align_reference_theme_key "$reference_client_script"
-
-reference_docs_stylesheet="$STAGED_DIR/sparkforensics/vendor/spark-tuning-reference/chapters/assets/docs.css"
-scope_reference_external_link_arrow "$reference_docs_stylesheet"
-inject_symptom_router_styles "$reference_docs_stylesheet"
 
 mkdir -p "$PUBLISH_ROOT"
 rm -rf "$PUBLISH_ROOT/sparkforensics" "$PUBLISH_ROOT/spark-tuning-reference"
@@ -769,16 +626,13 @@ fi
 # One sitemap for the whole published family, listing each surface's
 # canonical URL (the /spark-tuning-reference/ redirect stub above is
 # deliberately excluded: its own canonical link already points crawlers at
-# the landing page instead). Derived from PRODUCT_BAR_HREFS and
-# REFERENCE_LANDING_PATH rather than hand-typed, so a renamed/added product
+# the landing page instead), plus the reference's own entry point. Derived
+# from PRODUCT_BAR_HREFS rather than hand-typed, so a renamed/added product
 # can't drift out of sync with the sitemap.
-REFERENCE_DOC_DIR="$(dirname "$REFERENCE_LANDING_PATH")"
 SITEMAP_PATHS=(
   "/"
   "${PRODUCT_BAR_HREFS[@]}"
-  "$REFERENCE_DOC_DIR/chapters/index.html"
-  "$REFERENCE_DOC_DIR/chapters/spark/index.html"
-  "$REFERENCE_DOC_DIR/chapters/meta/index.html"
+  "${REFERENCE_LANDING_PATH}intro.html"
 )
 
 SITEMAP_LASTMOD="$(date -u +%Y-%m-%d)"
