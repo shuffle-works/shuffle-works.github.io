@@ -88,7 +88,19 @@ product_bar_markup() {
     exit 1
   fi
 
-  printf '%s' "<header class=\"shuffle-product-bar\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${PRODUCT_BAR_HEADER_LINKS}</nav></header>"
+  # vp-raw is VitePress's own documented escape hatch for embedded content
+  # that isn't part of its docs theme (normally used for third-party
+  # widgets): it excludes this header from VitePress's default prose styling
+  # and, critically, from its client-side router's click interception.
+  # Without it, clicking a link like "/sparkforensics/" from a VitePress-
+  # hosted page (e.g. the tuning reference) never reaches the browser's
+  # normal navigation -- VitePress's global click handler treats any
+  # same-origin, extensionless href as one of its own routes, and since
+  # "/sparkforensics/" doesn't fall under this docs build's own base
+  # ("/sparkforensics/docs/"), it resolves to that base instead of the
+  # intended destination. Harmless on the SparkForensics app shell, which
+  # has no VitePress runtime to interpret the class at all.
+  printf '%s' "<header class=\"shuffle-product-bar vp-raw\" data-shuffle-product-bar><nav class=\"shuffle-product-bar__nav\" aria-label=\"Shuffle Works products\"><a class=\"shuffle-product-bar__brand\" href=\"/\">Shuffle Works</a>${links}${PRODUCT_BAR_HEADER_LINKS}</nav></header>"
 }
 
 footer_markup() {
@@ -334,26 +346,70 @@ mark_page_controls_if_present() {
   fi
 }
 
-# A page whose own build ships a bespoke <header> (e.g. a docs theme's nav)
-# would otherwise render stacked underneath the hub's freshly-inserted
-# product bar. The hub's runtime hoist script relocates that header's marked
-# control (mark_page_controls_if_present, above) onto the shared bar and then
+# A page whose own build ships a bespoke <header> (a docs theme's nav) would
+# otherwise render stacked underneath the hub's freshly-inserted product bar.
+# The hub's runtime hoist script relocates that header's marked control
+# (mark_page_controls_if_present, above) onto the shared bar and then
 # best-effort removes the now-empty old header -- but that removal is
-# client-side and timing-dependent. This CSS is the deterministic fallback:
-# it hides any other <header> in the document, regardless of whether the JS
-# relocation/removal ran, raced, or failed. Harmless on a page with no other
-# <header> (the selector simply never matches).
+# client-side and timing-dependent. This CSS is the deterministic fallback.
 #
-# Uses :has() rather than a general sibling combinator (~) because the other
-# header isn't always a direct sibling of the bar: a docs theme like
-# VitePress nests its own <header class="VPNav"> several levels deep inside
-# its own root wrapper div, which sibling combinators can't reach regardless
-# of nesting depth. `body:has(> header.shuffle-product-bar)` still anchors
-# the rule to pages where the bar was actually injected as body's first
-# child, so it can't fire on a standalone open of an unrelated page.
+# Scoped to VitePress's own `header.VPNav` specifically, not "any other
+# header in the document": the SparkForensics app shell (which also gets
+# this style, via the same inject_product_shell call) legitimately renders
+# its own per-view <header> elements once a log is loaded (e.g. the
+# dashboard toolbar) -- those aren't stale chrome and must stay visible. An
+# unscoped `header:not([data-shuffle-product-bar])` hid them along with the
+# actual stale nav.
+#
+# Uses :has() rather than a general sibling combinator (~) because VPNav
+# isn't a direct sibling of the bar: VitePress nests it several levels deep
+# inside its own root wrapper div, which sibling combinators can't reach
+# regardless of nesting depth. `body:has(> header.shuffle-product-bar)`
+# still anchors the rule to pages where the bar was actually injected as
+# body's first child, so it can't fire on a standalone open of an unrelated
+# page.
 inject_header_dedup_style() {
   inject_dedup_style "$1" 'data-shuffle-header-dedup' \
-    'body:has(> header.shuffle-product-bar) header:not([data-shuffle-product-bar]){display:none}'
+    'body:has(> header.shuffle-product-bar) header.VPNav{display:none}'
+}
+
+skip_link_markup() {
+  local target=$1
+  printf '%s' "<a class=\"shuffle-skip-link\" data-shuffle-skip-link href=\"$target\">Skip to content</a>"
+}
+
+# A "skip to content" link, the first tab stop in the document, so a
+# keyboard user can bypass the product bar's own links entirely instead of
+# tabbing through every one of them first. Only the SparkForensics app
+# shell needs this injected: VitePress docs pages already ship their own
+# (VPSkipLink), and the hub's own index.html/404.html are hand-authored, not
+# vendored, so they carry a matching link directly in their own source.
+# Inserted before the data-shuffle-product-bar marker line (inject_before
+# matches the first occurrence), which places it ahead of the bar in the DOM
+# regardless of how many other injections already ran -- it must run after
+# inject_product_shell, not before, since the marker it targets doesn't
+# exist until the bar itself has been spliced in.
+# `target` (e.g. "#root") needs a focusable landing spot: jumping a browser's
+# focus to a plain <div> via its fragment doesn't actually move keyboard
+# focus unless that element can take it, so this also adds tabindex="-1" to
+# the target id if it doesn't already have one.
+inject_skip_link() {
+  local page=$1 target=$2 target_id
+
+  if grep -Fq 'data-shuffle-skip-link' "$page"; then
+    return
+  fi
+
+  if ! grep -Fq 'data-shuffle-product-bar' "$page"; then
+    return
+  fi
+
+  target_id="${target#\#}"
+  if grep -Eq "id=\"${target_id}\"" "$page" && ! grep -Eq "id=\"${target_id}\"[^>]*tabindex" "$page"; then
+    sed -i -E "s#id=\"${target_id}\"#id=\"${target_id}\" tabindex=\"-1\"#" "$page"
+  fi
+
+  inject_before "$page" 'data-shuffle-product-bar' "$(skip_link_markup "$target")"
 }
 
 inject_product_shell() {
@@ -424,7 +480,11 @@ inject_product_shells() {
       docs/tuning-reference/*)
         inject_product_shell "$page" spark-tuning-reference
         ;;
-      index.html | docs/*)
+      index.html)
+        inject_product_shell "$page" "$default_surface"
+        inject_skip_link "$page" "#root"
+        ;;
+      docs/*)
         inject_product_shell "$page" "$default_surface"
         ;;
       *)
@@ -477,6 +537,108 @@ inject_dedup_style() {
 
 escape_ere() {
   printf '%s' "$1" | sed 's/[.[\*^$+?(){}|\\]/\\&/g'
+}
+
+# Verbatim substring replacement, one page at a time. Mirrors inject_before's
+# ENVIRON approach (verbatim.md: passing content through the environment
+# rather than awk -v or a sed s/// replacement) so a `replace` value with its
+# own regex metacharacters, ampersands, or backslashes -- exactly what a
+# minified inline <script> full of &&/||/?: looks like -- can't be
+# misinterpreted by the substitution mechanism itself. No-ops (skips the
+# mktemp/awk pass entirely) when `find` isn't present in the page at all.
+replace_literal() {
+  local page=$1 find=$2 replace=$3 temp_page
+
+  if ! grep -Fq "$find" "$page"; then
+    return
+  fi
+
+  temp_page="$(mktemp)"
+  find="$find" replace="$replace" awk '
+    {
+      line = $0
+      f = ENVIRON["find"]
+      r = ENVIRON["replace"]
+      out = ""
+      while ((p = index(line, f)) > 0) {
+        out = out substr(line, 1, p - 1) r
+        line = substr(line, p + length(f))
+      }
+      print out line
+    }
+  ' "$page" >"$temp_page"
+  mv "$temp_page" "$page"
+}
+
+# The VitePress docs build's own pre-hydration script (identical across
+# every docs page, run before any framework code to avoid a flash of the
+# wrong theme) only ever reads the legacy vitepress-theme-appearance key and
+# only ever toggles VitePress's own .dark class. Everywhere else in the
+# family -- the hub, the SparkForensics app shell, and this same docs site's
+# own post-hydration bridge script (docs/assets/chunks/theme.*.js) -- reads
+# and writes localStorage['shuffle-works-theme'] ("light"/"dark", never
+# "auto") and reflects it via a data-theme attribute, which is what
+# shuffle-works-tokens.css's color tokens are keyed off (:root[data-theme=
+# ...]), not off .dark. A theme set anywhere else in the family therefore
+# doesn't take effect on a docs page until the post-hydration bridge script
+# corrects it a moment later: a visible flash on every first load whenever
+# the two disagree, and -- independent of that -- the shared product-bar/
+# footer chrome injected on every docs page has no data-theme to render
+# against at all until that same later correction runs.
+# Checks the shared key first, falls back to the original
+# vitepress-theme-appearance/auto/prefers-color-scheme chain unchanged when
+# it's unset, and sets data-theme alongside the existing .dark toggle so
+# both VitePress's own styling and the shared family chrome are correct
+# before first paint. Left as a single minified one-liner, matching the
+# vendored file's own convention, rather than reformatted into multiple
+# lines.
+fix_docs_theme_flash() {
+  local dir=$1 page
+  local legacy='<script id="check-dark-mode">(()=>{const e=localStorage.getItem("vitepress-theme-appearance")||"auto",a=window.matchMedia("(prefers-color-scheme: dark)").matches;(!e||e==="auto"?a:e==="dark")&&document.documentElement.classList.add("dark")})();</script>'
+  local fixed='<script id="check-dark-mode">(()=>{const s=localStorage.getItem("shuffle-works-theme"),e=(s==="light"||s==="dark")?s:(localStorage.getItem("vitepress-theme-appearance")||"auto"),a=window.matchMedia("(prefers-color-scheme: dark)").matches,d=!e||e==="auto"?a:e==="dark";d&&document.documentElement.classList.add("dark");document.documentElement.setAttribute("data-theme",d?"dark":"light")})();</script>'
+
+  if [ ! -d "$dir" ]; then
+    return
+  fi
+
+  while IFS= read -r -d '' page; do
+    replace_literal "$page" "$legacy" "$fixed"
+  done < <(find "$dir" -type f -name '*.html' -print0)
+}
+
+# The VitePress docs build ships a full Inter font bundle (@font-face rules
+# across every roman/italic weight and script subset, one of them actively
+# preloaded on every page) even though --vp-font-family-base is overridden
+# to the family's Recursive further down the same stylesheet -- Inter never
+# renders, so the bundle and its preload are pure network waste. Likewise
+# vp-icons.css is preloaded as a stylesheet on every page despite being
+# genuinely empty. Runs once across the whole docs tree via find+sed rather
+# than as a per-page injection like the functions above: this is dead-weight
+# removal, not markup the hub adds, and the build's hashed filenames
+# (style.<hash>.css, inter-<subset>.<hash>.woff2) rule out the literal
+# string match replace_literal's callers use elsewhere. A @font-face body
+# never contains a literal "}" of its own, so a non-greedy [^}]* between the
+# rule's braces can't spill into a neighboring rule.
+strip_dead_docs_font_assets() {
+  local dir=$1 css_file
+
+  if [ ! -d "$dir" ]; then
+    return
+  fi
+
+  while IFS= read -r -d '' css_file; do
+    sed -i -E 's/@font-face\{[^}]*Inter[^}]*\}//g' "$css_file"
+  done < <(find "$dir" -type f \( -name 'style.*.css' -o -name 'style.css' \) -print0)
+
+  while IFS= read -r -d '' page; do
+    sed -i -E \
+      -e 's#<link rel="preload" href="[^"]*inter-[^"]*\.woff2"[^>]*>##g' \
+      -e 's#<link rel="preload stylesheet" href="[^"]*vp-icons\.css"[^>]*>##g' \
+      "$page"
+  done < <(find "$dir" -type f -name '*.html' -print0)
+
+  find "$dir" -type f -name 'inter-*.woff2' -delete
+  find "$dir" -type f -name 'vp-icons.css' -empty -delete
 }
 
 # A vendored static build (e.g. SparkForensics' own VitePress docs) emits its
@@ -584,6 +746,8 @@ fi
 stage_tree "$FORENSICS_CHECKOUT/dist" "$STAGED_DIR/sparkforensics"
 
 rebase_absolute_paths "$STAGED_DIR/sparkforensics/docs"
+fix_docs_theme_flash "$STAGED_DIR/sparkforensics/docs"
+strip_dead_docs_font_assets "$STAGED_DIR/sparkforensics/docs"
 
 inject_product_shells "$STAGED_DIR/sparkforensics" sparkforensics
 
@@ -600,6 +764,7 @@ cat >"$PUBLISH_ROOT/spark-tuning-reference/index.html" <<EOF
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spark Tuning Reference moved</title>
 <link rel="canonical" href="$REFERENCE_LANDING_PATH">
 <meta http-equiv="refresh" content="0; url=$REFERENCE_LANDING_PATH">
