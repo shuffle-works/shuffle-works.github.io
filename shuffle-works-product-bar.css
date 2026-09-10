@@ -1,0 +1,265 @@
+/* Shared navigation shell for published Shuffle Works products. */
+.shuffle-product-bar,
+.shuffle-product-bar * {
+  box-sizing: border-box;
+}
+
+.shuffle-product-bar {
+  /* Prefer the canonical shuffle-works-tokens.css names; keep the legacy
+     unprefixed aliases for hosts still on their own vocabulary; fall back to
+     the family's own hex (orange, not teal) only if no tokens load at all. */
+  --shuffle-shell-bg: var(--color-surface, var(--surface, #11171a));
+  --shuffle-shell-text: var(--color-text, var(--text, #f4f4f5));
+  --shuffle-shell-muted: var(--color-text-muted, var(--text-muted, #a9b5b4));
+  --shuffle-shell-border: var(--color-border, var(--border, #233035));
+  --shuffle-shell-accent: var(--color-accent, var(--accent, #ff6b2c));
+  --shuffle-shell-signal: var(--color-signal, var(--teal, #39d6b5));
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  /* flex-start, not center: keeps a portaled [data-shuffle-page-controls]
+     sibling (see below) pinned to the bar's own row instead of drifting if
+     it and __nav ever end up different heights. */
+  align-items: flex-start;
+  min-height: 2.75rem;
+  padding: 0.25rem clamp(1rem, 4vw, 2rem);
+  color: var(--shuffle-shell-text);
+  background: var(--shuffle-shell-bg);
+  border-bottom: 1px solid var(--shuffle-shell-border);
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+/* No max-width/centering here: [data-shuffle-page-controls] is hoisted in
+   as nav's sibling (not its child — see below), so capping nav's own width
+   would leave it centered independently of that sibling, splitting the
+   free space on wide screens into a gap between them instead of pushing
+   both flush to the bar's edges. flex:1 lets nav fill exactly the space
+   controls doesn't need, keeping __end's margin-left:auto push flush
+   against whatever sits to its right.
+
+   nowrap + its own overflow-x: the bar must never wrap onto multiple rows
+   or grow the page's own scrollWidth — brand, every product tab, and
+   Reference/GitHub together are routinely wider than a phone screen, so
+   the row scrolls horizontally within itself instead. min-width: 0
+   overrides the flex default (min-width: auto, i.e. "never shrink below
+   my content"), which would otherwise force nav past its allotted width
+   and take the whole header, and the page, with it. */
+.shuffle-product-bar__nav {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shuffle-product-bar__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.shuffle-product-bar a {
+  color: var(--shuffle-shell-muted);
+  text-decoration: none;
+}
+
+.shuffle-product-bar a:hover {
+  color: var(--shuffle-shell-text);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.shuffle-product-bar__brand {
+  flex-shrink: 0;
+  margin-right: 0.35rem;
+  color: var(--shuffle-shell-text) !important;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.shuffle-product-bar__product {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 0.35rem;
+}
+
+.shuffle-product-bar__product[aria-current="page"] {
+  color: var(--shuffle-shell-text);
+  background: color-mix(in srgb, var(--shuffle-shell-accent) 16%, transparent);
+  font-weight: 600;
+}
+
+.shuffle-product-bar a:focus-visible {
+  outline: 2px solid var(--shuffle-shell-accent);
+  outline-offset: 2px;
+  border-radius: 0.2rem;
+}
+
+/* Off-screen until focused, then the first thing a keyboard user sees: lets
+   Tab jump straight past the bar's own nav links into the real page instead
+   of tabbing through every one of them first. z-index above the bar's own
+   (30) since it needs to sit visibly on top of it once focused, not behind. */
+.shuffle-skip-link {
+  position: fixed;
+  top: -3rem;
+  left: 0.5rem;
+  z-index: 40;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.35rem;
+  background: var(--shuffle-shell-bg);
+  color: var(--shuffle-shell-text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.shuffle-skip-link:focus-visible {
+  top: 0.5rem;
+  outline: 2px solid var(--shuffle-shell-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shuffle-skip-link {
+    transition: none;
+  }
+}
+
+/* Pushes Reference/GitHub to the far end of the nav's own row, so they sit
+   flush against whatever page control gets hoisted after the nav (a
+   sibling, not a nav child — see [data-shuffle-page-controls] below)
+   instead of trailing immediately after the product tabs. */
+.shuffle-product-bar__end {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* A hoisted client-rendered control isn't necessarily a bare button like
+   spark-tuning-reference's: it can be a wrapping element (icon + label +
+   toggle) with no layout of its own, so its inline children wrap onto extra
+   lines once placed here, taller than the bar's own row. Force it into the
+   same single-row flex layout regardless of what the source app put inside.
+   A descendant selector (not `__nav >`) on purpose: SparkForensics' own
+   bundle can portal this node directly onto the bar itself, as a sibling of
+   __nav rather than a child of it — see the sync script's page-controls-hoist
+   comment for why that node is never physically moved into __nav. */
+.shuffle-product-bar [data-shuffle-page-controls] {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  flex-shrink: 0;
+}
+
+/* Give a directly-portaled control (a sibling of __nav, not nested inside
+   it) the same breathing room __nav's own `gap` gives its hoisted-in-nav
+   counterpart. A no-op when __nav is the bar's only child. */
+.shuffle-product-bar {
+  gap: 0.5rem;
+}
+
+/* SparkForensics' hoisted control repeats its own product name next to an
+   icon; the shared bar's active tab already says "SparkForensics", so hide
+   the duplicate label. Scoped to a direct span child, nested under the
+   injected bar, so a standalone (unpublished) open of the app — no
+   .shuffle-product-bar there — is unaffected. */
+.shuffle-product-bar [data-shuffle-page-controls] > span {
+  display: none;
+}
+
+/* Same story for the leading "activity" icon next to that label: drop it
+   so the hoisted control is just the theme toggle, flush against
+   Reference/GitHub with no gap. Scoped to the icon's own lucide class, not
+   a bare `svg` child selector — on pages where data-shuffle-page-controls
+   sits directly on the theme-toggle button (e.g. the Reference doc's
+   static pages), a bare `svg` selector would hide its sun/moon icon too. */
+.shuffle-product-bar [data-shuffle-page-controls] > svg.lucide-activity {
+  display: none;
+}
+
+.shuffle-product-bar .header-link,
+.shuffle-product-bar .theme-toggle {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid transparent;
+  color: var(--shuffle-shell-muted);
+  background: transparent;
+  font-size: 0.88rem;
+}
+
+.shuffle-product-bar .theme-toggle {
+  width: 2.75rem;
+  padding: 0;
+  border-color: var(--shuffle-shell-border);
+  color: var(--shuffle-shell-text);
+  cursor: pointer;
+  border-radius: var(--radius, 0.75rem);
+}
+
+.shuffle-product-bar .theme-toggle:hover {
+  border-color: var(--shuffle-shell-signal);
+  color: var(--shuffle-shell-signal);
+}
+
+.shuffle-product-bar .theme-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.shuffle-product-bar .theme-icon.moon {
+  display: none;
+}
+
+:root[data-theme="light"] .shuffle-product-bar .theme-icon.sun {
+  display: none;
+}
+
+:root[data-theme="light"] .shuffle-product-bar .theme-icon.moon {
+  display: block;
+}
+
+/* The bar stays a single row (its own nav content scrolls horizontally
+   rather than wrapping), but its height still isn't a hardcoded constant:
+   padding, the sync script's injected content, and font metrics all nudge
+   it slightly. The product-bar-height-sync script keeps
+   --shuffle-product-bar-height current at runtime; 2.75rem is only the
+   pre-JS fallback. */
+/* Keep the tuning reference's sticky section menu below the product bar. */
+.shuffle-product-bar ~ .layout .sidebar {
+  top: var(--shuffle-product-bar-height, 2.75rem);
+  height: calc(100dvh - var(--shuffle-product-bar-height, 2.75rem));
+}
+
+/* The tuning reference's compact-menu button is fixed on narrow screens. */
+.shuffle-product-bar ~ .nav-toggle {
+  top: calc(var(--shuffle-product-bar-height, 2.75rem) + 0.75rem);
+}
+
+@media (max-width: 34rem) {
+  .shuffle-product-bar {
+    padding-inline: 0.75rem;
+  }
+}
+
+@media (forced-colors: active) {
+  .shuffle-product-bar__product[aria-current="page"] {
+    outline: 1px solid currentColor;
+  }
+}

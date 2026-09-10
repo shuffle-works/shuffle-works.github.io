@@ -1,0 +1,91 @@
+/* Shuffle Works design tokens — single source of truth for the product family.
+   Published from shuffle-works-site and injected into every downstream product
+   page at build time (see scripts/sync-static-sites.sh), alongside
+   shuffle-works-product-bar.css.
+
+   Subprojects should ALIAS their local variables to these canonical names
+   (e.g. `--accent: var(--color-accent)`) rather than redefining the palette,
+   so the family stays coherent from one shared source.
+
+   Theming: dark is the default (dark-first); the OS light preference overrides
+   it; the manual [data-theme] attribute (set per page) always wins over both. */
+:root {
+  /* Palette — dark (default) */
+  --color-bg: #080b0d;
+  --color-bg-elevated: #11171a;
+  /* Alias for downstream surfaces that expect a "surface" token; tracks
+     --color-bg-elevated automatically across theme changes. */
+  --color-surface: var(--color-bg-elevated);
+  --color-text: #f4f4f5;
+  --color-text-muted: #a9b5b4;
+  --color-accent: #ff6b2c;
+  --color-accent-hover: #ff8a4f;
+  --color-signal: #39d6b5;
+  --color-on-accent: #11110f;
+  --color-border: #233035;
+
+  /* Type */
+  --font-sans: 'Recursive', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Space + shape */
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --radius: 0.75rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #f7f8f4;
+    --color-bg-elevated: #ffffff;
+    --color-text: #151b1e;
+    --color-text-muted: #4f5f60;
+    --color-accent: #bf4413;
+    --color-accent-hover: #aa3510;
+    --color-signal: #00695a;
+    --color-on-accent: #ffffff;
+    --color-border: #dbe2df;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #080b0d;
+  --color-bg-elevated: #11171a;
+  --color-text: #f4f4f5;
+  --color-text-muted: #a9b5b4;
+  --color-accent: #ff6b2c;
+  --color-accent-hover: #ff8a4f;
+  --color-signal: #39d6b5;
+  --color-on-accent: #11110f;
+  --color-border: #233035;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f7f8f4;
+  --color-bg-elevated: #ffffff;
+  --color-text: #151b1e;
+  --color-text-muted: #4f5f60;
+  --color-accent: #bf4413;
+  --color-accent-hover: #aa3510;
+  --color-signal: #00695a;
+  --color-on-accent: #ffffff;
+  --color-border: #dbe2df;
+}
+
+/* Visually hidden but announced by screen readers (clip-based, not display:none) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

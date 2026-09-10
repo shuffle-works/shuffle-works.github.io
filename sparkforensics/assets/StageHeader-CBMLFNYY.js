@@ -1,0 +1,1 @@
+import{j as s}from"./react-vendor-u4pyvC5Y.js";import{S as r}from"./index-CDOP-I1J.js";function i({stageId:e,appModel:t}){const a=t.stages.get(e);return s.jsxs("div",{className:"flex flex-wrap items-center gap-2",children:[s.jsx(r,{stageId:e}),s.jsx("span",{className:"text-sm font-medium",children:a?.name??`Stage ${e}`})]})}export{i as S};
