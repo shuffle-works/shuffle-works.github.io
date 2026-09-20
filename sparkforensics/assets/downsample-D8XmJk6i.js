@@ -1,0 +1,1 @@
+function h(r,n=2e3){if(r.length<=n)return r;if(n<=1)return r.length?[r[0]]:[];const t=r.length-1,a=t/(n-1),l=new Array(n);for(let e=0;e<n;e++)l[e]=r[Math.min(t,Math.round(e*a))];return l}export{h as d};
