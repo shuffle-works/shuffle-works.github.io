@@ -40,11 +40,11 @@
    controls doesn't need, keeping __end's margin-left:auto push flush
    against whatever sits to its right.
 
-   nowrap + its own overflow-x: the bar must never wrap onto multiple rows
-   or grow the page's own scrollWidth — brand, every product tab, and
-   Reference/GitHub together are routinely wider than a phone screen, so
-   the row scrolls horizontally within itself instead (phones wrap to two
-   rows instead; see the max-width: 46rem block). min-width: 0
+   nowrap + its own overflow-x: above phone widths the bar stays one row
+   and must never grow the page's own scrollWidth, so if its content ever
+   outgrows the row it scrolls horizontally within itself. Phones, where
+   brand, every product tab, and Reference/GitHub together don't fit, wrap
+   to two rows instead; see the max-width: 46rem block. min-width: 0
    overrides the flex default (min-width: auto, i.e. "never shrink below
    my content"), which would otherwise force nav past its allotted width
    and take the whole header, and the page, with it. */
