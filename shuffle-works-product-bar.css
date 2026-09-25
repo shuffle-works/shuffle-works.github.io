@@ -44,7 +44,7 @@
    or grow the page's own scrollWidth — brand, every product tab, and
    Reference/GitHub together are routinely wider than a phone screen, so
    the row scrolls horizontally within itself instead (phones wrap to two
-   rows instead; see the max-width: 34rem block). min-width: 0
+   rows instead; see the max-width: 46rem block). min-width: 0
    overrides the flex default (min-width: auto, i.e. "never shrink below
    my content"), which would otherwise force nav past its allotted width
    and take the whole header, and the page, with it. */
@@ -237,7 +237,7 @@
 }
 
 /* The bar's height isn't a hardcoded constant: it wraps to two rows on
-   phones (see the max-width: 34rem block below), and
+   phones (see the max-width: 46rem block below), and
    padding, the sync script's injected content, and font metrics all nudge
    it slightly. The product-bar-height-sync script keeps
    --shuffle-product-bar-height current at runtime; 2.75rem is only the
@@ -253,17 +253,14 @@
   top: calc(var(--shuffle-product-bar-height, 2.75rem) + 0.75rem);
 }
 
-/* Phone widths: brand, both product tabs, Reference, GitHub and the theme
-   toggle need about 600px, so the scrolling single row above would leave the
-   end links and toggle off-screen behind a hidden scrollbar. Instead wrap
+/* Phone widths, landscape included: brand, both product tabs, Reference,
+   GitHub, the theme toggle and the bar's padding need about 715px, so the
+   scrolling single row above would leave the end links and toggle off-screen
+   behind a hidden scrollbar. Instead wrap
    into two rows: brand + GitHub + toggle on the first, the product tabs on
    the second. The zero-height ::before item forces the line break, and
    `order` pulls __end and a nav-hoisted control up onto the first row. */
-@media (max-width: 34rem) {
-  .shuffle-product-bar {
-    padding-inline: 0.75rem;
-  }
-
+@media (max-width: 46rem) {
   .shuffle-product-bar__nav {
     flex-wrap: wrap;
     row-gap: 0;
@@ -298,11 +295,21 @@
   .shuffle-product-bar > [data-shuffle-page-controls] {
     position: absolute;
     top: 0.25rem;
-    right: 0.75rem;
+    right: clamp(1rem, 4vw, 2rem);
   }
 
   .shuffle-product-bar:has(> [data-shuffle-page-controls]) .shuffle-product-bar__end {
     margin-right: 3.25rem;
+  }
+}
+
+@media (max-width: 34rem) {
+  .shuffle-product-bar {
+    padding-inline: 0.75rem;
+  }
+
+  .shuffle-product-bar > [data-shuffle-page-controls] {
+    right: 0.75rem;
   }
 }
 
