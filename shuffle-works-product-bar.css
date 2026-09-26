@@ -40,10 +40,11 @@
    controls doesn't need, keeping __end's margin-left:auto push flush
    against whatever sits to its right.
 
-   nowrap + its own overflow-x: the bar must never wrap onto multiple rows
-   or grow the page's own scrollWidth — brand, every product tab, and
-   Reference/GitHub together are routinely wider than a phone screen, so
-   the row scrolls horizontally within itself instead. min-width: 0
+   nowrap + its own overflow-x: above phone widths the bar stays one row
+   and must never grow the page's own scrollWidth, so if its content ever
+   outgrows the row it scrolls horizontally within itself. Phones, where
+   brand, every product tab, and Reference/GitHub together don't fit, wrap
+   to two rows instead; see the max-width: 46rem block. min-width: 0
    overrides the flex default (min-width: auto, i.e. "never shrink below
    my content"), which would otherwise force nav past its allotted width
    and take the whole header, and the page, with it. */
@@ -235,8 +236,8 @@
   display: block;
 }
 
-/* The bar stays a single row (its own nav content scrolls horizontally
-   rather than wrapping), but its height still isn't a hardcoded constant:
+/* The bar's height isn't a hardcoded constant: it wraps to two rows on
+   phones (see the max-width: 46rem block below), and
    padding, the sync script's injected content, and font metrics all nudge
    it slightly. The product-bar-height-sync script keeps
    --shuffle-product-bar-height current at runtime; 2.75rem is only the
@@ -252,9 +253,71 @@
   top: calc(var(--shuffle-product-bar-height, 2.75rem) + 0.75rem);
 }
 
+/* Phone widths, landscape included: brand, both product tabs, Reference,
+   GitHub, the theme toggle and the bar's padding need about 715px, so the
+   scrolling single row above would leave the end links and toggle off-screen
+   behind a hidden scrollbar. Instead wrap
+   into two rows: brand + GitHub + toggle on the first, the product tabs on
+   the second. The zero-height ::before item forces the line break, and
+   `order` pulls __end and a nav-hoisted control up onto the first row. */
+@media (max-width: 46rem) {
+  .shuffle-product-bar__nav {
+    flex-wrap: wrap;
+    row-gap: 0;
+    overflow-x: visible;
+  }
+
+  .shuffle-product-bar__nav::before {
+    content: "";
+    order: 2;
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  .shuffle-product-bar__end,
+  .shuffle-product-bar__nav > [data-shuffle-page-controls] {
+    order: 1;
+  }
+
+  .shuffle-product-bar__product {
+    order: 3;
+  }
+
+  /* Reference points into the same product as the Spark Tuning Reference
+     tab, so drop the duplicate where space is short. */
+  .shuffle-product-bar .header-link:not(.github) {
+    display: none;
+  }
+
+  /* A control portaled onto the bar itself (a sibling of __nav) would
+     otherwise narrow both nav rows by its own width; pin it to the first
+     row's right edge and reserve that space after __end instead. */
+  .shuffle-product-bar > [data-shuffle-page-controls] {
+    position: absolute;
+    top: 0.25rem;
+    right: clamp(1rem, 4vw, 2rem);
+  }
+
+  .shuffle-product-bar:has(> [data-shuffle-page-controls]) .shuffle-product-bar__end {
+    margin-right: 3.25rem;
+  }
+}
+
 @media (max-width: 34rem) {
   .shuffle-product-bar {
     padding-inline: 0.75rem;
+  }
+
+  .shuffle-product-bar > [data-shuffle-page-controls] {
+    right: 0.75rem;
+  }
+}
+
+/* At the narrowest phones (320px) both product tabs only fit one row at a
+   slightly smaller size; below that they wrap onto a third row. */
+@media (max-width: 22.5rem) {
+  .shuffle-product-bar__product {
+    font-size: 0.8125rem;
   }
 }
 
