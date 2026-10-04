@@ -7,13 +7,14 @@
 .shuffle-product-bar {
   /* Prefer the canonical shuffle-works-tokens.css names; keep the legacy
      unprefixed aliases for hosts still on their own vocabulary; fall back to
-     the family's own hex (orange, not teal) only if no tokens load at all. */
-  --shuffle-shell-bg: var(--color-surface, var(--surface, #11171a));
-  --shuffle-shell-text: var(--color-text, var(--text, #f4f4f5));
-  --shuffle-shell-muted: var(--color-text-muted, var(--text-muted, #a9b5b4));
-  --shuffle-shell-border: var(--color-border, var(--border, #233035));
-  --shuffle-shell-accent: var(--color-accent, var(--accent, #ff6b2c));
-  --shuffle-shell-signal: var(--color-signal, var(--teal, #39d6b5));
+     the family's own Trace hex (dark slate, indigo) only if no tokens load at
+     all. */
+  --shuffle-shell-bg: var(--color-surface, var(--surface, #1b1e25));
+  --shuffle-shell-text: var(--color-text, var(--text, #e6e8ee));
+  --shuffle-shell-muted: var(--color-text-muted, var(--text-muted, #9097a3));
+  --shuffle-shell-border: var(--color-border, var(--border, #2b2f38));
+  --shuffle-shell-accent: var(--color-accent, var(--accent, #9d97ff));
+  --shuffle-shell-accent-soft: var(--color-accent-soft, var(--accent-soft, #25234a));
   position: sticky;
   top: 0;
   z-index: 30;
@@ -78,7 +79,8 @@
   flex-shrink: 0;
   margin-right: 0.35rem;
   color: var(--shuffle-shell-text) !important;
-  font-weight: 700;
+  font-weight: 600;
+  font-stretch: var(--font-stretch-heading, 85%);
   letter-spacing: -0.01em;
 }
 
@@ -88,12 +90,14 @@
   align-items: center;
   min-height: 2.75rem;
   padding: 0.2rem 0.55rem;
-  border-radius: 0.35rem;
+  border-radius: var(--radius-button, 4px);
 }
 
-.shuffle-product-bar__product[aria-current="page"] {
-  color: var(--shuffle-shell-text);
-  background: color-mix(in srgb, var(--shuffle-shell-accent) 16%, transparent);
+/* The current product reads like Trace's primary button: accent text on the
+   accent-soft fill, never a solid accent block. */
+.shuffle-product-bar a.shuffle-product-bar__product[aria-current="page"] {
+  color: var(--shuffle-shell-accent);
+  background: var(--shuffle-shell-accent-soft);
   font-weight: 600;
 }
 
@@ -113,7 +117,7 @@
   left: 0.5rem;
   z-index: 40;
   padding: 0.5rem 0.9rem;
-  border-radius: 0.35rem;
+  border-radius: var(--radius-button, 4px);
   background: var(--shuffle-shell-bg);
   color: var(--shuffle-shell-text);
   font-family: inherit;
@@ -207,12 +211,12 @@
   border-color: var(--shuffle-shell-border);
   color: var(--shuffle-shell-text);
   cursor: pointer;
-  border-radius: var(--radius, 0.75rem);
+  border-radius: var(--radius-button, 4px);
 }
 
 .shuffle-product-bar .theme-toggle:hover {
-  border-color: var(--shuffle-shell-signal);
-  color: var(--shuffle-shell-signal);
+  border-color: var(--shuffle-shell-accent);
+  color: var(--shuffle-shell-accent);
 }
 
 .shuffle-product-bar .theme-icon {
