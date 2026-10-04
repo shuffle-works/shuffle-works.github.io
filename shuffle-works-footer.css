@@ -5,11 +5,11 @@
 }
 
 .shuffle-footer {
-  --shuffle-footer-bg: var(--color-bg, var(--bg, #080b0d));
-  --shuffle-footer-text: var(--color-text, var(--text, #f4f4f5));
-  --shuffle-footer-muted: var(--color-text-muted, var(--text-muted, #a9b5b4));
-  --shuffle-footer-border: var(--color-border, var(--border, #233035));
-  --shuffle-footer-accent: var(--color-accent, var(--accent, #ff6b2c));
+  --shuffle-footer-bg: var(--color-bg, var(--bg, #14161b));
+  --shuffle-footer-text: var(--color-text, var(--text, #e6e8ee));
+  --shuffle-footer-muted: var(--color-text-muted, var(--text-muted, #9097a3));
+  --shuffle-footer-border: var(--color-border, var(--border, #2b2f38));
+  --shuffle-footer-accent: var(--color-accent, var(--accent, #9d97ff));
   border-top: 1px solid var(--shuffle-footer-border);
   background: var(--shuffle-footer-bg);
   color: var(--shuffle-footer-muted);
