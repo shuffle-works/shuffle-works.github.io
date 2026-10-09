@@ -20,16 +20,17 @@
           document.documentElement.setAttribute('data-theme', 'light');
       } catch (_) {}
     </script>
-    <script type="module" crossorigin src="./assets/index-fKE5UqUI.js"></script>
+    <script type="module" crossorigin src="./assets/index-DiexuPT8.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-hePW80VL.js">
-    <link rel="modulepreload" crossorigin href="./assets/charts-vendor-0VMaLVLN.js">
-    <link rel="modulepreload" crossorigin href="./assets/plan-graph-vendor-BYl-AzN5.js">
-    <link rel="modulepreload" crossorigin href="./assets/react-vendor-DfpuPQZf.js">
-    <link rel="modulepreload" crossorigin href="./assets/DisclosureContext-CEbo4H8l.js">
-    <link rel="stylesheet" crossorigin href="./assets/plan-graph-vendor-DLioOiRN.css">
-    <link rel="stylesheet" crossorigin href="./assets/index-DhpRGMZc.css">
+    <link rel="modulepreload" crossorigin href="./assets/react-vendor-C6KcUD36.js">
+    <link rel="modulepreload" crossorigin href="./assets/DisclosureContext-Ca6wtWLL.js">
+    <link rel="modulepreload" crossorigin href="./assets/inertValue-DRbbFYJQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/button-DZoaFEkX.js">
+    <link rel="modulepreload" crossorigin href="./assets/composite-OIDI51Sa.js">
+    <link rel="modulepreload" crossorigin href="./assets/useScrollLock-DybdoiXl.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-BtUjWt_f.css">
 <link rel="stylesheet" href="/shuffle-works-tokens.css"><link rel="stylesheet" href="/shuffle-works-product-bar.css"><link rel="stylesheet" href="/shuffle-works-footer.css">
-<style data-shuffle-header-dedup>body:has(> header.shuffle-product-bar) header.VPNav{display:none}</style>
+<style data-shuffle-docs-nav>html:has(> body > header.shuffle-product-bar):has(header.VPNav){--vp-layout-top-height:var(--shuffle-product-bar-height,2.75rem);scroll-padding-top:calc(var(--vp-nav-height) + var(--vp-layout-top-height) + 24px)}body:has(> header.shuffle-product-bar):has(header.VPNav) > header.shuffle-product-bar{position:fixed;left:0;right:0}body:has(> header.shuffle-product-bar) :is(.VPNavBarAppearance,.VPNavBarExtra,.VPNavScreenAppearance){display:none}html[data-shuffle-framed] header.VPNav{display:none}</style>
   </head>
   <body>
 <a class="shuffle-skip-link" data-shuffle-skip-link href="#root">Skip to content</a>
@@ -39,6 +40,6 @@
 <style data-shuffle-footer-override>footer[data-shuffle-footer]{padding:0!important}</style>
 <script data-shuffle-page-controls-hoist>(() => { const tryHoist = () => { const productBar = document.querySelector("[data-shuffle-product-bar]"); const controls = document.querySelector("[data-shuffle-page-controls]"); if (!productBar || !controls) return false; if (productBar.contains(controls)) return true; const bar = productBar.querySelector(".shuffle-product-bar__nav"); if (!bar) return false; const oldHeader = controls.closest("header"); const end = productBar.querySelector(".shuffle-product-bar__end"); (end || bar).after(controls); if (oldHeader && oldHeader !== productBar) { oldHeader.remove(); } return true; }; if (tryHoist()) return; const observer = new MutationObserver(() => { if (tryHoist()) observer.disconnect(); }); observer.observe(document.body, { childList: true, subtree: true }); })();</script>
 <script data-shuffle-product-bar-height-sync>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); if (!bar) return; const sync = () => { document.documentElement.style.setProperty("--shuffle-product-bar-height", bar.offsetHeight + "px"); }; sync(); if (window.ResizeObserver) { new ResizeObserver(sync).observe(bar); } else { window.addEventListener("resize", sync); } })();</script>
-<script data-shuffle-dashboard-chrome-toggle>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); const footer = document.querySelector("[data-shuffle-footer]"); if (!bar && !footer) return; const framed = window.self !== window.top; const sync = () => { const hide = framed || !!document.querySelector("[data-testid=dashboard]"); if (bar) bar.style.display = hide ? "none" : ""; if (footer) footer.style.display = hide ? "none" : ""; }; sync(); new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); })();</script>
+<script data-shuffle-dashboard-chrome-toggle>(() => { const bar = document.querySelector("[data-shuffle-product-bar]"); const footer = document.querySelector("[data-shuffle-footer]"); if (!bar && !footer) return; const framed = window.self !== window.top; if (framed) document.documentElement.setAttribute("data-shuffle-framed", ""); const sync = () => { const hide = framed || !!document.querySelector("[data-testid=dashboard]"); if (bar) bar.style.display = hide ? "none" : ""; if (footer) footer.style.display = hide ? "none" : ""; }; sync(); new MutationObserver(sync).observe(document.body, { childList: true, subtree: true }); })();</script>
   </body>
 </html>
