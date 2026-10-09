@@ -1,1 +1,0 @@
-import{i as e}from"./react-vendor-C6KcUD36.js";import{i as t}from"./Dashboard-F5bomFoe.js";var n=e();function r({stageId:e,appModel:r}){let i=r.stages.get(e);return(0,n.jsxs)(`div`,{className:`flex flex-wrap items-center gap-2`,children:[(0,n.jsx)(t,{stageId:e}),(0,n.jsx)(`span`,{className:`text-sm font-medium`,children:i?.name??`Stage ${e}`})]})}export{r as t};
