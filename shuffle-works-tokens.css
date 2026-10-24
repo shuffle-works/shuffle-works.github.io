@@ -61,6 +61,8 @@
 }
 
 :root {
+  color-scheme: light dark;
+
   /* Palette — dark (default) */
   --color-bg: #14161b;
   --color-bg-elevated: #1b1e25;
