@@ -1,0 +1,1 @@
+import{Mt as e}from"./WidgetCard-BjRDXnLl.js";var t=e();function n({hint:e}){return(0,t.jsxs)(`p`,{className:`text-xs text-muted-foreground`,children:[`Try `,(0,t.jsxs)(`code`,{children:[`spark.sql.shuffle.partitions = `,e.recommended]}),` (now `,e.current,` tasks; target 128 MB per partition)`]})}export{n as t};
